@@ -1,0 +1,1023 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Return to Tennis — Program Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Narrow:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ink:#0F343D;
+  --ink-2:#4A6469;
+  --ink-3:#7B9298;
+  --line:#D3DEDD;
+  --line-2:#E7EEED;
+  --paper:#FFFFFF;
+  --bg:#F1F5F4;
+  --hip:#17707F;
+  --lum:#B0562F;
+  --tsp:#3F4C93;
+  --ball:#CBDD3F;
+  --ball-dk:#A8B92A;
+  --ok:#1F7A54;
+  --display:"Archivo Narrow","Archivo","Helvetica Neue",sans-serif;
+  --body:"Public Sans","Helvetica Neue",Arial,sans-serif;
+  --ui:"Archivo","Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* ---------- scoreboard label ---------- */
+.lbl{
+  font-family:var(--display);
+  text-transform:uppercase;
+  letter-spacing:.13em;
+  font-weight:600;
+  font-size:11px;
+  color:var(--ink-3);
+}
+
+/* ---------- top bar ---------- */
+.topbar{
+  background:var(--ink);
+  color:#EAF2F1;
+  padding:14px 22px;
+  display:flex;
+  align-items:center;
+  gap:22px;
+  flex-wrap:wrap;
+  position:sticky;top:0;z-index:50;
+}
+.brand{display:flex;flex-direction:column;line-height:1.15}
+.brand b{
+  font-family:var(--display);
+  text-transform:uppercase;
+  letter-spacing:.09em;
+  font-size:17px;
+  font-weight:700;
+}
+.brand span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7FA6A9;font-family:var(--display);font-weight:500}
+.who{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto}
+.who input{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:3px;padding:7px 10px;color:#fff;width:150px;font-size:13px;
+}
+.who input::placeholder{color:#83A6A9}
+.acts{display:flex;gap:8px;align-items:center}
+.btn{
+  background:transparent;border:1px solid rgba(255,255,255,.28);color:#EAF2F1;
+  padding:7px 14px;border-radius:3px;
+  font-family:var(--display);text-transform:uppercase;letter-spacing:.09em;font-size:11px;font-weight:600;
+}
+.btn:hover{background:rgba(255,255,255,.1)}
+.btn.solid{background:var(--ball);border-color:var(--ball);color:#1B2410}
+.btn.solid:hover{background:var(--ball-dk)}
+
+/* view switch */
+.switch{display:flex;border:1px solid rgba(255,255,255,.28);border-radius:3px;overflow:hidden}
+.switch button{
+  background:transparent;border:0;color:#9DBCBE;padding:7px 15px;
+  font-family:var(--display);text-transform:uppercase;letter-spacing:.09em;font-size:11px;font-weight:600;
+}
+.switch button[aria-pressed="true"]{background:#EAF2F1;color:var(--ink)}
+
+/* ---------- court strip (signature) ---------- */
+.court{
+  background:var(--paper);border-bottom:1px solid var(--line);
+  padding:0 22px;
+}
+.court-inner{max-width:1500px;margin:0 auto;display:flex;align-items:stretch;gap:0;overflow-x:auto}
+.blocktab{
+  border:0;background:transparent;
+  padding:14px 20px 12px;
+  border-bottom:3px solid transparent;
+  border-right:1px solid var(--line-2);
+  text-align:left;min-width:168px;flex:1;
+  display:flex;flex-direction:column;gap:3px;
+}
+.blocktab:hover{background:#F7FAF9}
+.blocktab[aria-selected="true"]{border-bottom-color:var(--ball);background:#FBFDF7}
+.blocktab .st{
+  font-family:var(--display);font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+}
+.blocktab .nm{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.02em;color:var(--ink)}
+.blocktab .wk{font-size:11px;color:var(--ink-3)}
+.blocktab .ct{
+  font-family:var(--display);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-2);font-weight:600;margin-top:2px;
+}
+.st1{color:var(--hip)} .st2{color:var(--lum)} .st3{color:var(--tsp)}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1500px;margin:0 auto;padding:22px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+@media(max-width:1080px){.cols{grid-template-columns:1fr}}
+
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:4px}
+.panel-hd{
+  padding:14px 18px;border-bottom:1px solid var(--line);
+  display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+}
+.panel-hd h2{
+  margin:0;font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;
+  font-size:13px;font-weight:700;
+}
+.panel-hd .count{margin-left:auto;font-family:var(--display);font-size:11px;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase;font-weight:600}
+
+/* ---------- filters ---------- */
+.filters{padding:12px 18px;border-bottom:1px solid var(--line-2);display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+.fgroup{display:flex;flex-direction:column;gap:5px}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{
+  border:1px solid var(--line);background:#fff;border-radius:99px;padding:4px 11px;
+  font-family:var(--display);font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;color:var(--ink-2);
+}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.search{border:1px solid var(--line);border-radius:3px;padding:7px 10px;min-width:180px;flex:1}
+
+/* ---------- library list ---------- */
+.lib{max-height:calc(100vh - 300px);overflow-y:auto}
+.grp{padding:11px 18px 5px;background:#F7FAF9;border-bottom:1px solid var(--line-2);position:sticky;top:0;z-index:2}
+.grp .lbl{color:var(--ink-2)}
+.ex{
+  display:flex;gap:12px;padding:11px 18px;border-bottom:1px solid var(--line-2);
+  border-left:3px solid transparent;
+}
+.ex:hover{background:#F9FBFA}
+.ex.hip{border-left-color:var(--hip)}
+.ex.lum{border-left-color:var(--lum)}
+.ex.tsp{border-left-color:var(--tsp)}
+.ex.on{background:#FBFDF2}
+.ex input[type=checkbox]{margin-top:4px;width:16px;height:16px;accent-color:var(--ink);flex:0 0 auto}
+.ex-body{flex:1;min-width:0}
+.ex-hd{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.ex-nm{font-weight:600;font-size:14.5px}
+.tag{
+  font-family:var(--display);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;font-weight:700;
+  padding:2px 6px;border-radius:2px;background:var(--line-2);color:var(--ink-2);white-space:nowrap;
+}
+.tag.stage{background:var(--ink);color:#fff}
+.ex-d{font-size:13px;color:var(--ink-2);margin-top:3px}
+.ex-t{font-size:12.5px;color:var(--ink-3);margin-top:3px;font-style:italic}
+
+/* ---------- assigned list ---------- */
+.asg{max-height:calc(100vh - 300px);overflow-y:auto}
+.acard{padding:13px 18px;border-bottom:1px solid var(--line-2);border-left:3px solid transparent}
+.acard.hip{border-left-color:var(--hip)}
+.acard.lum{border-left-color:var(--lum)}
+.acard.tsp{border-left-color:var(--tsp)}
+.acard-hd{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.acard-hd .num{
+  font-family:var(--display);font-weight:700;color:var(--ink-3);font-size:13px;
+  min-width:20px;font-variant-numeric:tabular-nums;
+}
+.rx{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+.rx label{display:flex;flex-direction:column;gap:3px}
+.rx input{border:1px solid var(--line);border-radius:3px;padding:5px 8px;font-size:13px;width:88px}
+.rx input.wide{width:100%}
+.rx .grow{flex:1;min-width:190px}
+.rm{
+  margin-left:auto;border:0;background:transparent;color:var(--ink-3);
+  font-family:var(--display);font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding:3px 5px;
+}
+.rm:hover{color:var(--lum)}
+.empty{padding:40px 22px;text-align:center;color:var(--ink-3);font-size:14px}
+.empty b{display:block;font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;color:var(--ink-2);margin-bottom:6px;font-size:12px}
+
+/* notes */
+.notes{padding:15px 18px;border-top:1px solid var(--line);background:#FAFCFB}
+.notes label{display:block;margin-bottom:13px}
+.notes textarea{
+  width:100%;border:1px solid var(--line);border-radius:3px;padding:9px 10px;
+  min-height:66px;resize:vertical;font-size:13.5px;line-height:1.5;margin-top:5px;
+}
+.hint{font-size:11.5px;color:var(--ink-3);margin-top:3px}
+
+/* block meta editing */
+.bmeta{padding:13px 18px;border-bottom:1px solid var(--line-2);display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.bmeta label{display:flex;flex-direction:column;gap:4px}
+.bmeta input{border:1px solid var(--line);border-radius:3px;padding:6px 9px;font-size:13px}
+.bmeta input.nm{width:180px;font-weight:600}
+.bmeta input.wk{width:130px}
+.bmeta select{border:1px solid var(--line);border-radius:3px;padding:6px 9px;font-size:13px}
+
+/* ---------- patient handout ---------- */
+.sheet{
+  background:var(--paper);border:1px solid var(--line);border-radius:4px;
+  max-width:900px;margin:0 auto;padding:0 0 40px;
+}
+.sheet-hd{padding:30px 40px 22px;border-bottom:4px solid var(--ink)}
+.sheet-hd .eyebrow{font-family:var(--display);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:700;color:var(--ink-3)}
+.sheet-hd h1{
+  margin:6px 0 0;font-family:var(--display);font-size:33px;line-height:1.1;
+  text-transform:uppercase;letter-spacing:.01em;font-weight:700;
+}
+.sheet-meta{display:flex;gap:32px;flex-wrap:wrap;margin-top:16px}
+.sheet-meta div{display:flex;flex-direction:column;gap:2px}
+.sheet-meta strong{font-size:15px;font-weight:600}
+.sheet-sec{padding:26px 40px 0}
+.sheet-sec h3{
+  font-family:var(--display);text-transform:uppercase;letter-spacing:.13em;font-size:12px;font-weight:700;
+  color:var(--ink);margin:0 0 4px;padding-bottom:7px;border-bottom:1px solid var(--line);
+}
+.pex{padding:15px 0;border-bottom:1px solid var(--line-2);display:flex;gap:15px}
+.pex .pnum{
+  font-family:var(--display);font-weight:700;font-size:19px;color:var(--ink-3);
+  min-width:28px;font-variant-numeric:tabular-nums;line-height:1.2;
+}
+.pex h4{margin:0;font-size:16px;font-weight:600}
+.pex .pd{font-size:14px;color:var(--ink-2);margin-top:5px}
+.pex .pt{font-size:13px;color:var(--ink-3);font-style:italic;margin-top:5px}
+.pex .prx{
+  margin-top:8px;display:inline-block;background:#F3F7F1;border-left:3px solid var(--ball-dk);
+  padding:6px 11px;font-size:13.5px;font-weight:600;
+}
+.pex .pn{font-size:13.5px;margin-top:7px;padding-left:11px;border-left:2px solid var(--line)}
+.callout{
+  margin:22px 40px 0;background:#F6F9F5;border:1px solid var(--line);border-left:4px solid var(--ball-dk);
+  padding:16px 20px;font-size:14px;
+}
+.callout .lbl{display:block;margin-bottom:6px}
+.callout p{margin:0 0 8px}
+.callout p:last-child{margin:0}
+.sheet-foot{padding:24px 40px 0;margin-top:24px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3)}
+
+.legend{display:flex;gap:18px;flex-wrap:wrap;padding:12px 22px;max-width:1500px;margin:0 auto;font-size:12px;color:var(--ink-2)}
+.legend span{display:flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+.toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+  background:var(--ink);color:#fff;padding:11px 20px;border-radius:4px;font-size:13.5px;
+  opacity:0;pointer-events:none;transition:opacity .25s;z-index:200;
+}
+.toast.show{opacity:1}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- print ---------- */
+@media print{
+  @page{margin:14mm}
+  body{background:#fff}
+  .topbar,.court,.legend,.no-print{display:none!important}
+  .wrap{padding:0;max-width:none}
+  .sheet{border:0;max-width:none;padding:0}
+  .sheet-hd{padding:0 0 18px}
+  .sheet-sec{padding:20px 0 0;break-inside:auto}
+  .callout{margin:18px 0 0;break-inside:avoid}
+  .sheet-foot{padding:18px 0 0}
+  .pex{break-inside:avoid}
+  .panel{border:0}
+  .lib,.asg{max-height:none;overflow:visible}
+  .acard{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar no-print">
+  <div class="brand">
+    <b>Return to Tennis</b>
+    <span>Mobility &amp; Stability Program Builder</span>
+  </div>
+  <div class="who">
+    <input id="fPatient" placeholder="Patient name">
+    <input id="fPrac" placeholder="Practitioner (RMT)">
+    <input id="fDate" placeholder="Start date">
+  </div>
+  <div class="acts">
+    <div class="switch" role="group" aria-label="View">
+      <button id="vPrac" aria-pressed="true">Build</button>
+      <button id="vPat" aria-pressed="false">Patient copy</button>
+    </div>
+    <button class="btn" id="bSave" title="Keeps your work in this browser">Save</button>
+    <button class="btn" id="bOpen" title="Load a .json program file you saved earlier">Open file</button>
+    <button class="btn" id="bBackup" title="Saves your selections as a .json data file — not a handout">Save file (.json)</button>
+    <button class="btn solid" id="bPrint" title="Makes the printable handout PDF">Print / Save as PDF</button>
+    <input type="file" id="fFile" accept=".json,application/json" style="display:none">
+  </div>
+</div>
+
+<div class="court no-print"><div class="court-inner" id="tabs" role="tablist"></div></div>
+
+<div class="legend no-print">
+  <span><i class="dot" style="background:var(--hip)"></i> Hip</span>
+  <span><i class="dot" style="background:var(--lum)"></i> Lumbar</span>
+  <span><i class="dot" style="background:var(--tsp)"></i> Thoracic</span>
+  <span>· Stage tags show the earliest block an exercise is appropriate.</span>
+</div>
+
+<div class="wrap">
+  <div id="buildView">
+    <div class="cols">
+      <section class="panel">
+        <div class="panel-hd">
+          <h2>Exercise library</h2>
+          <span class="count" id="libCount"></span>
+        </div>
+        <div class="filters">
+          <div class="fgroup">
+            <span class="lbl">Region</span>
+            <div class="chips" id="fRegion"></div>
+          </div>
+          <div class="fgroup">
+            <span class="lbl">Type</span>
+            <div class="chips" id="fType"></div>
+          </div>
+          <div class="fgroup">
+            <span class="lbl">Stage</span>
+            <div class="chips" id="fStage"></div>
+          </div>
+          <input class="search" id="fSearch" placeholder="Search exercises…">
+        </div>
+        <div class="lib" id="lib"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-hd">
+          <h2>This block</h2>
+          <span class="count" id="asgCount"></span>
+        </div>
+        <div class="bmeta" id="bmeta"></div>
+        <div class="asg" id="asg"></div>
+        <div class="notes">
+          <label>
+            <span class="lbl">Notes for patient — prints on his copy</span>
+            <textarea id="nPatient" placeholder="Order to run them in, what it should feel like, when to stop, on-court progression for this block…"></textarea>
+          </label>
+          <label>
+            <span class="lbl">Practitioner notes — stays on your copy only</span>
+            <textarea id="nPrac" placeholder="Soft tissue findings, compensations seen, regression/progression triggers, what to reassess next visit…"></textarea>
+            <span class="hint">Hidden from the patient copy.</span>
+          </label>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="patientView" style="display:none"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================ EXERCISE LIBRARY ============================ */
+const REGIONS = {hip:{k:"hip",name:"Hip"}, lum:{k:"lum",name:"Lumbar"}, tsp:{k:"tsp",name:"Thoracic spine"}};
+
+const EX = [
+/* ---------- HIP MOBILITY ---------- */
+{id:"hm1",r:"hip",ty:"mob",n:"90/90 Hip Switch",s:"S1-S2",rx:"2 x 8 each side, slow",
+ d:"Sit with front leg bent at 90 degrees in front and back leg bent at 90 degrees to the side. Build it up: hold each side → lift the front knee off the floor → lift the back knee → slowly switch side to side → switch with hands off the floor → switch and stand up.",
+ t:"Hip internal and external rotation range"},
+{id:"hm2",r:"hip",ty:"mob",n:"Hip CARs (Controlled Rotations)",s:"S1-S2",rx:"3 slow circles each direction, each side",
+ d:"Draw the biggest slow circle you can with the knee, keeping the rest of the body completely still. Build it up: lying on your back → on your side → on hands and knees → standing.",
+ t:"Full hip capsule range; also a weekly self-check for where movement catches"},
+{id:"hm3",r:"hip",ty:"mob",n:"Half-Kneeling Hip Flexor Series",s:"S1-S3",rx:"2 x 45s each side",
+ d:"Half-kneel, tuck the tailbone under and squeeze the back glute — do not lean forward. Build it up: tuck and hold → add same-side arm overhead → add a side bend away → couch stretch (back foot on a bench) → couch stretch with a rotation.",
+ t:"Hip extension for the serve — so the arch comes from the hip, not the low back"},
+{id:"hm4",r:"hip",ty:"mob",n:"Adductor Rock Back",s:"S1-S2",rx:"2 x 10 each side",
+ d:"On hands and knees, take one leg out to the side with the foot flat, then rock the hips back toward the heel. Build it up: one leg out → both legs wide (frog) → add a rotation at the deepest point.",
+ t:"Inner thigh length — sets how deep the lunge for a wide ball can go"},
+{id:"hm5",r:"hip",ty:"mob",n:"Cossack Squat",s:"S2-S3",rx:"2 x 6 each side",
+ d:"Wide stance, shift all the way over one bent leg while the other stays straight. Build it up: hold a pole for support → no support → no support with the straight leg's toes lifted and rotated up → holding a weight at the chest.",
+ t:"Loaded sideways hip range — the closest drill to a real defensive court position"},
+{id:"hm6",r:"hip",ty:"mob",n:"Frog Rock",s:"S1",rx:"60-90s",
+ d:"Knees wide on hands and knees, shins in line with the thighs, feet turned out. Build it up: hold still → rock gently back and forth → sink a little deeper on each breath out.",
+ t:"Inner thigh and hip capsule — a safe, low-effort starting point"},
+{id:"hm7",r:"hip",ty:"mob",n:"World's Greatest Stretch",s:"S1-S2",rx:"5 each side",
+ d:"Deep lunge, drop the same-side elbow toward the inside of the front foot. Build it up: elbow down → add a reach up and rotate → add an overhead reach → straighten the front leg at the end to sweep the hamstring.",
+ t:"Hip and thoracic spine together — best value per minute in the program"},
+{id:"hm8",r:"hip",ty:"mob",n:"Hip Airplane",s:"S2-S3",rx:"2 x 6 each side",
+ d:"Stand on one leg, hinge forward, then rotate the pelvis open and closed over the standing hip. Build it up: hands on a wall → fingertips on a wall → no support → eyes closed.",
+ t:"Hip rotation under load on the standing leg — the split-step recovery pattern"},
+{id:"hm9",r:"hip",ty:"mob",n:"Prone Windshield Wipers",s:"S1",rx:"2 x 10 each direction",
+ d:"Lie face down, knees bent, let the lower legs fall out and in. Build it up: let them fall → actively drive them → hold 3s at the end of range → add a band.",
+ t:"Pure hip rotation with no help from the low back"},
+{id:"hm10",r:"hip",ty:"mob",n:"Seated 90/90 Lift-Offs",s:"S1-S2",rx:"2 x 8 each side, 3s hold",
+ d:"From the 90/90 position, lift a shin off the floor and hold. Build it up: lean in passively → press the leg down into the floor and hold → lift off and hold 3s → add ankle weight.",
+ t:"Converts passive range into range he can actually control"},
+{id:"hm11",r:"hip",ty:"mob",n:"Deep Squat Hold",s:"S1-S3",rx:"3 x 30-60s",
+ d:"Sit into the deepest squat you can hold with heels down. Build it up: heels raised plus hold a counterweight → heels raised only → flat foot → flat foot with a rotation reach.",
+ t:"Overall hip bending range; also shows up any upper back stiffness"},
+{id:"hm12",r:"hip",ty:"mob",n:"Leg Swings",s:"S1-S2",rx:"15 each direction, each leg",
+ d:"Swing one leg loosely, keeping the trunk still. Build it up: hold a wall, swing front to back → hold a wall, swing side to side → no support → at warm-up pace before hitting.",
+ t:"Dynamic hip range — carries straight into his on-court warm-up"},
+{id:"hm13",r:"hip",ty:"mob",n:"Supine Figure-4 to Active Pigeon",s:"S1-S2",rx:"2 x 45s each side",
+ d:"Ankle across the opposite knee, draw the legs toward the chest. Build it up: on your back → seated → pigeon on the floor → active pigeon (lift the back leg off the floor).",
+ t:"Back of the hip and external rotators"},
+{id:"hm14",r:"hip",ty:"mob",n:"Lateral Lunge with Reach",s:"S2",rx:"2 x 8 each side",
+ d:"Step wide to one side, sit back into that hip, keep the other leg straight. Build it up: shallow → full depth → reach the opposite hand across → hold a weight at the chest.",
+ t:"Loaded sideways movement — the direct lead-in to a defensive slide"},
+{id:"hm15",r:"hip",ty:"mob",n:"Banded Hip Distraction",s:"S1-S2",rx:"2 x 60s each side",
+ d:"Heavy band high in the crease of the hip, pulling backward, then move into range. Build it up: bend the hip in the band → bend and rotate in → half-kneeling with the band pulling forward → add active circles inside the band.",
+ t:"Genuine joint capsule tightness that soft tissue work alone won't shift"},
+{id:"hm16",r:"hip",ty:"mob",n:"End-Range PAILs / RAILs",s:"S2-S3",rx:"2 rounds each side",
+ d:"Get to the very end of a stretch and hold 2 minutes. Push gently into the stretch for 10s building to hard, then pull yourself deeper for 10s, then relax into the new range and repeat.",
+ t:"Locking in range that keeps regressing between appointments"},
+
+/* ---------- HIP STABILITY ---------- */
+{id:"hs1",r:"hip",ty:"stab",n:"Glute Bridge Series",s:"S1-S3",rx:"3 x 12",
+ d:"Lift the hips by squeezing the glutes, ribs stay down. Build it up: two legs → one leg → one leg with a 3s hold at the top → feet on a bench → barbell or dumbbell hip thrust → single leg hip thrust.",
+ t:"Glute strength and hip extension power"},
+{id:"hs2",r:"hip",ty:"stab",n:"Side Plank with Clam",s:"S1-S2",rx:"3 x 10 each side",
+ d:"Side plank position, then open the top knee. Build it up: knees bent, elbow under shoulder → feet stacked → lift the whole top leg → hold the top leg lifted.",
+ t:"Side hip and trunk together"},
+{id:"hs3",r:"hip",ty:"stab",n:"Copenhagen Plank",s:"S2-S3",rx:"3 x 15-30s each side",
+ d:"Side plank with the top leg's inner thigh resting on a bench. Build it up: knee on the bench → mid-shin on the bench → foot on the bench → foot on the bench with the bottom leg lifting.",
+ t:"Groin strength — the strongest protector against adductor strain in a lateral sport, and almost always undertrained"},
+{id:"hs4",r:"hip",ty:"stab",n:"Lateral Band Walks",s:"S1-S2",rx:"3 x 12 each direction",
+ d:"Band around the legs, small steps sideways, staying low with feet pointing forward. Build it up: band above the knees → band at the ankles → deeper athletic stance → resisted by a sled or partner.",
+ t:"Side hip endurance for repeated lateral pushes"},
+{id:"hs5",r:"hip",ty:"stab",n:"Single Leg RDL",s:"S1-S3",rx:"3 x 8 each side",
+ d:"Stand on one leg, hinge at the hip with a flat back, the free leg extending behind. Build it up: fingertips on a wall → no support → hold a weight in the opposite hand → two weights → add a rotation at the bottom.",
+ t:"Hamstring and glute strength plus balance — the deceleration position"},
+{id:"hs6",r:"hip",ty:"stab",n:"Split Squat to Bulgarian",s:"S1-S3",rx:"3 x 8 each side",
+ d:"Long stance, drop the back knee straight down. Build it up: hold support → no support → back foot elevated on a bench → back foot elevated holding weight → front foot on a plate for extra depth.",
+ t:"Single leg strength through full range"},
+{id:"hs7",r:"hip",ty:"stab",n:"Eccentric Step Down",s:"S2-S3",rx:"3 x 8 each side, 3s lower",
+ d:"Stand on a box on one leg, lower the other heel to the floor over 3 seconds, then push back up. Build it up: 4 inch box → 8 inch → 12 inch → 12 inch with the opposite hand reaching across.",
+ t:"Ability to absorb and stop — the braking on a wide ball"},
+{id:"hs8",r:"hip",ty:"stab",n:"Skater Bound",s:"S3",rx:"4 x 5 each direction",
+ d:"Push off one leg sideways, land on the other and hold it. Build it up: bound and stick for 3s → stick on a soft surface → continuous bounds → bound and catch a ball on landing.",
+ t:"The single most tennis-specific drill here — gate Stage 3 on being able to stick the landing clean"},
+{id:"hs9",r:"hip",ty:"stab",n:"Single Leg Balance Progression",s:"S1-S3",rx:"3 x 30s each side",
+ d:"Stand on one leg. Build it up: eyes open 30s → eyes closed → on a foam pad or cushion → turning the head side to side → someone lightly nudging you → catching and throwing a ball.",
+ t:"Balance and reaction on one leg"},
+{id:"hs10",r:"hip",ty:"stab",n:"Standing Banded Abduction",s:"S1-S2",rx:"3 x 15 each side",
+ d:"Band around the ankles, push one leg out to the side — but focus on the leg you are standing on doing the work. Build it up: slow reps → slow with a hold → add an opposite arm reach.",
+ t:"Standing hip control — the leg holding you up, not the leg moving"},
+{id:"hs11",r:"hip",ty:"stab",n:"Wall Press March",s:"S1-S2",rx:"3 x 20s each side",
+ d:"Hands on a wall, drive one knee up hard into an imaginary resistance while the other leg holds you. Build it up: hold still → alternate sides → add a band around the working thigh.",
+ t:"Hip flexor strength at the top of the range, plus standing hip control"},
+{id:"hs12",r:"hip",ty:"stab",n:"Suitcase Carry",s:"S2-S3",rx:"4 x 30m each side",
+ d:"Carry a heavy weight in one hand only and walk without leaning. Build it up: light and short → heavier → heavy for short distances → add turns and uneven ground.",
+ t:"Side hip and trunk at once — very efficient pick if you are short on time"},
+{id:"hs13",r:"hip",ty:"stab",n:"Curtsy Lunge",s:"S2",rx:"3 x 10 each side",
+ d:"Step one leg back and across behind the other, then lower. Build it up: bodyweight → hold a weight at the chest → add an opposite hand reach.",
+ t:"Hip control in the twisted, crossed-over positions tennis puts you in"},
+{id:"hs14",r:"hip",ty:"stab",n:"Single Leg Squat to Box",s:"S2-S3",rx:"3 x 6 each side",
+ d:"Stand on one leg, sit back to touch a box, stand back up. Build it up: high box → mid box → low box → no box with arms held out as a counterbalance.",
+ t:"Single leg strength and knee control under depth"},
+{id:"hs15",r:"hip",ty:"stab",n:"Lateral Resisted Walk",s:"S2-S3",rx:"4 x 15m each direction",
+ d:"Band or cable around the waist pulling sideways, shuffle against it in an athletic stance. Build it up: band → sled → holding a racquet in the ready position.",
+ t:"Sport-speed lateral push against resistance"},
+{id:"hs16",r:"hip",ty:"stab",n:"Half-Kneeling Pallof Press",s:"S1-S2",rx:"3 x 8 each side, 3s hold",
+ d:"Half-kneel side-on to a band, press it straight out from the chest and resist being twisted. Build it up: tall kneeling → half kneeling → split stance → standing.",
+ t:"Hip and anti-twist trunk control together"},
+
+/* ---------- LUMBAR MOBILITY ---------- */
+{id:"lm1",r:"lum",ty:"mob",n:"Cat-Cow",s:"S1",rx:"2 x 10 slow",
+ d:"On hands and knees, round and arch the spine. Build it up: whole spine together → move it one segment at a time from the top down → then bottom up → match it to slow breathing.",
+ t:"Gentle segment-by-segment low back movement and body awareness"},
+{id:"lm2",r:"lum",ty:"mob",n:"Pelvic Tilts",s:"S1-S2",rx:"2 x 12",
+ d:"Tip the pelvis forward and back, finding the middle. Build it up: on your back → hands and knees → sitting on a ball → standing → standing with a racquet in hand.",
+ t:"The foundation for every bracing cue later — worth not skipping"},
+{id:"lm3",r:"lum",ty:"mob",n:"Supine Lower Trunk Rotation",s:"S1",rx:"2 x 10 each side",
+ d:"On your back, let the knees fall to one side and back. Build it up: feet on the floor with a small arc → knees at 90 degrees, controlled → legs straight (biggest arc, go carefully).",
+ t:"Low back rotation, controlled"},
+{id:"lm4",r:"lum",ty:"mob",n:"Child's Pose Lateral Reach",s:"S1",rx:"30s each side",
+ d:"From child's pose, walk both hands to one side. Build it up: walk and hold 30s → add pushing the opposite hip back away from the hands.",
+ t:"Side bending of the low back and the lats"},
+{id:"lm5",r:"lum",ty:"mob",n:"Prone Press-Up",s:"S1-S2",rx:"2 x 10",
+ d:"Lie face down and press the chest up while the hips stay down. Build it up: just lying face down → up on elbows → partial press-up → full press-up → press-up with the hips shifted to one side.",
+ t:"Low back extension range and tolerance"},
+{id:"lm6",r:"lum",ty:"mob",n:"Sphinx to Cobra",s:"S1-S2",rx:"60s then 2 x 8",
+ d:"Rest on your elbows, chest up, hips heavy. Build it up: hold 60s → rock gently forward and back → press up to full cobra → cobra while looking over one shoulder.",
+ t:"Sustained extension — the counter to a desk-bound 18 months"},
+{id:"lm7",r:"lum",ty:"mob",n:"Standing Lateral Flexion with Reach",s:"S1",rx:"2 x 8 each side",
+ d:"Standing, bend directly sideways without rotating. Build it up: slide the hand down the thigh → reach the opposite arm overhead → hold a light weight in the low hand.",
+ t:"Side bending, standing up"},
+{id:"lm8",r:"lum",ty:"mob",n:"Segmental Bridge",s:"S1-S2",rx:"2 x 8",
+ d:"Peel the spine off the floor one vertebra at a time, then lay it back down the same way. Build it up: two legs → slower with a pause at the top → one leg.",
+ t:"Half mobility, half control — teaches him to move the low back on purpose"},
+{id:"lm9",r:"lum",ty:"mob",n:"Quadruped Rock Back",s:"S1",rx:"2 x 10",
+ d:"Hands and knees, rock the hips back toward the heels. Build it up: stop at a neutral spine → allow a little rounding at the end → add a reach-through rotation.",
+ t:"Low back flexion range, unloaded"},
+{id:"lm10",r:"lum",ty:"mob",n:"Seated Ball Rotation",s:"S1-S2",rx:"2 x 10 each side",
+ d:"Sit on a ball with feet planted and rotate side to side. Build it up: small arcs → hands crossed on the chest → arms crossed at the shoulders → hands overhead.",
+ t:"Controlled seated rotation — an easy daily option he can do anywhere"},
+
+/* ---------- LUMBAR STABILITY ---------- */
+{id:"ls1",r:"lum",ty:"stab",n:"Dead Bug",s:"S1-S3",rx:"3 x 8 each side",
+ d:"On your back, low back pressed flat, lower opposite arm and leg. Build it up: arms only → legs only → opposite arm and leg → with a 3s hold at the bottom → holding a band anchored overhead → heels sliding along the floor → pressing a weight or ball.",
+ t:"Stops the low back arching while the arms and legs move — the serve position"},
+{id:"ls2",r:"lum",ty:"stab",n:"Bird Dog",s:"S1-S3",rx:"3 x 8 each side, 5s hold",
+ d:"Hands and knees, reach opposite arm and leg out long without tipping. Build it up: arm only → leg only → opposite arm and leg → hold 5s → draw elbow to knee and back out → add a band row → hold a light weight.",
+ t:"Trunk control against twisting while the limbs work"},
+{id:"ls3",r:"lum",ty:"stab",n:"McGill Curl-Up",s:"S1-S2",rx:"3 sets: 10s, 8s, 6s holds",
+ d:"Lie on your back, hands under the low back, one knee bent, lift the head and shoulders just an inch. Build it up: 10 second holds, then descending sets of 10-8-6.",
+ t:"Front trunk endurance without loading the low back into flexion"},
+{id:"ls4",r:"lum",ty:"stab",n:"Side Plank",s:"S1-S3",rx:"3 x 30-45s each side",
+ d:"Elbow under the shoulder, body in a straight line. Build it up: knees down → feet stacked → lift the top leg → thread the top arm under and rotate → add a band row.",
+ t:"Side trunk endurance — a key marker for return to sport"},
+{id:"ls5",r:"lum",ty:"stab",n:"Front Plank to RKC Plank",s:"S1-S2",rx:"3 x 20-40s",
+ d:"Standard plank, then make it harder by squeezing everything maximally. Build it up: normal hold → RKC (all-out tension for 10s) → alternating arm reach → body saw rocking forward and back.",
+ t:"Stops the low back sagging under effort"},
+{id:"ls6",r:"lum",ty:"stab",n:"Pallof Press",s:"S1-S3",rx:"3 x 8 each side, 3s hold",
+ d:"Side-on to a band at chest height, press out and resist the twist. Build it up: tall kneeling → half kneeling → split stance → standing athletic → with a lateral step out → adding a rotation at the end.",
+ t:"The anchor anti-twist drill — should appear in some form in all three blocks"},
+{id:"ls7",r:"lum",ty:"stab",n:"Half-Kneeling Chop",s:"S2-S3",rx:"3 x 10 each side",
+ d:"Half-kneel, pull a high cable or band down and across the body. Build it up: band → cable → add a full rotation follow-through.",
+ t:"Diagonal force transfer — the groundstroke pattern"},
+{id:"ls8",r:"lum",ty:"stab",n:"Half-Kneeling Lift",s:"S2-S3",rx:"3 x 10 each side",
+ d:"The mirror of the chop — drive a low cable or band up and across. Build it up: band → cable → add rotation and a bigger finish.",
+ t:"Upward diagonal transfer — maps directly onto the serve"},
+{id:"ls9",r:"lum",ty:"stab",n:"Farmer / Suitcase Carry",s:"S2-S3",rx:"4 x 30-40m",
+ d:"Walk holding heavy weight. Build it up: both hands → one hand only → one hand overhead → one racked at the shoulder and one hanging.",
+ t:"Trunk stiffness while walking and turning under load"},
+{id:"ls10",r:"lum",ty:"stab",n:"Bear Crawl",s:"S1-S3",rx:"3 x 20s or 10m",
+ d:"Hands and toes, knees hovering an inch off the floor. Build it up: hold still 20s → shoulder taps → crawl forward and back → crawl sideways.",
+ t:"Trunk control against twisting while moving on all fours"},
+{id:"ls11",r:"lum",ty:"stab",n:"Stir the Pot",s:"S2-S3",rx:"3 x 8 circles each way",
+ d:"Forearms on a stability ball in a plank, draw circles with the elbows. Build it up: small circles → wider circles → figure-8 → one arm.",
+ t:"Trunk control under a moving, unstable load"},
+{id:"ls12",r:"lum",ty:"stab",n:"Hollow Body Hold",s:"S2-S3",rx:"3 x 20-30s",
+ d:"On your back, low back pressed flat, arms and legs lifted. Build it up: knees tucked → one leg out → full hollow → hollow rocking.",
+ t:"Whole-front trunk tension"},
+{id:"ls13",r:"lum",ty:"stab",n:"Landmine Anti-Rotation Press",s:"S2-S3",rx:"3 x 8 each side",
+ d:"Bar in a landmine, press it away from one shoulder without letting the trunk twist. Build it up: tall kneeling → half kneeling → standing → standing with a rotation and step.",
+ t:"Pressing strength while the trunk refuses to give up rotation"},
+{id:"ls14",r:"lum",ty:"stab",n:"Renegade Row",s:"S3",rx:"3 x 8 each side",
+ d:"Plank on two dumbbells, row one at a time without the hips rocking. Build it up: from the knees → feet wide → feet narrow → add a push-up between rows.",
+ t:"Anti-twist under real load"},
+{id:"ls15",r:"lum",ty:"stab",n:"Glute Bridge March",s:"S1-S2",rx:"3 x 10 each side",
+ d:"Hold a bridge and lift one knee at a time with zero drop in the hips. Build it up: slow marching → add a band around the knees → add ankle weight.",
+ t:"Keeping the pelvis level while one leg unloads — the single leg stance moment"},
+{id:"ls16",r:"lum",ty:"stab",n:"Standing Banded Overhead Press",s:"S2",rx:"3 x 10",
+ d:"Press a band overhead without the ribs flaring or the back arching. Build it up: light band, slow → heavier band → single arm.",
+ t:"Rehearses the serve trunk position under safe load"},
+{id:"ls17",r:"lum",ty:"stab",n:"Ab Wheel / Ball Rollout",s:"S3",rx:"3 x 8",
+ d:"Roll out and back without the low back arching. Build it up: rolling up a wall → from the knees, short range → from the knees, full range → from the feet.",
+ t:"Top-end resistance to arching"},
+{id:"ls18",r:"lum",ty:"stab",n:"Plank Shoulder Taps",s:"S1-S2",rx:"3 x 10 each side",
+ d:"Plank on hands, tap one hand to the opposite shoulder with no hip rock. Build it up: feet wide → feet narrow → feet elevated.",
+ t:"Anti-twist with a shifting base"},
+{id:"ls19",r:"lum",ty:"stab",n:"Med Ball Rotational Throw",s:"S3",rx:"4 x 6 each side",
+ d:"Throw a medicine ball rotationally into a wall. Build it up: half-kneeling scoop toss → standing scoop → standing side throw → step-in rotational throw → overhead slam.",
+ t:"Where mobility and stability finally become power — the Stage 3 gate drill"},
+{id:"ls20",r:"lum",ty:"stab",n:"Offset / Uneven Carry",s:"S2-S3",rx:"4 x 30m each way",
+ d:"Carry two different weights, or one racked at the shoulder and one hanging. Build it up: small difference → bigger difference → add turns and direction changes.",
+ t:"Trunk control under uneven load — closer to real sport than a symmetrical carry"},
+
+/* ---------- T-SPINE MOBILITY ---------- */
+{id:"tm1",r:"tsp",ty:"mob",n:"Open Book",s:"S1-S2",rx:"2 x 8 each side",
+ d:"Side lying, knees stacked and bent, open the top arm across the body and follow it with the eyes. Build it up: knees on the floor → knees on a foam roller → trace the arm all the way overhead → hold for 3 breaths at the end.",
+ t:"Upper back rotation with the low back locked out"},
+{id:"tm2",r:"tsp",ty:"mob",n:"Thread the Needle",s:"S1",rx:"5 breaths each side",
+ d:"On hands and knees, slide one arm under the body, then open it to the ceiling. Build it up: reach through and hold → reach through then open to the ceiling → hold 5 breaths at each end.",
+ t:"Upper back rotation and shoulder blade movement"},
+{id:"tm3",r:"tsp",ty:"mob",n:"Quadruped Rotation (hand behind head)",s:"S1-S2",rx:"2 x 8 each side",
+ d:"Hands and knees, one hand behind the head, rotate the elbow up to the ceiling. Build it up: hand behind head → hand on the low back (harder, more isolated) → same but rocked back onto the heels.",
+ t:"Upper back rotation without the low back joining in"},
+{id:"tm4",r:"tsp",ty:"mob",n:"Half-Kneeling Rotation with Dowel",s:"S2",rx:"2 x 8 each side",
+ d:"Half-kneel with a dowel across the shoulders and rotate. Build it up: dowel across the shoulders → dowel held overhead → add a reach at the end of range.",
+ t:"Half-kneeling locks the pelvis, so all rotation has to come from the upper back"},
+{id:"tm5",r:"tsp",ty:"mob",n:"Seated 90/90 Rotation",s:"S1-S2",rx:"2 x 10 each side",
+ d:"Sit tall with a ball squeezed between the knees and rotate. Build it up: arms crossed on the chest → arms crossed at the shoulders → hands overhead.",
+ t:"Isolated seated rotation with the legs held still"},
+{id:"tm6",r:"tsp",ty:"mob",n:"Foam Roller Thoracic Extension",s:"S1",rx:"3 breaths x 4-5 levels",
+ d:"Roller across the mid-back, support the head, arch backward over it. Build it up: work one level at a time, 3 breaths each, moving up and down the spine.",
+ t:"Upper back extension, segment by segment"},
+{id:"tm7",r:"tsp",ty:"mob",n:"Peanut Segmental Extension",s:"S1-S2",rx:"3 breaths x 4-5 levels",
+ d:"Two balls taped together either side of the spine, extend over them level by level. Build it up: extend only → add an overhead arm reach at each level.",
+ t:"More targeted version of the roller — good for a specific stiff segment"},
+{id:"tm8",r:"tsp",ty:"mob",n:"Wall Angels",s:"S1-S2",rx:"2 x 10",
+ d:"Back to a wall, ribs down, slide the arms up and overhead keeping contact. Build it up: partial range → full overhead → add a band → do it in a half squat.",
+ t:"Upper back extension plus overhead shoulder range — the serve position"},
+{id:"tm9",r:"tsp",ty:"mob",n:"Bench Thoracic Extension",s:"S1-S2",rx:"3 x 45s",
+ d:"Kneel with elbows on a bench and sink the chest toward the floor. Build it up: elbows on bench → hold a dowel overhead → add a rotation to one side.",
+ t:"Overhead reach and upper back extension together"},
+{id:"tm10",r:"tsp",ty:"mob",n:"Child's Pose Rotation Reach-Through",s:"S1",rx:"5 breaths each side",
+ d:"From child's pose, reach one arm under and through, then open it up. Build it up: reach through → open to the ceiling → 5 slow breaths at each end.",
+ t:"Gentle rotation with the hips fully parked"},
+{id:"tm11",r:"tsp",ty:"mob",n:"Bretzel 1",s:"S1-S2",rx:"5 breaths each side",
+ d:"Side lying, top knee resting on a roller held by the bottom hand, rotate the chest away. Build it up: hold 5 breaths → build the hold time → add a deeper exhale into range.",
+ t:"Rotation with both the hip and the low back locked out"},
+{id:"tm12",r:"tsp",ty:"mob",n:"Bretzel 2",s:"S2",rx:"5 breaths each side",
+ d:"As Bretzel 1 but also holding the bottom foot behind you to add a quad stretch.",
+ t:"Rotation plus front-of-hip length in one position"},
+{id:"tm13",r:"tsp",ty:"mob",n:"Side-Lying Windmill",s:"S1-S2",rx:"2 x 8 each side",
+ d:"Side lying, knees bent, sweep the top arm in a big arc from floor to floor. Build it up: bent arm → straight arm → follow with the head and eyes → hold a light weight.",
+ t:"Big-arc rotation combined with shoulder range"},
+{id:"tm14",r:"tsp",ty:"mob",n:"Standing Wall Rotation (ball between knees)",s:"S2",rx:"2 x 10 each side",
+ d:"Stand facing away from a wall with a ball squeezed between the knees, rotate to touch the wall behind. Build it up: hands on chest → hands overhead → add a hold at the end.",
+ t:"The ball kills any hip or low back contribution — rotation is pure upper back"},
+{id:"tm15",r:"tsp",ty:"mob",n:"Rock Back with Rotation",s:"S1-S2",rx:"2 x 8 each side",
+ d:"On hands and knees, rock the hips back to the heels then rotate. Build it up: rock then rotate → hold at the end → add an overhead reach.",
+ t:"Hip flexion parks the pelvis so the rotation is clean"},
+{id:"tm16",r:"tsp",ty:"mob",n:"Rib Roll Breathing",s:"S1",rx:"6 breaths each side",
+ d:"Side lying, one hand on the ribs, breathe all the way out then rotate open on the exhale. Build it up: 6 slow breaths per side, letting range come from the exhale rather than force.",
+ t:"Ribcage expansion — if the ribs don't move, upper back rotation stays capped"},
+{id:"tm17",r:"tsp",ty:"mob",n:"Sphinx with Rotation",s:"S1-S2",rx:"2 x 8 each side",
+ d:"From sphinx, reach one arm up and overhead, rotating the chest open. Build it up: small reach → full overhead reach → hold at the end of range.",
+ t:"Extension and rotation together, unloaded"},
+{id:"tm18",r:"tsp",ty:"mob",n:"Bench Rotation with Overhead Dowel",s:"S2",rx:"2 x 8 each side",
+ d:"Chest supported on an incline bench, dowel held overhead, rotate side to side. Build it up: light dowel → longer lever → pause at the end of range.",
+ t:"Loaded end-range rotation with the trunk supported"},
+{id:"tm19",r:"tsp",ty:"mob",n:"Half-Kneeling Adductor + Rotation Combo",s:"S2",rx:"2 x 8 each side",
+ d:"Half-kneel with the front leg out wide to the side, then rotate the chest toward the front leg. Build it up: rotate only → add an overhead reach → hold 3 breaths at the end.",
+ t:"Hip and upper back at once — efficient when session time is short"},
+{id:"tm20",r:"tsp",ty:"mob",n:"Seated-on-Heels Rotation",s:"S1",rx:"2 x 10 each side",
+ d:"Sit back on the heels and rotate the chest. Build it up: hands on the chest → hands behind the head → hands overhead.",
+ t:"The cleanest upper back isolation available — the pelvis simply cannot move"},
+
+/* ---------- T-SPINE STABILITY ---------- */
+{id:"ts1",r:"tsp",ty:"stab",n:"Prone Y-T-W-I",s:"S1-S2",rx:"2 x 8 each position",
+ d:"Face down, lift the arms in four different shapes. Build it up: no weight → 2s hold at the top → light plates → face down on an incline bench.",
+ t:"Mid-back and shoulder blade endurance"},
+{id:"ts2",r:"tsp",ty:"stab",n:"Band Pull-Apart",s:"S1-S2",rx:"3 x 15",
+ d:"Pull a band apart with straight arms. Build it up: at chest height → at 45 degrees → overhead → add a 2s hold.",
+ t:"Mid-back strength — the direct counter to a rounded desk posture"},
+{id:"ts3",r:"tsp",ty:"stab",n:"Face Pull",s:"S1-S3",rx:"3 x 15",
+ d:"Pull a band or cable toward the face with the elbows high. Build it up: band → cable → add external rotation at the end → half kneeling.",
+ t:"Rear shoulder and mid-back — protects the shoulder over a long serving season"},
+{id:"ts4",r:"tsp",ty:"stab",n:"Prone Swimmers",s:"S1-S2",rx:"2 x 6 full circuits",
+ d:"Face down, sweep the arms in a slow arc from overhead to the low back and reverse. Build it up: slow and continuous → pause at each position → add light weight.",
+ t:"Shoulder blade control through a full arc"},
+{id:"ts5",r:"tsp",ty:"stab",n:"Banded Wall Slide",s:"S1-S2",rx:"3 x 10",
+ d:"Band around the wrists, forearms on a wall, slide up while pushing out against the band. Build it up: short range → full overhead → add a 3s hold at the top.",
+ t:"Overhead shoulder blade control — the serve arm path"},
+{id:"ts6",r:"tsp",ty:"stab",n:"Scap Push-Up",s:"S1-S2",rx:"3 x 12",
+ d:"Plank position, arms locked, only the shoulder blades move together and apart. Build it up: against a wall → on an incline → on the floor → feet elevated.",
+ t:"Serratus and shoulder blade control on the ribcage"},
+{id:"ts7",r:"tsp",ty:"stab",n:"Single Arm Row",s:"S1-S3",rx:"3 x 10 each side",
+ d:"Row a weight to the hip without letting the trunk twist toward it. Build it up: supported on a bench → free standing in a split stance → standing on one leg.",
+ t:"Pulling strength while the trunk resists rotation"},
+{id:"ts8",r:"tsp",ty:"stab",n:"Landmine Press",s:"S2-S3",rx:"3 x 8 each side",
+ d:"Press a landmine bar up and away at an angle. Build it up: tall kneeling → half kneeling → standing → standing with a rotation.",
+ t:"Overhead pressing at an angle the shoulder tolerates well"},
+{id:"ts9",r:"tsp",ty:"stab",n:"Half-Kneeling Single Arm Press",s:"S2-S3",rx:"3 x 8 each side",
+ d:"Half-kneel and press a dumbbell overhead with the ribs staying down. Build it up: light and slow → heavier → add a pause overhead.",
+ t:"Direct rehearsal of the trunk position at the top of the serve"},
+{id:"ts10",r:"tsp",ty:"stab",n:"Serratus Wall Slide",s:"S1",rx:"3 x 10",
+ d:"Forearms on a wall, push into the wall and slide up, reaching long at the top. Build it up: short range → full reach → add a band around the wrists.",
+ t:"Serratus — the muscle that lets the arm get truly overhead"},
+{id:"ts11",r:"tsp",ty:"stab",n:"Bear Position Shoulder Taps",s:"S1-S2",rx:"3 x 10 each side",
+ d:"Knees hovering off the floor, tap one hand to the opposite shoulder. Build it up: feet wide → feet narrow → slow down the tempo.",
+ t:"Shoulder and trunk control together on an unstable base"},
+{id:"ts12",r:"tsp",ty:"stab",n:"Turkish Get-Up",s:"S2-S3",rx:"3 x 3 each side",
+ d:"Move from lying to standing while holding a weight overhead, then reverse it. Build it up: to the elbow → to the hand → to half kneeling → all the way up → heavier.",
+ t:"The best single integrator here — hip, low back and upper back in one pattern"},
+{id:"ts13",r:"tsp",ty:"stab",n:"Isometric Rotation Hold",s:"S2-S3",rx:"3 x 20s each side",
+ d:"Rotate to the end of your range and hold there against a band pulling you back. Build it up: 10s → 20s → heavier band.",
+ t:"Builds strength inside the new range so it doesn't get lost again"},
+{id:"ts14",r:"tsp",ty:"stab",n:"Med Ball Scoop Toss",s:"S3",rx:"4 x 6 each side",
+ d:"Throw a medicine ball across the body into a wall. Build it up: half kneeling → standing → with a step in → catching the rebound and throwing straight back.",
+ t:"Rotational power with a reactive catch"},
+{id:"ts15",r:"tsp",ty:"stab",n:"Chop and Lift Complex",s:"S2-S3",rx:"3 x 8 each direction",
+ d:"Run the chop and the lift back to back in both directions. Build it up: controlled tempo → faster → full sport speed.",
+ t:"The complete diagonal pattern, both groundstroke and serve directions"}
+];
+
+/* ============================ STATE ============================ */
+const DEFAULT_BLOCKS = [
+  {name:"Visit 1", stage:1, weeks:"Weeks 1-3",   items:[], np:"", nr:""},
+  {name:"Visit 2", stage:1, weeks:"Weeks 3-5",   items:[], np:"", nr:""},
+  {name:"Visit 3", stage:2, weeks:"Weeks 5-8",   items:[], np:"", nr:""},
+  {name:"Visit 4", stage:2, weeks:"Weeks 8-11",  items:[], np:"", nr:""},
+  {name:"Visit 5", stage:3, weeks:"Weeks 11-14", items:[], np:"", nr:""},
+  {name:"Visit 6", stage:3, weeks:"Weeks 14-17", items:[], np:"", nr:""}
+];
+
+let S = {
+  patient:"", prac:"", date:"",
+  view:"prac", active:0,
+  blocks: JSON.parse(JSON.stringify(DEFAULT_BLOCKS))
+};
+let F = {region:"all", type:"all", stage:"all", q:""};
+
+const byId = {}; EX.forEach(e=>byId[e.id]=e);
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+const STAGE_NAME = {1:"Stage 1 · Restore", 2:"Stage 2 · Integrate", 3:"Stage 3 · Express"};
+const STAGE_BLURB = {
+  1:"Mobility-led. Ground-based positions, slow tempo, one plane at a time. Rebuilding range and reawakening control after time off.",
+  2:"Even split. Half-kneeling and split stance, light bands and load, two planes combined. Turning range into controlled strength.",
+  3:"Strength and power led. Standing, single leg, reactive, full rotation. Bringing it back to the court."
+};
+
+/* ============================ FILTERS UI ============================ */
+function chips(el, opts, key){
+  el.innerHTML = opts.map(o=>
+    `<button class="chip" data-v="${o.v}" aria-pressed="${F[key]===o.v}">${o.l}</button>`).join("");
+  el.onclick = e=>{
+    const b=e.target.closest(".chip"); if(!b) return;
+    F[key]=b.dataset.v; chips(el,opts,key); renderLib();
+  };
+}
+chips($("#fRegion"), [{v:"all",l:"All"},{v:"hip",l:"Hip"},{v:"lum",l:"Lumbar"},{v:"tsp",l:"Thoracic"}], "region");
+chips($("#fType"),   [{v:"all",l:"All"},{v:"mob",l:"Mobility"},{v:"stab",l:"Stability"}], "type");
+chips($("#fStage"),  [{v:"all",l:"All"},{v:"S1",l:"S1"},{v:"S2",l:"S2"},{v:"S3",l:"S3"}], "stage");
+$("#fSearch").oninput = e=>{F.q=e.target.value.toLowerCase(); renderLib();};
+
+/* ============================ RENDER: TABS ============================ */
+function renderTabs(){
+  $("#tabs").innerHTML = S.blocks.map((b,i)=>`
+    <button class="blocktab" role="tab" aria-selected="${i===S.active}" data-i="${i}">
+      <span class="st st${b.stage}">Stage ${b.stage}</span>
+      <span class="nm">${esc(b.name)}</span>
+      <span class="wk">${esc(b.weeks)}</span>
+      <span class="ct">${b.items.length} exercise${b.items.length===1?"":"s"}</span>
+    </button>`).join("");
+  $("#tabs").onclick = e=>{
+    const t=e.target.closest(".blocktab"); if(!t) return;
+    S.active = +t.dataset.i; renderAll();
+  };
+}
+
+/* ============================ RENDER: LIBRARY ============================ */
+function passes(x){
+  if(F.region!=="all" && x.r!==F.region) return false;
+  if(F.type!=="all" && x.ty!==F.type) return false;
+  if(F.stage!=="all" && !x.s.includes(F.stage)) return false;
+  if(F.q && !(x.n+" "+x.t+" "+x.d).toLowerCase().includes(F.q)) return false;
+  return true;
+}
+function renderLib(){
+  const blk = S.blocks[S.active];
+  const chosen = new Set(blk.items.map(i=>i.id));
+  const list = EX.filter(passes);
+  $("#libCount").textContent = list.length + " shown of " + EX.length;
+
+  const groups = [
+    ["hip","mob","Hip — Mobility"],["hip","stab","Hip — Stability"],
+    ["lum","mob","Lumbar — Mobility"],["lum","stab","Lumbar — Stability"],
+    ["tsp","mob","Thoracic — Mobility"],["tsp","stab","Thoracic — Stability"]
+  ];
+  let html = "";
+  groups.forEach(([r,ty,label])=>{
+    const g = list.filter(x=>x.r===r && x.ty===ty);
+    if(!g.length) return;
+    html += `<div class="grp"><span class="lbl">${label} · ${g.length}</span></div>`;
+    html += g.map(x=>`
+      <label class="ex ${x.r} ${chosen.has(x.id)?"on":""}">
+        <input type="checkbox" data-id="${x.id}" ${chosen.has(x.id)?"checked":""}>
+        <span class="ex-body">
+          <span class="ex-hd">
+            <span class="ex-nm">${esc(x.n)}</span>
+            <span class="tag stage">${esc(x.s)}</span>
+            <span class="tag">${x.ty==="mob"?"Mobility":"Stability"}</span>
+          </span>
+          <span class="ex-d">${esc(x.d)}</span>
+          <span class="ex-t">Targets: ${esc(x.t)}</span>
+        </span>
+      </label>`).join("");
+  });
+  if(!html) html = `<div class="empty"><b>Nothing matches</b>Widen a filter or clear the search box.</div>`;
+  $("#lib").innerHTML = html;
+
+  $("#lib").onchange = e=>{
+    const cb = e.target; if(cb.type!=="checkbox") return;
+    const id = cb.dataset.id, b = S.blocks[S.active];
+    if(cb.checked){
+      if(!b.items.some(i=>i.id===id)) b.items.push({id, rx:byId[id].rx, freq:"", note:""});
+    } else {
+      b.items = b.items.filter(i=>i.id!==id);
+    }
+    renderAll();
+  };
+}
+
+/* ============================ RENDER: BLOCK META + ASSIGNED ============================ */
+function renderMeta(){
+  const b = S.blocks[S.active];
+  $("#bmeta").innerHTML = `
+    <label><span class="lbl">Block name</span><input class="nm" id="mName" value="${esc(b.name)}"></label>
+    <label><span class="lbl">Timeframe</span><input class="wk" id="mWeeks" value="${esc(b.weeks)}"></label>
+    <label><span class="lbl">Stage</span>
+      <select id="mStage">
+        <option value="1"${b.stage===1?" selected":""}>Stage 1 — Restore</option>
+        <option value="2"${b.stage===2?" selected":""}>Stage 2 — Integrate</option>
+        <option value="3"${b.stage===3?" selected":""}>Stage 3 — Express</option>
+      </select></label>`;
+  $("#mName").oninput = e=>{b.name=e.target.value; renderTabs();};
+  $("#mWeeks").oninput = e=>{b.weeks=e.target.value; renderTabs();};
+  $("#mStage").onchange = e=>{b.stage=+e.target.value; renderTabs();};
+}
+
+function renderAsg(){
+  const b = S.blocks[S.active];
+  $("#asgCount").textContent = b.items.length + " selected";
+  if(!b.items.length){
+    $("#asg").innerHTML = `<div class="empty"><b>No exercises yet</b>Tick anything in the library to add it to ${esc(b.name)}.</div>`;
+    return;
+  }
+  $("#asg").innerHTML = b.items.map((it,i)=>{
+    const x = byId[it.id];
+    return `<div class="acard ${x.r}">
+      <div class="acard-hd">
+        <span class="num">${i+1}</span>
+        <span class="ex-nm">${esc(x.n)}</span>
+        <span class="tag stage">${esc(x.s)}</span>
+        <span class="tag">${x.ty==="mob"?"Mobility":"Stability"}</span>
+        <button class="rm" data-rm="${it.id}">Remove</button>
+      </div>
+      <div class="rx">
+        <label><span class="lbl">Sets &amp; reps</span><input data-f="rx" data-id="${it.id}" value="${esc(it.rx)}"></label>
+        <label><span class="lbl">Per week</span><input data-f="freq" data-id="${it.id}" value="${esc(it.freq)}" placeholder="e.g. 4x"></label>
+        <label class="grow"><span class="lbl">Cue or note for this exercise</span><input class="wide" data-f="note" data-id="${it.id}" value="${esc(it.note)}" placeholder="e.g. keep ribs down, stop if it pinches at the front"></label>
+      </div>
+    </div>`;
+  }).join("");
+
+  $("#asg").onclick = e=>{
+    const r = e.target.closest("[data-rm]"); if(!r) return;
+    b.items = b.items.filter(i=>i.id!==r.dataset.rm); renderAll();
+  };
+  $("#asg").oninput = e=>{
+    const f = e.target.dataset.f; if(!f) return;
+    const it = b.items.find(i=>i.id===e.target.dataset.id);
+    if(it) it[f] = e.target.value;
+  };
+}
+
+/* ============================ RENDER: PATIENT COPY ============================ */
+function renderPatient(){
+  const b = S.blocks[S.active];
+  const mob = b.items.filter(i=>byId[i.id].ty==="mob");
+  const stab = b.items.filter(i=>byId[i.id].ty==="stab");
+
+  const card = (it,n)=>{
+    const x = byId[it.id];
+    return `<div class="pex">
+      <div class="pnum">${n}</div>
+      <div style="flex:1">
+        <h4>${esc(x.n)}</h4>
+        <div class="pd">${esc(x.d)}</div>
+        <div class="pt">What it's for: ${esc(x.t)}</div>
+        ${it.rx||it.freq?`<div class="prx">${esc(it.rx)}${it.freq?" &nbsp;·&nbsp; "+esc(it.freq)+" per week":""}</div>`:""}
+        ${it.note?`<div class="pn">${esc(it.note)}</div>`:""}
+      </div>
+    </div>`;
+  };
+
+  let n=0;
+  const secMob = mob.length ? `<div class="sheet-sec"><h3>Part 1 — Mobility (do these first)</h3>${mob.map(i=>card(i,++n)).join("")}</div>` : "";
+  const secStab = stab.length ? `<div class="sheet-sec"><h3>Part 2 — Stability &amp; strength</h3>${stab.map(i=>card(i,++n)).join("")}</div>` : "";
+
+  const empty = !b.items.length ? `<div class="empty" style="padding:60px 40px"><b>Nothing assigned to this block yet</b>Switch to Build and tick some exercises.</div>` : "";
+
+  $("#patientView").innerHTML = `
+    <div class="sheet">
+      <div class="sheet-hd">
+        <div class="eyebrow">Return to Tennis · ${esc(STAGE_NAME[b.stage])}</div>
+        <h1>${esc(b.name)}</h1>
+        <div class="sheet-meta">
+          ${S.patient?`<div><span class="lbl">Patient</span><strong>${esc(S.patient)}</strong></div>`:""}
+          ${S.prac?`<div><span class="lbl">Practitioner</span><strong>${esc(S.prac)}</strong></div>`:""}
+          ${S.date?`<div><span class="lbl">Started</span><strong>${esc(S.date)}</strong></div>`:""}
+          <div><span class="lbl">Timeframe</span><strong>${esc(b.weeks)}</strong></div>
+          <div><span class="lbl">Exercises</span><strong>${b.items.length}</strong></div>
+        </div>
+      </div>
+      ${empty}
+      ${secMob}${secStab}
+      ${b.np?`<div class="callout"><span class="lbl">Notes from your therapist</span><p>${esc(b.np).replace(/\n/g,"</p><p>")}</p></div>`:""}
+      <div class="callout">
+        <span class="lbl">How to run this block</span>
+        <p><strong>Mobility first, then strength.</strong> The mobility work opens the range; the stability work teaches you to hold it. Doing it in the other order wastes both.</p>
+        <p><strong>Where you should feel it.</strong> A stretch or a working muscle is fine. Sharp, pinching, or nerve-like pain is not — back off that exercise and tell me at the next appointment.</p>
+        <p><strong>Progressing.</strong> Each exercise has stages built into the description. Move to the next stage only once the current one feels controlled and easy for all your reps.</p>
+        <p><strong>Consistency beats intensity.</strong> Short and frequent beats long and occasional every time.</p>
+      </div>
+      <div class="sheet-foot">
+        Prepared${S.prac?" by "+esc(S.prac):""} for this block only. Bring this sheet to your next appointment so we can progress it.
+      </div>
+    </div>`;
+}
+
+/* ============================ VIEW SWITCH / RENDER ALL ============================ */
+function setView(v){
+  S.view = v;
+  $("#vPrac").setAttribute("aria-pressed", v==="prac");
+  $("#vPat").setAttribute("aria-pressed", v==="pat");
+  $("#buildView").style.display = v==="prac" ? "" : "none";
+  $("#patientView").style.display = v==="pat" ? "" : "none";
+  if(v==="pat") renderPatient();
+}
+$("#vPrac").onclick = ()=>setView("prac");
+$("#vPat").onclick = ()=>setView("pat");
+
+function renderAll(){
+  renderTabs(); renderMeta(); renderLib(); renderAsg();
+  const b = S.blocks[S.active];
+  $("#nPatient").value = b.np; $("#nPrac").value = b.nr;
+  if(S.view==="pat") renderPatient();
+}
+$("#nPatient").oninput = e=>{S.blocks[S.active].np = e.target.value;};
+$("#nPrac").oninput = e=>{S.blocks[S.active].nr = e.target.value;};
+["fPatient","fPrac","fDate"].forEach((id,i)=>{
+  const k = ["patient","prac","date"][i];
+  $("#"+id).oninput = e=>{S[k]=e.target.value;};
+});
+
+/* ============================ SAVE / LOAD / PRINT ============================ */
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2200);
+}
+/* Persistence. Plain localStorage — reading or writing it throws in private
+   mode or when the quota is full, and both callers below catch that and fall
+   back to in-memory state plus the Download backup file. */
+const storage = {
+  set(key, value){
+    localStorage.setItem(key, value);
+    return true;
+  },
+  get(key){
+    const value = localStorage.getItem(key);
+    return value === null ? null : {value};
+  }
+};
+
+function save(){
+  try{
+    const r = storage.set("rtt:program", JSON.stringify(S));
+    if(r) toast("Saved. It'll be here next time you open this."); else throw 0;
+  }catch(err){
+    toast("Couldn't save in the browser — use Download backup instead.");
+  }
+}
+function load(){
+  try{
+    const r = storage.get("rtt:program");
+    if(r && r.value){
+      const d = JSON.parse(r.value);
+      if(d && Array.isArray(d.blocks)) S = Object.assign(S, d);
+    }
+  }catch(err){ /* nothing saved yet — normal on first open */ }
+}
+$("#bSave").onclick = save;
+
+const slug = s=>String(s||"").trim().replace(/[^\w-]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase();
+
+$("#bPrint").onclick = ()=>{
+  const b = S.blocks[S.active];
+  const orig = document.title;
+  // Browsers use the page title as the default PDF filename.
+  document.title = [slug(S.patient)||"program", slug(b.name), S.view==="pat"?"patient":"practitioner"]
+                     .filter(Boolean).join("-");
+  window.print();
+  setTimeout(()=>{document.title = orig;}, 800);
+};
+
+$("#bBackup").onclick = ()=>{
+  const blob = new Blob([JSON.stringify(S,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = (slug(S.patient)||"program")+"-tennis-program.json";
+  a.click(); URL.revokeObjectURL(a.href);
+  toast("Program file saved. Reload it any time with Open file.");
+};
+
+$("#bOpen").onclick = ()=>$("#fFile").click();
+$("#fFile").onchange = e=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    try{
+      const d = JSON.parse(rd.result);
+      if(!d || !Array.isArray(d.blocks)) throw 0;
+      S = Object.assign({view:"prac", active:0}, d);
+      S.active = Math.min(S.active||0, S.blocks.length-1);
+      $("#fPatient").value = S.patient||"";
+      $("#fPrac").value = S.prac||"";
+      $("#fDate").value = S.date||"";
+      setView(S.view||"prac");
+      renderAll();
+      toast("Loaded "+(S.patient||"program")+".");
+    }catch(err){
+      toast("That file isn't a program file. Pick the .json this tool saved.");
+    }
+    e.target.value = "";
+  };
+  rd.readAsText(f);
+};
+
+/* ============================ BOOT ============================ */
+(function(){
+  load();
+  $("#fPatient").value = S.patient; $("#fPrac").value = S.prac; $("#fDate").value = S.date;
+  setView(S.view||"prac");
+  renderAll();
+})();
+</script>
+
+</body>
+</html>
