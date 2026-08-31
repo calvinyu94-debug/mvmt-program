@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Return to Tennis — Program Builder</title>
+<title>MVMT Program</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Narrow:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -306,44 +306,119 @@ button{cursor:pointer}
   .lib,.asg{max-height:none;overflow:visible}
   .acard{break-inside:avoid}
 }
+
+/* ---------- saved indicator ---------- */
+.saved{
+  font-family:var(--display);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:#7FA6A9;font-weight:600;white-space:nowrap;
+}
+.saved.warn{color:#E8B04B}
+
+/* ---------- add phase ---------- */
+.addphase{
+  border:0;background:transparent;color:var(--ink-3);padding:14px 18px;white-space:nowrap;
+  font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-weight:700;
+}
+.addphase:hover{color:var(--ink);background:#F7FAF9}
+
+/* ---------- small controls ---------- */
+.pctl{display:flex;gap:6px;margin-left:auto;align-items:center}
+.pbtn{
+  border:1px solid var(--line);background:#fff;border-radius:3px;padding:5px 9px;color:var(--ink-2);
+  font-family:var(--display);font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;
+}
+.pbtn:hover:not(:disabled){background:#F3F7F6;color:var(--ink)}
+.pbtn:disabled{opacity:.35;cursor:not-allowed}
+.pbtn.danger:hover:not(:disabled){border-color:var(--r-lumbar);color:var(--r-lumbar)}
+
+/* ---------- level hint ---------- */
+.hintbar{
+  padding:9px 18px;background:#FBFDF2;border-bottom:1px solid var(--line-2);
+  font-size:12.5px;color:var(--ink-2);display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+}
+.hintbar button{border:0;background:transparent;color:var(--ink);font-weight:600;text-decoration:underline;font-size:12.5px;padding:0}
+
+/* ---------- saved programs list ---------- */
+.prow{display:flex;gap:14px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line-2);flex-wrap:wrap}
+.prow:hover{background:#F9FBFA}
+.prow .pnm{font-weight:600;font-size:15px;min-width:150px}
+.prow .pnm .anon{color:var(--ink-3);font-weight:400;font-style:italic}
+.prow .pmeta{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-3)}
+.prow .pacts{display:flex;gap:5px;margin-left:auto;flex-wrap:wrap}
+
+/* ---------- modal ---------- */
+.modal{
+  position:fixed;inset:0;background:rgba(15,52,61,.55);z-index:300;
+  display:flex;align-items:flex-start;justify-content:center;padding:6vh 18px;overflow-y:auto;
+}
+.modal[hidden]{display:none}
+.modal-box{background:var(--paper);border-radius:5px;width:100%;max-width:520px;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.modal-hd{padding:18px 22px 0;font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;font-size:13px;font-weight:700}
+.modal-body{padding:16px 22px}
+.modal-body label{display:block;margin-bottom:13px}
+.modal-body input,.modal-body select{
+  width:100%;border:1px solid var(--line);border-radius:3px;padding:8px 10px;font-size:14px;margin-top:5px;background:#fff;
+}
+.modal-body p{font-size:13.5px;color:var(--ink-2);margin:0 0 13px}
+.modal-foot{padding:0 22px 20px;display:flex;gap:9px;justify-content:flex-end}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.dark:hover{background:#17454F}
+.btn.ghost{border-color:var(--line);color:var(--ink-2)}
+.btn.ghost:hover{background:var(--line-2)}
+.rx select{border:1px solid var(--line);border-radius:3px;padding:5px 8px;font-size:13px;width:112px;background:#fff}
 </style>
 </head>
 <body>
 
 <div class="topbar no-print">
   <div class="brand">
-    <b>Return to Tennis</b>
-    <span>Mobility &amp; Stability Program Builder</span>
+    <b>MVMT Program</b>
+    <span>Homecare &amp; Treatment Plan Builder</span>
   </div>
-  <div class="who">
+  <div class="who" id="who">
     <input id="fPatient" placeholder="Patient name">
-    <input id="fPrac" placeholder="Practitioner (RMT)">
-    <input id="fDate" placeholder="Start date">
+    <input id="fPrac" placeholder="Practitioner">
+    <input id="fDate" type="date" aria-label="Start date" title="Start date">
   </div>
   <div class="acts">
+    <span class="saved" id="savedAt"></span>
     <div class="switch" role="group" aria-label="View">
-      <button id="vPrac" aria-pressed="true">Build</button>
+      <button id="vList" aria-pressed="true">Programs</button>
+      <button id="vPrac" aria-pressed="false">Build</button>
       <button id="vPat" aria-pressed="false">Patient copy</button>
     </div>
+    <button class="btn" id="bNew" title="Start a new program">New program</button>
     <button class="btn" id="bSave" title="Keeps your work in this browser">Save</button>
     <button class="btn" id="bOpen" title="Load a .json program file you saved earlier">Open file</button>
-    <button class="btn" id="bBackup" title="Saves your selections as a .json data file — not a handout">Save file (.json)</button>
+    <button class="btn" id="bBackup" title="Saves this program as a .json data file — not a handout">Save file (.json)</button>
     <button class="btn solid" id="bPrint" title="Makes the printable handout PDF">Print / Save as PDF</button>
     <input type="file" id="fFile" accept=".json,application/json" style="display:none">
   </div>
 </div>
 
-<div class="court no-print"><div class="court-inner" id="tabs" role="tablist"></div></div>
+<div class="court no-print" id="courtWrap"><div class="court-inner" id="tabs" role="tablist"></div></div>
 
-<div class="legend no-print">
-  <span><i class="dot" style="background:var(--hip)"></i> Hip</span>
-  <span><i class="dot" style="background:var(--lum)"></i> Lumbar</span>
-  <span><i class="dot" style="background:var(--tsp)"></i> Thoracic</span>
-  <span>· Level tags show the earliest phase an exercise is appropriate.</span>
+<div class="legend no-print" id="legend">
+  <span><i class="dot" style="background:var(--r-hip)"></i> Hip</span>
+  <span><i class="dot" style="background:var(--r-lumbar)"></i> Lumbar</span>
+  <span><i class="dot" style="background:var(--r-thoracic)"></i> Thoracic</span>
+  <span>· Level shows the earliest point in a program an exercise is appropriate.</span>
 </div>
 
 <div class="wrap">
-  <div id="buildView">
+
+  <div id="listView">
+    <section class="panel">
+      <div class="panel-hd">
+        <h2>Saved programs</h2>
+        <input class="search" id="lSearch" placeholder="Search by patient name…">
+        <span class="count" id="lCount"></span>
+      </div>
+      <div id="plist"></div>
+    </section>
+  </div>
+
+  <div id="buildView" style="display:none">
     <div class="cols">
       <section class="panel">
         <div class="panel-hd">
@@ -365,12 +440,13 @@ button{cursor:pointer}
           </div>
           <input class="search" id="fSearch" placeholder="Search exercises…">
         </div>
+        <div id="libHint"></div>
         <div class="lib" id="lib"></div>
       </section>
 
       <section class="panel">
         <div class="panel-hd">
-          <h2>This block</h2>
+          <h2 id="asgTitle">This phase</h2>
           <span class="count" id="asgCount"></span>
         </div>
         <div class="bmeta" id="bmeta"></div>
@@ -378,11 +454,11 @@ button{cursor:pointer}
         <div class="notes">
           <label>
             <span class="lbl">Notes for patient — prints on their copy</span>
-            <textarea id="nPatient" placeholder="Order to run them in, what it should feel like, when to stop, on-court progression for this block…"></textarea>
+            <textarea id="nPatient" placeholder="Order to run them in, what it should feel like, when to stop, what to progress to…"></textarea>
           </label>
           <label>
             <span class="lbl">Practitioner notes — stays on your copy only</span>
-            <textarea id="nPrac" placeholder="Soft tissue findings, compensations seen, regression/progression triggers, what to reassess next visit…"></textarea>
+            <textarea id="nPrac" placeholder="Findings, compensations seen, regression/progression triggers, what to reassess next visit…"></textarea>
             <span class="hint">Hidden from the patient copy.</span>
           </label>
         </div>
@@ -391,6 +467,17 @@ button{cursor:pointer}
   </div>
 
   <div id="patientView" style="display:none"></div>
+</div>
+
+<div class="modal no-print" id="modal" hidden>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-hd" id="modalTitle"></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" id="modalCancel">Cancel</button>
+      <button class="btn dark" id="modalOk">Save</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -623,7 +710,7 @@ const EX = [
 {id:"hip-stab-skater-bound", region:"hip", type:"stability", level:3,
  name:"Skater Bound", rx:"4 x 5 each direction",
  desc:"Push off one leg sideways, land on the other and hold it. Build it up: bound and stick for 3s → stick on a soft surface → continuous bounds → bound and catch a ball on landing.",
- targets:"The single most tennis-specific drill here — gate Stage 3 on being able to stick the landing clean"},
+ targets:"The single most sport-specific drill here — gate return to sport on being able to stick the landing clean"},
 {id:"hip-stab-single-leg-balance-progression", region:"hip", type:"stability", level:1,
  name:"Single Leg Balance Progression", rx:"3 x 30s each side",
  desc:"Stand on one leg. Build it up: eyes open 30s → eyes closed → on a foam pad or cushion → turning the head side to side → someone lightly nudging you → catching and throwing a ball.",
@@ -643,7 +730,7 @@ const EX = [
 {id:"hip-stab-curtsy-lunge", region:"hip", type:"stability", level:2,
  name:"Curtsy Lunge", rx:"3 x 10 each side",
  desc:"Step one leg back and across behind the other, then lower. Build it up: bodyweight → hold a weight at the chest → add an opposite hand reach.",
- targets:"Hip control in the twisted, crossed-over positions tennis puts you in"},
+ targets:"Hip control in twisted, crossed-over positions"},
 {id:"hip-stab-single-leg-squat-to-box", region:"hip", type:"stability", level:2,
  name:"Single Leg Squat to Box", rx:"3 x 6 each side",
  desc:"Stand on one leg, sit back to touch a box, stand back up. Build it up: high box → mid box → low box → no box with arms held out as a counterbalance.",
@@ -923,14 +1010,14 @@ const EX = [
 ];
 
 /* ============================ STATE ============================ */
-const DEFAULT_PHASES = [
-  {name:"Visit 1", level:1, timeframe:"Weeks 1-3",   items:[], patientNote:"", practitionerNote:""},
-  {name:"Visit 2", level:1, timeframe:"Weeks 3-5",   items:[], patientNote:"", practitionerNote:""},
-  {name:"Visit 3", level:2, timeframe:"Weeks 5-8",   items:[], patientNote:"", practitionerNote:""},
-  {name:"Visit 4", level:2, timeframe:"Weeks 8-11",  items:[], patientNote:"", practitionerNote:""},
-  {name:"Visit 5", level:3, timeframe:"Weeks 11-14", items:[], patientNote:"", practitionerNote:""},
-  {name:"Visit 6", level:3, timeframe:"Weeks 14-17", items:[], patientNote:"", practitionerNote:""}
-];
+const LEVELS = {1:"Foundational", 2:"Intermediate", 3:"Advanced"};
+
+/* Phase naming presets offered at setup. Names are editable afterwards. */
+const PHASE_WORDS = {phase:"Phase", stage:"Stage", visit:"Visit", week:"Week"};
+
+/* Frequency is a fixed list so nobody can type "daily" into a field that then
+   renders "daily per week". */
+const FREQ_OPTIONS = ["1x","2x","3x","4x","5x","6x","Daily","As needed"];
 
 const clone = o => JSON.parse(JSON.stringify(o));
 
@@ -939,23 +1026,32 @@ function uuid(){
   return "p-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,10);
 }
 
-function newProgram(){
+function blankPhase(name){
+  return {name:name||"Phase", timeframe:"", level:null, items:[], patientNote:"", practitionerNote:""};
+}
+
+function makeProgram(o){
   return {
     schemaVersion:2,
     id:uuid(),
-    patient:"", practitioner:"", startDate:"",
-    structure:"phased",
-    phases:clone(DEFAULT_PHASES),
+    patient:o.patient||"",
+    practitioner:o.practitioner||"",
+    startDate:o.startDate||"",
+    structure:o.structure==="single"?"single":"phased",
+    phases:(o.names||["Phase 1"]).map(blankPhase),
     updatedAt:new Date().toISOString()
   };
 }
 
-/* The program being edited. */
-let S = newProgram();
+/* The program being edited — null when none is open. */
+let S = null;
 /* View state. Deliberately kept off the program object so it never lands in a
    saved record or an export. */
-let U = {view:"prac", active:0};
-let F = {region:"all", type:"all", level:"all", q:""};
+let U = {view:"list", active:0};
+/* maxLevel is the soft filter a phase's own level applies. It is a convenience,
+   not a restriction, and any click on the Level chips clears it. */
+let F = {region:"all", type:"all", level:"all", q:"", maxLevel:null};
+let listQuery = "";
 
 const byId = {}; EX.forEach(e=>byId[e.id]=e);
 const $ = s=>document.querySelector(s);
@@ -963,21 +1059,71 @@ const esc = s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt
 
 const phase = ()=>S.phases[U.active];
 const typeName = k=>(TYPES.find(t=>t.k===k)||{}).name || k;
+const isSingle = ()=>!!S && S.structure==="single";
 
-const LEVEL_NAME = {1:"Level 1 · Restore", 2:"Level 2 · Integrate", 3:"Level 3 · Express"};
-const LEVEL_BLURB = {
-  1:"Mobility-led. Ground-based positions, slow tempo, one plane at a time. Rebuilding range and reawakening control after time off.",
-  2:"Even split. Half-kneeling and split stance, light bands and load, two planes combined. Turning range into controlled strength.",
-  3:"Strength and power led. Standing, single leg, reactive, full rotation. Bringing it back to the court."
-};
+/* ============================ DATES & FORMATTING ============================ */
+/* Everything here works on local calendar parts. Going through Date.toISOString
+   would shift the day backwards for anyone west of UTC. */
+const pad = n=>String(n).padStart(2,"0");
+const MONTHS = ["January","February","March","April","May","June","July","August",
+                "September","October","November","December"];
+
+function isoLocal(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+
+/* v1 stored the start date as free text. Anything a browser can parse becomes a
+   real ISO date; anything it can't is reported rather than silently binned. */
+function normalizeDate(v){
+  const s = String(v==null?"":v).trim();
+  if(!s) return "";
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d = new Date(s);
+  if(isNaN(d.getTime())){ lostDate = s; return ""; }
+  return isoLocal(d);
+}
+
+function prettyDate(iso){
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||"");
+  if(!m) return "";
+  return Number(m[3]) + " " + MONTHS[Number(m[2])-1] + " " + m[1];
+}
+
+function relTime(iso){
+  const t = Date.parse(iso||"");
+  if(isNaN(t)) return "";
+  const secs = Math.max(0, (Date.now()-t)/1000);
+  if(secs < 45) return "just now";
+  const mins = secs/60;
+  if(mins < 60){ const n=Math.round(mins); return n+(n===1?" min ago":" mins ago"); }
+  const hrs = mins/60;
+  if(hrs < 24){ const n=Math.round(hrs); return n+(n===1?" hour ago":" hours ago"); }
+  const days = hrs/24;
+  if(days < 30){ const n=Math.round(days); return n+(n===1?" day ago":" days ago"); }
+  return prettyDate(isoLocal(new Date(t)));
+}
+
+function normalizeFreq(v){
+  const s = String(v==null?"":v).trim();
+  if(!s) return "";
+  const m = s.match(/^([1-6])\s*x?$/i);
+  if(m) return m[1]+"x";
+  if(/^daily$/i.test(s)) return "Daily";
+  if(/^as\s*needed$/i.test(s)) return "As needed";
+  return s;   // unrecognised — kept verbatim rather than thrown away
+}
+
+function renderFreq(v){
+  if(!v) return "";
+  return /^[1-6]x$/.test(v) ? v+" per week" : v;
+}
 
 /* ============================ SCHEMA MIGRATION ============================ */
 /* v1 kept a single program under rtt:program, using block/np/nr field names and
    short exercise ids. v2 keeps an array of programs under homecare:programs.
-   Anything still speaking v1 — an old saved blob, or a .json exported by the
-   previous build — comes through migrate() first. */
+   Anything still speaking v1 — an old saved blob, or a .json exported by an
+   earlier build — comes through migrate() first. */
 
 let droppedOnMigrate = 0;
+let lostDate = "";
 
 function migrateItems(items){
   const out = [];
@@ -988,7 +1134,7 @@ function migrateItems(items){
     /* An id we no longer recognise is dropped rather than left to blow up the
        renderer. The count is surfaced to the user, never swallowed. */
     if(!id || !byId[id]){ droppedOnMigrate++; return; }
-    out.push({exerciseId:id, rx:it.rx||"", freq:it.freq||"", note:it.note||""});
+    out.push({exerciseId:id, rx:it.rx||"", freq:normalizeFreq(it.freq), note:it.note||""});
   });
   return out;
 }
@@ -1019,19 +1165,20 @@ function normalize(d){
     id: d.id || uuid(),
     patient: d.patient || "",
     practitioner: d.practitioner || "",
-    startDate: d.startDate || "",
+    startDate: normalizeDate(d.startDate),
     structure: d.structure === "single" ? "single" : "phased",
     phases: (Array.isArray(d.phases) ? d.phases : []).map((ph,i)=>({
       name: (ph && ph.name) || ("Phase " + (i+1)),
       timeframe: (ph && ph.timeframe) || "",
-      level: Number(ph && ph.level) || 1,
+      /* level is optional now — only 1, 2 or 3 count as set. */
+      level: [1,2,3].indexOf(Number(ph && ph.level)) >= 0 ? Number(ph.level) : null,
       items: migrateItems(ph && ph.items),
       patientNote: (ph && ph.patientNote) || "",
       practitionerNote: (ph && ph.practitionerNote) || ""
     })),
     updatedAt: d.updatedAt || new Date().toISOString()
   };
-  if(!p.phases.length) p.phases = clone(DEFAULT_PHASES);
+  if(!p.phases.length) p.phases = [blankPhase("Phase 1")];
   if(p.structure === "single") p.phases = p.phases.slice(0,1);
   return p;
 }
@@ -1039,247 +1186,28 @@ function normalize(d){
 /* Returns a v2 program, or null if this isn't a program at all. */
 function migrate(d){
   droppedOnMigrate = 0;
+  lostDate = "";
   if(!d || typeof d !== "object") return null;
   if(Array.isArray(d.phases)) return normalize(d);          // already v2
   if(Array.isArray(d.blocks)) return normalize(fromV1(d));  // v1
   return null;
 }
 
-/* ============================ FILTERS UI ============================ */
-function chips(el, opts, key){
-  el.innerHTML = opts.map(o=>
-    `<button class="chip" data-v="${o.v}" aria-pressed="${F[key]===o.v}">${o.l}</button>`).join("");
-  el.onclick = e=>{
-    const b=e.target.closest(".chip"); if(!b) return;
-    F[key]=b.dataset.v; chips(el,opts,key); renderLib();
-  };
-}
-/* Only offer a region or type that actually has something in it, so the regions
-   waiting on content show up as nothing rather than as an empty filter. */
-const regionOpts = [{v:"all",l:"All"}].concat(
-  REGIONS.filter(r=>EX.some(x=>x.region===r.k)).map(r=>({v:r.k, l:r.name})));
-const typeOpts = [{v:"all",l:"All"}].concat(
-  TYPES.filter(t=>EX.some(x=>x.type===t.k)).map(t=>({v:t.k, l:t.name})));
-
-chips($("#fRegion"), regionOpts, "region");
-chips($("#fType"),   typeOpts, "type");
-chips($("#fLevel"),  [{v:"all",l:"All"},{v:"1",l:"1"},{v:"2",l:"2"},{v:"3",l:"3"}], "level");
-$("#fSearch").oninput = e=>{F.q=e.target.value.toLowerCase(); renderLib();};
-
-/* ============================ RENDER: TABS ============================ */
-function renderTabs(){
-  /* A single-handout program has no phase structure to show. */
-  const single = S.structure === "single";
-  const court = $("#tabs").closest(".court");
-  if(court) court.style.display = single ? "none" : "";
-  if(single) return;
-
-  $("#tabs").innerHTML = S.phases.map((ph,i)=>`
-    <button class="blocktab" role="tab" aria-selected="${i===U.active}" data-i="${i}">
-      <span class="st st${ph.level}">Level ${ph.level}</span>
-      <span class="nm">${esc(ph.name)}</span>
-      <span class="wk">${esc(ph.timeframe)}</span>
-      <span class="ct">${ph.items.length} exercise${ph.items.length===1?"":"s"}</span>
-    </button>`).join("");
-  $("#tabs").onclick = e=>{
-    const t=e.target.closest(".blocktab"); if(!t) return;
-    U.active = +t.dataset.i; renderAll();
-  };
-}
-
-/* ============================ RENDER: LIBRARY ============================ */
-function passes(x){
-  if(F.region!=="all" && x.region!==F.region) return false;
-  if(F.type!=="all" && x.type!==F.type) return false;
-  if(F.level!=="all" && String(x.level)!==F.level) return false;
-  if(F.q && !(x.name+" "+x.targets+" "+x.desc).toLowerCase().includes(F.q)) return false;
-  return true;
-}
-function renderLib(){
-  const chosen = new Set(phase().items.map(i=>i.exerciseId));
-  const list = EX.filter(passes);
-  $("#libCount").textContent = list.length + " shown of " + EX.length;
-
-  let html = "";
-  REGIONS.forEach(r=>{
-    TYPES.forEach(t=>{
-      const g = list.filter(x=>x.region===r.k && x.type===t.k);
-      if(!g.length) return;
-      html += `<div class="grp"><span class="lbl">${esc(r.name)} — ${esc(t.name)} · ${g.length}</span></div>`;
-      html += g.map(x=>`
-        <label class="ex ${x.region} ${chosen.has(x.id)?"on":""}">
-          <input type="checkbox" data-id="${x.id}" ${chosen.has(x.id)?"checked":""}>
-          <span class="ex-body">
-            <span class="ex-hd">
-              <span class="ex-nm">${esc(x.name)}</span>
-              <span class="tag stage">Level ${x.level}</span>
-              <span class="tag">${esc(typeName(x.type))}</span>
-            </span>
-            <span class="ex-d">${esc(x.desc)}</span>
-            <span class="ex-t">Targets: ${esc(x.targets)}</span>
-          </span>
-        </label>`).join("");
-    });
-  });
-  if(!html) html = `<div class="empty"><b>Nothing matches</b>Widen a filter or clear the search box.</div>`;
-  $("#lib").innerHTML = html;
-
-  $("#lib").onchange = e=>{
-    const cb = e.target; if(cb.type!=="checkbox") return;
-    const id = cb.dataset.id, ph = phase();
-    if(cb.checked){
-      if(!ph.items.some(i=>i.exerciseId===id)) ph.items.push({exerciseId:id, rx:byId[id].rx, freq:"", note:""});
-    } else {
-      ph.items = ph.items.filter(i=>i.exerciseId!==id);
-    }
-    renderAll();
-  };
-}
-
-/* ============================ RENDER: PHASE META + ASSIGNED ============================ */
-function renderMeta(){
-  const ph = phase();
-  const single = S.structure === "single";
-  $("#bmeta").innerHTML = `
-    ${single?"":`<label><span class="lbl">Phase name</span><input class="nm" id="mName" value="${esc(ph.name)}"></label>`}
-    <label><span class="lbl">Timeframe</span><input class="wk" id="mWeeks" value="${esc(ph.timeframe)}"></label>
-    <label><span class="lbl">Level</span>
-      <select id="mLevel">
-        <option value="1"${ph.level===1?" selected":""}>Level 1 — Restore</option>
-        <option value="2"${ph.level===2?" selected":""}>Level 2 — Integrate</option>
-        <option value="3"${ph.level===3?" selected":""}>Level 3 — Express</option>
-      </select></label>`;
-  if(!single) $("#mName").oninput = e=>{ph.name=e.target.value; renderTabs();};
-  $("#mWeeks").oninput = e=>{ph.timeframe=e.target.value; renderTabs();};
-  $("#mLevel").onchange = e=>{ph.level=+e.target.value; renderTabs();};
-}
-
-function renderAsg(){
-  const ph = phase();
-  $("#asgCount").textContent = ph.items.length + " selected";
-  if(!ph.items.length){
-    $("#asg").innerHTML = `<div class="empty"><b>No exercises yet</b>Tick anything in the library to add it to ${esc(ph.name)}.</div>`;
-    return;
+function reportMigration(){
+  if(droppedOnMigrate){
+    toast(droppedOnMigrate===1
+      ? "1 exercise in that program is no longer in the library and was left out."
+      : droppedOnMigrate + " exercises in that program are no longer in the library and were left out.");
+  }else if(lostDate){
+    toast("Start date “"+lostDate+"” wasn't a date we could read, so it was left blank.");
   }
-  $("#asg").innerHTML = ph.items.map((it,i)=>{
-    const x = byId[it.exerciseId];
-    if(!x) return "";
-    return `<div class="acard ${x.region}">
-      <div class="acard-hd">
-        <span class="num">${i+1}</span>
-        <span class="ex-nm">${esc(x.name)}</span>
-        <span class="tag stage">Level ${x.level}</span>
-        <span class="tag">${esc(typeName(x.type))}</span>
-        <button class="rm" data-rm="${x.id}">Remove</button>
-      </div>
-      <div class="rx">
-        <label><span class="lbl">Sets &amp; reps</span><input data-f="rx" data-id="${x.id}" value="${esc(it.rx)}"></label>
-        <label><span class="lbl">Per week</span><input data-f="freq" data-id="${x.id}" value="${esc(it.freq)}" placeholder="e.g. 4x"></label>
-        <label class="grow"><span class="lbl">Cue or note for this exercise</span><input class="wide" data-f="note" data-id="${x.id}" value="${esc(it.note)}" placeholder="e.g. keep ribs down, stop if it pinches at the front"></label>
-      </div>
-    </div>`;
-  }).join("");
-
-  $("#asg").onclick = e=>{
-    const r = e.target.closest("[data-rm]"); if(!r) return;
-    ph.items = ph.items.filter(i=>i.exerciseId!==r.dataset.rm); renderAll();
-  };
-  $("#asg").oninput = e=>{
-    const f = e.target.dataset.f; if(!f) return;
-    const it = ph.items.find(i=>i.exerciseId===e.target.dataset.id);
-    if(it) it[f] = e.target.value;
-  };
+  return droppedOnMigrate || lostDate;
 }
-
-/* ============================ RENDER: PATIENT COPY ============================ */
-function renderPatient(){
-  const ph = phase();
-  const known = ph.items.filter(i=>byId[i.exerciseId]);
-  /* Mobility always prints before stability. */
-  const mob  = known.filter(i=>byId[i.exerciseId].type==="mobility");
-  const stab = known.filter(i=>byId[i.exerciseId].type==="stability");
-
-  const card = (it,n)=>{
-    const x = byId[it.exerciseId];
-    return `<div class="pex">
-      <div class="pnum">${n}</div>
-      <div style="flex:1">
-        <h4>${esc(x.name)}</h4>
-        <div class="pd">${esc(x.desc)}</div>
-        <div class="pt">What it's for: ${esc(x.targets)}</div>
-        ${it.rx||it.freq?`<div class="prx">${esc(it.rx)}${it.freq?" &nbsp;·&nbsp; "+esc(it.freq)+" per week":""}</div>`:""}
-        ${it.note?`<div class="pn">${esc(it.note)}</div>`:""}
-      </div>
-    </div>`;
-  };
-
-  let n=0;
-  const secMob = mob.length ? `<div class="sheet-sec"><h3>Part 1 — Mobility (do these first)</h3>${mob.map(i=>card(i,++n)).join("")}</div>` : "";
-  const secStab = stab.length ? `<div class="sheet-sec"><h3>Part 2 — Stability &amp; strength</h3>${stab.map(i=>card(i,++n)).join("")}</div>` : "";
-
-  const empty = !known.length ? `<div class="empty" style="padding:60px 40px"><b>Nothing assigned to this phase yet</b>Switch to Build and tick some exercises.</div>` : "";
-
-  const single = S.structure === "single";
-
-  $("#patientView").innerHTML = `
-    <div class="sheet">
-      <div class="sheet-hd">
-        <div class="eyebrow">${esc(single ? "Home programme" : "Home programme · " + LEVEL_NAME[ph.level])}</div>
-        <h1>${esc(single ? "Your programme" : ph.name)}</h1>
-        <div class="sheet-meta">
-          ${S.patient?`<div><span class="lbl">Patient</span><strong>${esc(S.patient)}</strong></div>`:""}
-          ${S.practitioner?`<div><span class="lbl">Practitioner</span><strong>${esc(S.practitioner)}</strong></div>`:""}
-          ${S.startDate?`<div><span class="lbl">Started</span><strong>${esc(S.startDate)}</strong></div>`:""}
-          ${ph.timeframe?`<div><span class="lbl">Timeframe</span><strong>${esc(ph.timeframe)}</strong></div>`:""}
-          <div><span class="lbl">Exercises</span><strong>${known.length}</strong></div>
-        </div>
-      </div>
-      ${empty}
-      ${secMob}${secStab}
-      ${ph.patientNote?`<div class="callout"><span class="lbl">Notes from your therapist</span><p>${esc(ph.patientNote).replace(/\n/g,"</p><p>")}</p></div>`:""}
-      <div class="callout">
-        <span class="lbl">How to run this programme</span>
-        <p><strong>Mobility first, then strength.</strong> The mobility work opens the range; the stability work teaches you to hold it. Doing it in the other order wastes both.</p>
-        <p><strong>Where you should feel it.</strong> A stretch or a working muscle is fine. Sharp, pinching, or nerve-like pain is not — back off that exercise and tell me at the next appointment.</p>
-        <p><strong>Progressing.</strong> Each exercise has stages built into the description. Move to the next stage only once the current one feels controlled and easy for all your reps.</p>
-        <p><strong>Consistency beats intensity.</strong> Short and frequent beats long and occasional every time.</p>
-      </div>
-      <div class="sheet-foot">
-        Prepared${S.practitioner?" by "+esc(S.practitioner):""} for ${single?"you":"this phase only"}. Bring this sheet to your next appointment so we can progress it.
-      </div>
-    </div>`;
-}
-
-/* ============================ VIEW SWITCH / RENDER ALL ============================ */
-function setView(v){
-  U.view = v;
-  $("#vPrac").setAttribute("aria-pressed", v==="prac");
-  $("#vPat").setAttribute("aria-pressed", v==="pat");
-  $("#buildView").style.display = v==="prac" ? "" : "none";
-  $("#patientView").style.display = v==="pat" ? "" : "none";
-  if(v==="pat") renderPatient();
-}
-$("#vPrac").onclick = ()=>setView("prac");
-$("#vPat").onclick = ()=>setView("pat");
-
-function renderAll(){
-  if(U.active >= S.phases.length) U.active = 0;
-  renderTabs(); renderMeta(); renderLib(); renderAsg();
-  const ph = phase();
-  $("#nPatient").value = ph.patientNote; $("#nPrac").value = ph.practitionerNote;
-  if(U.view==="pat") renderPatient();
-}
-$("#nPatient").oninput = e=>{phase().patientNote = e.target.value;};
-$("#nPrac").oninput = e=>{phase().practitionerNote = e.target.value;};
-["fPatient","fPrac","fDate"].forEach((id,i)=>{
-  const k = ["patient","practitioner","startDate"][i];
-  $("#"+id).oninput = e=>{S[k]=e.target.value;};
-});
 
 /* ============================ STORAGE ============================ */
 function toast(msg){
   const t=$("#toast"); t.textContent=msg; t.classList.add("show");
-  setTimeout(()=>t.classList.remove("show"), 2200);
+  setTimeout(()=>t.classList.remove("show"), 2600);
 }
 
 const KEYS = {
@@ -1318,79 +1246,691 @@ function writeJSON(key, value){
 
 function readPrograms(){
   const a = readJSON(KEYS.programs, []);
-  return Array.isArray(a) ? a : [];
+  return Array.isArray(a) ? a.filter(p=>p && p.id) : [];
 }
+function writePrograms(list){ return writeJSON(KEYS.programs, list); }
 function readSettings(){
   const s = readJSON(KEYS.settings, {});
   return (s && typeof s === "object" && !Array.isArray(s)) ? s : {};
 }
+function writeSettings(patch){
+  const st = Object.assign(readSettings(), patch);
+  return writeJSON(KEYS.settings, st);
+}
 
-function save(){
+/* ---- autosave ---- */
+let saveTimer = null;
+let saveFailed = false;
+
+/* Called after any edit. Debounced so typing doesn't hammer localStorage. */
+function touch(){
+  if(!S) return;
   S.updatedAt = new Date().toISOString();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{ saveTimer=null; persist(false); }, 800);
+  renderSaved();
+}
+
+function persist(announce){
+  if(!S) return true;
   const list = readPrograms();
-  const i = list.findIndex(p=>p && p.id===S.id);
+  const i = list.findIndex(p=>p.id===S.id);
   if(i>=0) list[i] = S; else list.push(S);
 
-  const st = readSettings();
-  st.lastProgramId = S.id;
-  if(S.practitioner) st.practitioner = S.practitioner;
+  const ok = writePrograms(list) && writeSettings({
+    lastProgramId: S.id,
+    practitioner: S.practitioner || readSettings().practitioner || ""
+  });
 
-  if(writeJSON(KEYS.programs, list) && writeJSON(KEYS.settings, st)){
-    toast("Saved. It'll be here next time you open this.");
+  saveFailed = !ok;
+  renderSaved();
+  if(announce) toast(ok ? "Saved. It'll be here next time you open this."
+                        : "Couldn't save in the browser — use Save file (.json) instead.");
+  return ok;
+}
+
+/* A pending debounce must not be lost when the tab goes away. */
+function flushSave(){
+  if(saveTimer){ clearTimeout(saveTimer); saveTimer=null; persist(false); }
+}
+window.addEventListener("pagehide", flushSave);
+window.addEventListener("beforeunload", flushSave);
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden") flushSave(); });
+
+function renderSaved(){
+  const el = $("#savedAt");
+  if(!S){ el.textContent=""; el.classList.remove("warn"); return; }
+  if(saveFailed){ el.textContent="Not saved"; el.classList.add("warn"); return; }
+  el.classList.remove("warn");
+  el.textContent = saveTimer ? "Saving…" : "Saved · " + relTime(S.updatedAt);
+}
+setInterval(()=>{ if(S && !saveTimer && !saveFailed) renderSaved(); }, 30000);
+
+/* ============================ MODAL ============================ */
+let modalOk = null;
+
+function openModal(title, bodyHtml, onOk, okLabel){
+  $("#modalTitle").textContent = title;
+  $("#modalBody").innerHTML = bodyHtml;
+  $("#modalOk").textContent = okLabel || "Save";
+  modalOk = onOk;
+  $("#modal").hidden = false;
+  const first = $("#modalBody").querySelector("input,select");
+  if(first) setTimeout(()=>{ first.focus(); if(first.select) first.select(); }, 30);
+}
+function closeModal(){ $("#modal").hidden = true; modalOk = null; }
+
+$("#modalCancel").onclick = closeModal;
+$("#modalOk").onclick = ()=>{ if(modalOk && modalOk() === false) return; closeModal(); };
+$("#modal").onclick = e=>{ if(e.target === $("#modal")) closeModal(); };
+document.addEventListener("keydown", e=>{
+  if(e.key === "Escape" && !$("#modal").hidden) closeModal();
+  if(e.key === "Enter" && !$("#modal").hidden && e.target.tagName === "INPUT"){ $("#modalOk").click(); }
+});
+
+function confirmModal(title, message, onYes, yesLabel){
+  openModal(title, `<p>${esc(message)}</p>`, ()=>{ onYes(); }, yesLabel || "Delete");
+}
+
+/* ============================ NEW PROGRAM SETUP ============================ */
+function newProgramFlow(){
+  const st = readSettings();
+  openModal("New program", `
+    <label><span class="lbl">Patient name</span><input id="suPatient" autocomplete="off"></label>
+    <label><span class="lbl">Practitioner</span><input id="suPrac" value="${esc(st.practitioner||"")}" autocomplete="off"></label>
+    <label><span class="lbl">Start date</span><input id="suDate" type="date"></label>
+    <label><span class="lbl">Program structure</span>
+      <select id="suStruct">
+        <option value="single">Single handout</option>
+        <option value="phased">Multi-phase program</option>
+      </select></label>
+    <div id="suPhased" style="display:none">
+      <label><span class="lbl">Number of phases</span>
+        <select id="suCount">${[2,3,4,5,6,7,8].map(n=>`<option value="${n}">${n}</option>`).join("")}</select></label>
+      <label><span class="lbl">Phase naming</span>
+        <select id="suNaming">
+          <option value="phase">Phase 1, Phase 2, …</option>
+          <option value="stage">Stage 1, Stage 2, …</option>
+          <option value="visit">Visit 1, Visit 2, …</option>
+          <option value="week">Week 1, Week 2, …</option>
+          <option value="custom">Custom</option>
+        </select></label>
+      <div id="suCustom"></div>
+    </div>
+  `, createFromSetup, "Create program");
+
+  const struct = $("#suStruct"), naming = $("#suNaming"), count = $("#suCount");
+  const sync = ()=>{
+    $("#suPhased").style.display = struct.value === "phased" ? "" : "none";
+    const custom = struct.value === "phased" && naming.value === "custom";
+    $("#suCustom").innerHTML = custom
+      ? Array.from({length:+count.value}, (_,i)=>
+          `<label><span class="lbl">Phase ${i+1} name</span><input class="suName" value="Phase ${i+1}"></label>`).join("")
+      : "";
+  };
+  struct.onchange = sync; naming.onchange = sync; count.onchange = sync;
+  sync();
+}
+
+function createFromSetup(){
+  /* Whatever is open may have an unsaved debounce in flight — land it before
+     S is replaced, or that last edit is lost. */
+  flushSave();
+  const structure = $("#suStruct").value;
+  let names;
+  if(structure === "single"){
+    names = ["Programme"];
   }else{
-    toast("Couldn't save in the browser — use Save file (.json) instead.");
+    const n = +$("#suCount").value;
+    const naming = $("#suNaming").value;
+    names = naming === "custom"
+      ? [...document.querySelectorAll("#suCustom .suName")].map((el,i)=>el.value.trim() || ("Phase "+(i+1)))
+      : Array.from({length:n}, (_,i)=>PHASE_WORDS[naming]+" "+(i+1));
   }
+  S = makeProgram({
+    patient: $("#suPatient").value.trim(),
+    practitioner: $("#suPrac").value.trim(),
+    startDate: $("#suDate").value,
+    structure, names
+  });
+  U.active = 0;
+  F.maxLevel = null;
+  persist(false);
+  syncHeader();
+  setView("prac");
 }
 
-function reportDropped(n){
-  toast(n===1
-    ? "1 exercise in that program is no longer in the library and was left out."
-    : n + " exercises in that program are no longer in the library and were left out.");
+/* ============================ SAVED PROGRAMS LIST ============================ */
+function programStats(p){
+  const phases = Array.isArray(p.phases) ? p.phases : [];
+  return {
+    phases: phases.length,
+    exercises: phases.reduce((n,ph)=>n + (((ph&&ph.items)||[]).length), 0)
+  };
 }
 
-function load(){
-  let list = readPrograms();
-  let dropped = 0;
+function renderList(){
+  const all = readPrograms().slice().sort((a,b)=>
+    String(b.updatedAt||"").localeCompare(String(a.updatedAt||"")));
+  const q = listQuery.trim().toLowerCase();
+  const list = q ? all.filter(p=>String(p.patient||"").toLowerCase().includes(q)) : all;
 
+  $("#lCount").textContent = all.length
+    ? (q ? list.length+" of "+all.length : all.length + (all.length===1?" program":" programs"))
+    : "";
+
+  if(!all.length){
+    $("#plist").innerHTML = `<div class="empty">
+      <b>No programs yet</b>Create one to get started.
+      <div style="margin-top:14px"><button class="pbtn" id="emptyNew">New program</button></div>
+    </div>`;
+    $("#emptyNew").onclick = newProgramFlow;
+    return;
+  }
   if(!list.length){
-    /* First run on v2. Bring across a v1 blob from the previous build if one is
-       sitting there. The old key is left in place as a fallback. */
-    const p = migrate(readJSON(LEGACY_KEY, null));
-    if(p){
-      dropped = droppedOnMigrate;
-      list = [p];
-      writeJSON(KEYS.programs, list);
-      const st = readSettings(); st.lastProgramId = p.id; writeJSON(KEYS.settings, st);
-    }
+    $("#plist").innerHTML = `<div class="empty"><b>Nothing matches</b>No patient name contains “${esc(listQuery)}”.</div>`;
+    return;
   }
-  if(!list.length) return;
 
-  const st = readSettings();
-  const chosen = list.find(p=>p && p.id===st.lastProgramId) || list[0];
-  const p = migrate(chosen);
-  if(!p) return;
-  S = p;
-  dropped = dropped || droppedOnMigrate;
-  if(dropped) reportDropped(dropped);
+  $("#plist").innerHTML = list.map(p=>{
+    const s = programStats(p);
+    const open = S && S.id === p.id;
+    return `<div class="prow" data-id="${esc(p.id)}">
+      <div class="pnm">${p.patient ? esc(p.patient) : `<span class="anon">Unnamed patient</span>`}</div>
+      <div class="pmeta">
+        <span>${p.structure==="single" ? "Single handout" : s.phases+(s.phases===1?" phase":" phases")}</span>
+        <span>${s.exercises} exercise${s.exercises===1?"":"s"}</span>
+        <span>${esc(relTime(p.updatedAt))}</span>
+        ${open?`<span>· open</span>`:""}
+      </div>
+      <div class="pacts">
+        <button class="pbtn" data-a="open">Open</button>
+        <button class="pbtn" data-a="print">Print handout</button>
+        <button class="pbtn" data-a="dup">Duplicate</button>
+        <button class="pbtn" data-a="ren">Rename</button>
+        <button class="pbtn danger" data-a="del">Delete</button>
+      </div>
+    </div>`;
+  }).join("");
+
+  $("#plist").onclick = e=>{
+    const btn = e.target.closest("[data-a]"); if(!btn) return;
+    const id = e.target.closest(".prow").dataset.id;
+    const action = btn.dataset.a;
+    if(action === "open")  openProgram(id);
+    if(action === "print") printProgram(id);
+    if(action === "dup")   duplicateProgram(id);
+    if(action === "ren")   renameProgram(id);
+    if(action === "del")   deleteProgram(id);
+  };
 }
 
-$("#bSave").onclick = save;
+function loadProgram(id){
+  const raw = readPrograms().find(p=>p.id === id);
+  if(!raw) return null;
+  const p = migrate(raw);
+  if(p) p.id = raw.id;   // migrate() would mint a new id if the record lacked one
+  return p;
+}
+
+function openProgram(id){
+  flushSave();
+  const p = loadProgram(id);
+  if(!p){ toast("That program couldn't be opened."); return; }
+  S = p; U.active = 0; F.maxLevel = null;
+  reportMigration();
+  writeSettings({lastProgramId: S.id});
+  syncHeader();
+  setView("prac");
+}
+
+function printProgram(id){
+  flushSave();
+  const p = loadProgram(id);
+  if(!p){ toast("That program couldn't be opened."); return; }
+  S = p; U.active = 0; F.maxLevel = null;
+  syncHeader();
+  setView("pat");
+  /* Give the handout a paint before the print dialog steals the thread. */
+  setTimeout(printCurrent, 80);
+}
+
+function duplicateProgram(id){
+  flushSave();
+  const raw = readPrograms().find(p=>p.id === id);
+  if(!raw) return;
+  const copy = clone(raw);
+  copy.id = uuid();
+  copy.patient = (raw.patient ? raw.patient : "Unnamed patient") + " (copy)";
+  copy.updatedAt = new Date().toISOString();
+  const list = readPrograms();
+  list.push(copy);
+  if(writePrograms(list)) toast("Duplicated.");
+  else toast("Couldn't save the duplicate.");
+  renderList();
+}
+
+function renameProgram(id){
+  flushSave();
+  const raw = readPrograms().find(p=>p.id === id);
+  if(!raw) return;
+  openModal("Rename program",
+    `<label><span class="lbl">Patient name</span><input id="rnName" value="${esc(raw.patient||"")}"></label>`,
+    ()=>{
+      const name = $("#rnName").value.trim();
+      const list = readPrograms();
+      const t = list.find(p=>p.id === id);
+      if(!t) return;
+      t.patient = name;
+      t.updatedAt = new Date().toISOString();
+      writePrograms(list);
+      if(S && S.id === id){ S.patient = name; S.updatedAt = t.updatedAt; syncHeader(); }
+      renderList();
+    }, "Rename");
+}
+
+function deleteProgram(id){
+  flushSave();
+  const raw = readPrograms().find(p=>p.id === id);
+  if(!raw) return;
+  const label = raw.patient || "this unnamed program";
+  confirmModal("Delete program", "Delete " + label + "? This can't be undone.", ()=>{
+    const list = readPrograms().filter(p=>p.id !== id);
+    writePrograms(list);
+    if(S && S.id === id){
+      /* The open program just went away — drop back to the list rather than
+         editing a record that no longer exists. */
+      clearTimeout(saveTimer); saveTimer = null;
+      S = null;
+      writeSettings({lastProgramId: ""});
+      syncHeader();
+      setView("list");
+    }
+    toast("Deleted.");
+    renderList();
+  });
+}
+
+$("#lSearch").oninput = e=>{ listQuery = e.target.value; renderList(); };
+$("#bNew").onclick = newProgramFlow;
+
+/* ============================ FILTERS UI ============================ */
+function chips(el, opts, key){
+  el.innerHTML = opts.map(o=>
+    `<button class="chip" data-v="${o.v}" aria-pressed="${F[key]===o.v}">${o.l}</button>`).join("");
+  el.onclick = e=>{
+    const b=e.target.closest(".chip"); if(!b) return;
+    F[key]=b.dataset.v;
+    /* Touching the level chips means the user is steering — drop the phase's
+       automatic narrowing. */
+    if(key === "level") F.maxLevel = null;
+    chips(el,opts,key); renderLib();
+  };
+}
+/* Only offer a region or type that actually has something in it, so the regions
+   waiting on content show up as nothing rather than as an empty filter. */
+const regionOpts = [{v:"all",l:"All"}].concat(
+  REGIONS.filter(r=>EX.some(x=>x.region===r.k)).map(r=>({v:r.k, l:r.name})));
+const typeOpts = [{v:"all",l:"All"}].concat(
+  TYPES.filter(t=>EX.some(x=>x.type===t.k)).map(t=>({v:t.k, l:t.name})));
+
+chips($("#fRegion"), regionOpts, "region");
+chips($("#fType"),   typeOpts, "type");
+chips($("#fLevel"),  [{v:"all",l:"All"},{v:"1",l:"1"},{v:"2",l:"2"},{v:"3",l:"3"}], "level");
+$("#fSearch").oninput = e=>{F.q=e.target.value.toLowerCase(); renderLib();};
+
+/* ============================ RENDER: TABS ============================ */
+function renderTabs(){
+  if(isSingle()) return;
+  $("#tabs").innerHTML = S.phases.map((ph,i)=>`
+    <button class="blocktab" role="tab" aria-selected="${i===U.active}" data-i="${i}">
+      ${ph.level?`<span class="st st${ph.level}">${esc(LEVELS[ph.level])}</span>`:`<span class="st">&nbsp;</span>`}
+      <span class="nm">${esc(ph.name)}</span>
+      <span class="wk">${esc(ph.timeframe)}</span>
+      <span class="ct">${ph.items.length} exercise${ph.items.length===1?"":"s"}</span>
+    </button>`).join("")
+    + `<button class="addphase" id="addPhase" title="Add a phase">+ Add phase</button>`;
+
+  $("#tabs").onclick = e=>{
+    if(e.target.closest("#addPhase")){ addPhase(); return; }
+    const t=e.target.closest(".blocktab"); if(!t) return;
+    setActivePhase(+t.dataset.i);
+  };
+}
+
+function setActivePhase(i){
+  U.active = i;
+  applyPhaseLevel();
+  renderAll();
+}
+
+/* A phase level pre-narrows the library to that level and below. */
+function applyPhaseLevel(){
+  F.maxLevel = (S && phase() && phase().level) ? phase().level : null;
+  F.level = "all";
+  chips($("#fLevel"), [{v:"all",l:"All"},{v:"1",l:"1"},{v:"2",l:"2"},{v:"3",l:"3"}], "level");
+}
+
+function addPhase(){
+  S.phases.push(blankPhase("Phase " + (S.phases.length+1)));
+  U.active = S.phases.length - 1;
+  applyPhaseLevel();
+  touch(); renderAll();
+}
+
+function deletePhase(i){
+  const ph = S.phases[i];
+  const go = ()=>{
+    S.phases.splice(i,1);
+    if(!S.phases.length) S.phases.push(blankPhase("Phase 1"));
+    if(U.active >= S.phases.length) U.active = S.phases.length-1;
+    applyPhaseLevel();
+    touch(); renderAll();
+  };
+  if(ph.items.length){
+    confirmModal("Delete phase",
+      "“"+ph.name+"” has "+ph.items.length+" exercise"+(ph.items.length===1?"":"s")+". This can't be undone.",
+      go, "Delete phase");
+  }else go();
+}
+
+function movePhase(i, d){
+  const j = i + d;
+  if(j < 0 || j >= S.phases.length) return;
+  const [x] = S.phases.splice(i,1);
+  S.phases.splice(j,0,x);
+  U.active = j;
+  touch(); renderAll();
+}
+
+/* ============================ RENDER: LIBRARY ============================ */
+function passes(x){
+  if(F.region!=="all" && x.region!==F.region) return false;
+  if(F.type!=="all" && x.type!==F.type) return false;
+  if(F.level!=="all" && String(x.level)!==F.level) return false;
+  if(F.maxLevel && x.level > F.maxLevel) return false;
+  if(F.q && !(x.name+" "+x.targets+" "+x.desc).toLowerCase().includes(F.q)) return false;
+  return true;
+}
+
+function renderLibHint(){
+  const el = $("#libHint");
+  if(!F.maxLevel){ el.innerHTML = ""; return; }
+  el.innerHTML = `<div class="hintbar">
+    Showing ${esc(LEVELS[F.maxLevel])} and below, to match this phase.
+    <button id="clearMax">Show all levels</button></div>`;
+  $("#clearMax").onclick = ()=>{ F.maxLevel = null; renderLib(); };
+}
+
+function renderLib(){
+  renderLibHint();
+  const chosen = new Set(phase().items.map(i=>i.exerciseId));
+  const list = EX.filter(passes);
+  $("#libCount").textContent = list.length + " shown of " + EX.length;
+
+  let html = "";
+  REGIONS.forEach(r=>{
+    TYPES.forEach(t=>{
+      const g = list.filter(x=>x.region===r.k && x.type===t.k);
+      if(!g.length) return;
+      html += `<div class="grp"><span class="lbl">${esc(r.name)} — ${esc(t.name)} · ${g.length}</span></div>`;
+      html += g.map(x=>`
+        <label class="ex ${x.region} ${chosen.has(x.id)?"on":""}">
+          <input type="checkbox" data-id="${x.id}" ${chosen.has(x.id)?"checked":""}>
+          <span class="ex-body">
+            <span class="ex-hd">
+              <span class="ex-nm">${esc(x.name)}</span>
+              <span class="tag stage">${esc(LEVELS[x.level])}</span>
+              <span class="tag">${esc(typeName(x.type))}</span>
+            </span>
+            <span class="ex-d">${esc(x.desc)}</span>
+            <span class="ex-t">Targets: ${esc(x.targets)}</span>
+          </span>
+        </label>`).join("");
+    });
+  });
+  if(!html) html = `<div class="empty"><b>Nothing matches</b>Widen a filter or clear the search box.</div>`;
+  $("#lib").innerHTML = html;
+
+  $("#lib").onchange = e=>{
+    const cb = e.target; if(cb.type!=="checkbox") return;
+    const id = cb.dataset.id, ph = phase();
+    if(cb.checked){
+      if(!ph.items.some(i=>i.exerciseId===id)) ph.items.push({exerciseId:id, rx:byId[id].rx, freq:"", note:""});
+    } else {
+      ph.items = ph.items.filter(i=>i.exerciseId!==id);
+    }
+    touch(); renderAll();
+  };
+}
+
+/* ============================ RENDER: PHASE META + ASSIGNED ============================ */
+function renderMeta(){
+  const ph = phase();
+  const single = isSingle();
+  $("#asgTitle").textContent = single ? "This handout" : "This phase";
+  $("#bmeta").innerHTML = `
+    ${single?"":`<label><span class="lbl">Phase name</span><input class="nm" id="mName" value="${esc(ph.name)}"></label>`}
+    <label><span class="lbl">Timeframe</span><input class="wk" id="mWeeks" value="${esc(ph.timeframe)}" placeholder="e.g. Weeks 1-3"></label>
+    <label><span class="lbl">Level</span>
+      <select id="mLevel">
+        <option value=""${ph.level?"":" selected"}>No level set</option>
+        ${[1,2,3].map(n=>`<option value="${n}"${ph.level===n?" selected":""}>${esc(LEVELS[n])}</option>`).join("")}
+      </select></label>
+    ${single?"":`<div class="pctl">
+      <button class="pbtn" id="mLeft" ${U.active===0?"disabled":""} title="Move this phase earlier">← Earlier</button>
+      <button class="pbtn" id="mRight" ${U.active===S.phases.length-1?"disabled":""} title="Move this phase later">Later →</button>
+      <button class="pbtn danger" id="mDel" title="Delete this phase">Delete phase</button>
+    </div>`}`;
+
+  if(!single){
+    $("#mName").oninput = e=>{ph.name=e.target.value; touch(); renderTabs();};
+    $("#mLeft").onclick  = ()=>movePhase(U.active,-1);
+    $("#mRight").onclick = ()=>movePhase(U.active, 1);
+    $("#mDel").onclick   = ()=>deletePhase(U.active);
+  }
+  $("#mWeeks").oninput = e=>{ph.timeframe=e.target.value; touch(); renderTabs();};
+  $("#mLevel").onchange = e=>{
+    ph.level = e.target.value ? +e.target.value : null;
+    applyPhaseLevel();
+    touch(); renderAll();
+  };
+}
+
+function freqOptionsFor(cur){
+  const opts = FREQ_OPTIONS.slice();
+  /* Keep an imported value we don't recognise, rather than silently resetting it. */
+  if(cur && opts.indexOf(cur) < 0) opts.unshift(cur);
+  return opts;
+}
+
+function renderAsg(){
+  const ph = phase();
+  $("#asgCount").textContent = ph.items.length + " selected";
+  if(!ph.items.length){
+    $("#asg").innerHTML = `<div class="empty"><b>No exercises yet</b>Tick anything in the library to add it${isSingle()?"":" to "+esc(ph.name)}.</div>`;
+    return;
+  }
+  $("#asg").innerHTML = ph.items.map((it,i)=>{
+    const x = byId[it.exerciseId];
+    if(!x) return "";
+    return `<div class="acard ${x.region}">
+      <div class="acard-hd">
+        <span class="num">${i+1}</span>
+        <span class="ex-nm">${esc(x.name)}</span>
+        <span class="tag stage">${esc(LEVELS[x.level])}</span>
+        <span class="tag">${esc(typeName(x.type))}</span>
+        <button class="rm" data-rm="${x.id}">Remove</button>
+      </div>
+      <div class="rx">
+        <label><span class="lbl">Sets &amp; reps</span><input data-f="rx" data-id="${x.id}" value="${esc(it.rx)}"></label>
+        <label><span class="lbl">Frequency</span>
+          <select data-f="freq" data-id="${x.id}">
+            <option value=""></option>
+            ${freqOptionsFor(it.freq).map(o=>`<option value="${esc(o)}"${it.freq===o?" selected":""}>${esc(o)}</option>`).join("")}
+          </select></label>
+        <label class="grow"><span class="lbl">Cue or note for this exercise</span><input class="wide" data-f="note" data-id="${x.id}" value="${esc(it.note)}" placeholder="e.g. keep ribs down, stop if it pinches at the front"></label>
+      </div>
+    </div>`;
+  }).join("");
+
+  $("#asg").onclick = e=>{
+    const r = e.target.closest("[data-rm]"); if(!r) return;
+    ph.items = ph.items.filter(i=>i.exerciseId!==r.dataset.rm);
+    touch(); renderAll();
+  };
+  const edit = e=>{
+    const f = e.target.dataset.f; if(!f) return;
+    const it = ph.items.find(i=>i.exerciseId===e.target.dataset.id);
+    if(!it) return;
+    it[f] = e.target.value;
+    touch();
+    if(f === "freq") renderTabs();
+  };
+  $("#asg").oninput = edit;
+  $("#asg").onchange = edit;
+}
+
+/* ============================ RENDER: PATIENT COPY ============================ */
+function renderPatient(){
+  const ph = phase();
+  const known = ph.items.filter(i=>byId[i.exerciseId]);
+  /* Mobility always prints before stability. */
+  const mob  = known.filter(i=>byId[i.exerciseId].type==="mobility");
+  const stab = known.filter(i=>byId[i.exerciseId].type==="stability");
+
+  const card = (it,n)=>{
+    const x = byId[it.exerciseId];
+    const freq = renderFreq(it.freq);
+    return `<div class="pex">
+      <div class="pnum">${n}</div>
+      <div style="flex:1">
+        <h4>${esc(x.name)}</h4>
+        <div class="pd">${esc(x.desc)}</div>
+        <div class="pt">What it's for: ${esc(x.targets)}</div>
+        ${it.rx||freq?`<div class="prx">${esc(it.rx)}${it.rx&&freq?" &nbsp;·&nbsp; ":""}${esc(freq)}</div>`:""}
+        ${it.note?`<div class="pn">${esc(it.note)}</div>`:""}
+      </div>
+    </div>`;
+  };
+
+  let n=0;
+  const secMob = mob.length ? `<div class="sheet-sec"><h3>Part 1 — Mobility (do these first)</h3>${mob.map(i=>card(i,++n)).join("")}</div>` : "";
+  const secStab = stab.length ? `<div class="sheet-sec"><h3>Part 2 — Stability &amp; strength</h3>${stab.map(i=>card(i,++n)).join("")}</div>` : "";
+
+  const empty = !known.length
+    ? `<div class="empty" style="padding:60px 40px"><b>Nothing assigned yet</b>Switch to Build and tick some exercises.</div>`
+    : "";
+
+  const single = isSingle();
+  /* Eyebrow is built from what actually exists — no invented level copy. */
+  const eyebrow = ["MVMT Program"].concat(ph.level ? [LEVELS[ph.level]] : []).join(" · ");
+  const heading = single ? (S.patient || "Home programme") : ph.name;
+
+  $("#patientView").innerHTML = `
+    <div class="sheet">
+      <div class="sheet-hd">
+        <div class="eyebrow">${esc(eyebrow)}</div>
+        <h1>${esc(heading)}</h1>
+        <div class="sheet-meta">
+          ${S.patient && !single?`<div><span class="lbl">Patient</span><strong>${esc(S.patient)}</strong></div>`:""}
+          ${S.practitioner?`<div><span class="lbl">Practitioner</span><strong>${esc(S.practitioner)}</strong></div>`:""}
+          ${S.startDate?`<div><span class="lbl">Started</span><strong>${esc(prettyDate(S.startDate))}</strong></div>`:""}
+          ${ph.timeframe?`<div><span class="lbl">Timeframe</span><strong>${esc(ph.timeframe)}</strong></div>`:""}
+          <div><span class="lbl">Exercises</span><strong>${known.length}</strong></div>
+        </div>
+      </div>
+      ${empty}
+      ${secMob}${secStab}
+      ${ph.patientNote?`<div class="callout"><span class="lbl">Notes from your therapist</span><p>${esc(ph.patientNote).replace(/\n/g,"</p><p>")}</p></div>`:""}
+      <div class="callout">
+        <span class="lbl">How to run this programme</span>
+        <p><strong>Mobility first, then strength.</strong> The mobility work opens the range; the stability work teaches you to hold it. Doing it in the other order wastes both.</p>
+        <p><strong>Where you should feel it.</strong> A stretch or a working muscle is fine. Sharp, pinching, or nerve-like pain is not — back off that exercise and tell me at the next appointment.</p>
+        <p><strong>Progressing.</strong> Each exercise has stages built into the description. Move to the next stage only once the current one feels controlled and easy for all your reps.</p>
+        <p><strong>Consistency beats intensity.</strong> Short and frequent beats long and occasional every time.</p>
+      </div>
+      <div class="sheet-foot">
+        Prepared${S.practitioner?" by "+esc(S.practitioner):""} for ${single?"you":"this phase only"}. Bring this sheet to your next appointment so we can progress it.
+      </div>
+    </div>`;
+}
+
+/* ============================ VIEW SWITCH / RENDER ALL ============================ */
+function setView(v){
+  /* Build and Patient copy need a program; without one there is only the list. */
+  if(v !== "list" && !S) v = "list";
+  U.view = v;
+  $("#vList").setAttribute("aria-pressed", v==="list");
+  $("#vPrac").setAttribute("aria-pressed", v==="prac");
+  $("#vPat").setAttribute("aria-pressed", v==="pat");
+  $("#listView").style.display    = v==="list" ? "" : "none";
+  $("#buildView").style.display   = v==="prac" ? "" : "none";
+  $("#patientView").style.display = v==="pat"  ? "" : "none";
+
+  /* Header and phase chrome only make sense with a program open, and the phase
+     bar only when there is more than one phase to move between. */
+  $("#who").style.display    = (v!=="list" && S) ? "" : "none";
+  $("#legend").style.display = v==="prac" ? "" : "none";
+  $("#courtWrap").style.display = (v!=="list" && S && !isSingle()) ? "" : "none";
+  ["bSave","bBackup","bPrint"].forEach(id=>{
+    $("#"+id).style.display = S ? "" : "none";
+  });
+  $("#vPrac").disabled = !S;
+  $("#vPat").disabled = !S;
+
+  renderSaved();
+  if(v === "list") renderList();
+  else renderAll();
+}
+
+$("#vList").onclick = ()=>setView("list");
+$("#vPrac").onclick = ()=>setView("prac");
+$("#vPat").onclick  = ()=>setView("pat");
+
+function renderAll(){
+  if(!S) return;
+  if(U.active >= S.phases.length) U.active = 0;
+  renderTabs(); renderMeta(); renderLib(); renderAsg();
+  const ph = phase();
+  $("#nPatient").value = ph.patientNote;
+  $("#nPrac").value = ph.practitionerNote;
+  if(U.view==="pat") renderPatient();
+}
+
+function syncHeader(){
+  $("#fPatient").value = S ? S.patient : "";
+  $("#fPrac").value    = S ? S.practitioner : "";
+  $("#fDate").value    = S ? S.startDate : "";
+}
+
+$("#nPatient").oninput = e=>{phase().patientNote = e.target.value; touch();};
+$("#nPrac").oninput = e=>{phase().practitionerNote = e.target.value; touch();};
+["fPatient","fPrac","fDate"].forEach((id,i)=>{
+  const k = ["patient","practitioner","startDate"][i];
+  $("#"+id).oninput = e=>{ if(!S) return; S[k]=e.target.value; touch(); };
+});
+
+$("#bSave").onclick = ()=>{ clearTimeout(saveTimer); saveTimer=null; persist(true); };
 
 /* ============================ FILE / PRINT ============================ */
 const slug = s=>String(s||"").trim().replace(/[^\w-]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase();
 
-$("#bPrint").onclick = ()=>{
+function printCurrent(){
+  if(!S) return;
   const orig = document.title;
   // Browsers use the page title as the default PDF filename.
   document.title = [slug(S.patient)||"program",
-                    S.structure==="single" ? "" : slug(phase().name),
-                    U.view==="pat"?"patient":"practitioner"]
+                    isSingle() ? "" : slug(phase().name),
+                    U.view==="pat" ? "patient" : "practitioner"]
                      .filter(Boolean).join("-");
   window.print();
   setTimeout(()=>{document.title = orig;}, 800);
-};
+}
+$("#bPrint").onclick = printCurrent;
 
 $("#bBackup").onclick = ()=>{
+  if(!S) return;
   S.updatedAt = new Date().toISOString();
   const blob = new Blob([JSON.stringify(S,null,2)], {type:"application/json"});
   const a = document.createElement("a");
@@ -1409,16 +1949,14 @@ $("#fFile").onchange = e=>{
     try{
       const p = migrate(JSON.parse(rd.result));
       if(!p) throw 0;
-      const dropped = droppedOnMigrate;
+      flushSave();
       S = p;
       U.active = 0;
-      $("#fPatient").value = S.patient;
-      $("#fPrac").value = S.practitioner;
-      $("#fDate").value = S.startDate;
-      setView(U.view||"prac");
-      renderAll();
-      if(dropped) reportDropped(dropped);
-      else toast("Loaded "+(S.patient||"program")+".");
+      applyPhaseLevel();
+      persist(false);
+      syncHeader();
+      setView("prac");
+      if(!reportMigration()) toast("Loaded "+(S.patient||"program")+".");
     }catch(err){
       toast("That file isn't a program file. Pick the .json this tool saved.");
     }
@@ -1429,16 +1967,17 @@ $("#fFile").onchange = e=>{
 
 /* ============================ BOOT ============================ */
 (function(){
-  load();
-  if(!S.practitioner){
-    const st = readSettings();
-    if(st.practitioner) S.practitioner = st.practitioner;
+  /* One-time upgrade of a v1 blob left by the previous build. The old key is
+     left in place as a fallback rather than deleted. */
+  if(!readPrograms().length){
+    const p = migrate(readJSON(LEGACY_KEY, null));
+    if(p){
+      writePrograms([p]);
+      writeSettings({lastProgramId: p.id});
+    }
   }
-  $("#fPatient").value = S.patient;
-  $("#fPrac").value = S.practitioner;
-  $("#fDate").value = S.startDate;
-  setView(U.view||"prac");
-  renderAll();
+  /* The saved-programs list is the home screen. */
+  setView("list");
 })();
 </script>
 
