@@ -58,9 +58,45 @@ future region gains its own forced callout, this note needs updating alongside i
 `desc` and `targets` are written to be read by patients. Do not rewrite,
 summarise or "improve" them without being asked.
 
+### "Tennis elbow" is a deliberate, approved exception
+
+The tool was rebranded away from its origin as a return-to-tennis builder, and
+one acceptance check was written as *"no occurrence of 'tennis' in any UI-facing
+string"*. Three occurrences survive on purpose, all in elbow-wrist `targets`:
+
+- "the group involved in tennis elbow"
+- "the reliable starting point for a painful tennis elbow"
+- "Tendon loading for tennis elbow"
+
+**Do not "fix" these.** Tennis elbow is lateral epicondylitis — the condition
+name patients actually use. It is clinical vocabulary, not sport framing. The
+acceptance check was written too literally; the rule it was protecting is that
+nothing frames the tool around a sport.
+
+If you grep for `tennis` and get exactly these three hits in `targets`, that is
+the correct state. More than three, or any hit outside `targets`, is not.
+
 Every `id` must start with its own `region` key. Ids are referenced by saved
 programs, so changing one costs a `LEGACY_ID_MAP` entry — get them right before
 content ships, not after.
+
+## Adding a region
+
+Region and type filter chips, the library groupings and the colour legend are all
+derived from what the library actually contains, so a new region is a content drop
+plus two small declarations. There is **no schema change and no migration** — the
+`region` field is a free string and `migrate()` does not validate it.
+
+1. Add `{k, name}` to `REGIONS` (order in that array is the display order).
+2. Add a `--r-<key>` colour token, plus `.ex.<key>` and `.acard.<key>` rules.
+3. Ship the content, with ids prefixed `<key>-`.
+
+The filter chip, the library grouping and the legend entry then appear on their
+own. A region declared with no content shows nothing at all rather than an empty
+filter, so step 1 can safely land ahead of step 3.
+
+If the new region needs a forced safety callout, that is a separate change — see
+the callout section below and the `alsoRegion` warning above.
 
 ## Forced handout callouts
 
