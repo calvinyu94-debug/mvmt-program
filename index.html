@@ -276,6 +276,9 @@ button{cursor:pointer}
 .callout .lbl{display:block;margin-bottom:6px}
 .callout p{margin:0 0 8px}
 .callout p:last-child{margin:0}
+.callout ul{margin:0;padding-left:19px}
+.callout li{margin:0 0 5px}
+.callout li:last-child{margin:0}
 .sheet-foot{padding:24px 40px 0;margin-top:24px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3)}
 
 .legend{display:flex;gap:18px;flex-wrap:wrap;padding:12px 22px;max-width:1500px;margin:0 auto;font-size:12px;color:var(--ink-2)}
@@ -501,7 +504,8 @@ const REGIONS = [
 
 const TYPES = [
   {k:"mobility",  name:"Mobility"},
-  {k:"stability", name:"Stability"}
+  {k:"stability", name:"Stability"},
+  {k:"nerve",     name:"Nerve"}
 ];
 
 /* v1 used short ids (hm1, ls19). Saved programs and exported .json files still
@@ -947,43 +951,43 @@ const EX = [
  desc:"Sit back on the heels and rotate the chest. Build it up: hands on the chest → hands behind the head → hands overhead.",
  targets:"The cleanest upper back isolation available — the pelvis simply cannot move"},
 /* ---------- THORACIC STABILITY ---------- */
-{id:"thoracic-stab-prone-ytwi", region:"thoracic", type:"stability", level:1,
+{id:"thoracic-stab-prone-ytwi", region:"thoracic", alsoRegion:"shoulder", type:"stability", level:1,
  name:"Prone Y-T-W-I", rx:"2 x 8 each position",
  desc:"Face down, lift the arms in four different shapes. Build it up: no weight → 2s hold at the top → light plates → face down on an incline bench.",
  targets:"Mid-back and shoulder blade endurance"},
-{id:"thoracic-stab-band-pull-apart", region:"thoracic", type:"stability", level:1,
+{id:"thoracic-stab-band-pull-apart", region:"thoracic", alsoRegion:"shoulder", type:"stability", level:1,
  name:"Band Pull-Apart", rx:"3 x 15",
  desc:"Pull a band apart with straight arms. Build it up: at chest height → at 45 degrees → overhead → add a 2s hold.",
  targets:"Mid-back strength — the direct counter to a rounded desk posture"},
-{id:"thoracic-stab-face-pull", region:"thoracic", type:"stability", level:1,
+{id:"thoracic-stab-face-pull", region:"thoracic", alsoRegion:"shoulder", type:"stability", level:1,
  name:"Face Pull", rx:"3 x 15",
  desc:"Pull a band or cable toward the face with the elbows high. Build it up: band → cable → add external rotation at the end → half kneeling.",
  targets:"Rear shoulder and mid-back — protects the shoulder over a long serving season"},
-{id:"thoracic-stab-prone-swimmers", region:"thoracic", type:"stability", level:1,
+{id:"thoracic-stab-prone-swimmers", region:"thoracic", alsoRegion:"shoulder", type:"stability", level:1,
  name:"Prone Swimmers", rx:"2 x 6 full circuits",
  desc:"Face down, sweep the arms in a slow arc from overhead to the low back and reverse. Build it up: slow and continuous → pause at each position → add light weight.",
  targets:"Shoulder blade control through a full arc"},
-{id:"thoracic-stab-banded-wall-slide", region:"thoracic", type:"stability", level:1,
+{id:"thoracic-stab-banded-wall-slide", region:"thoracic", alsoRegion:"shoulder", type:"stability", level:1,
  name:"Banded Wall Slide", rx:"3 x 10",
  desc:"Band around the wrists, forearms on a wall, slide up while pushing out against the band. Build it up: short range → full overhead → add a 3s hold at the top.",
  targets:"Overhead shoulder blade control — the serve arm path"},
-{id:"thoracic-stab-scap-push-up", region:"thoracic", type:"stability", level:1,
+{id:"thoracic-stab-scap-push-up", region:"thoracic", alsoRegion:"shoulder", type:"stability", level:1,
  name:"Scap Push-Up", rx:"3 x 12",
  desc:"Plank position, arms locked, only the shoulder blades move together and apart. Build it up: against a wall → on an incline → on the floor → feet elevated.",
  targets:"Serratus and shoulder blade control on the ribcage"},
-{id:"thoracic-stab-single-arm-row", region:"thoracic", type:"stability", level:1,
+{id:"thoracic-stab-single-arm-row", region:"thoracic", alsoRegion:"shoulder", type:"stability", level:1,
  name:"Single Arm Row", rx:"3 x 10 each side",
  desc:"Row a weight to the hip without letting the trunk twist toward it. Build it up: supported on a bench → free standing in a split stance → standing on one leg.",
  targets:"Pulling strength while the trunk resists rotation"},
-{id:"thoracic-stab-landmine-press", region:"thoracic", type:"stability", level:2,
+{id:"thoracic-stab-landmine-press", region:"thoracic", alsoRegion:"shoulder", type:"stability", level:2,
  name:"Landmine Press", rx:"3 x 8 each side",
  desc:"Press a landmine bar up and away at an angle. Build it up: tall kneeling → half kneeling → standing → standing with a rotation.",
  targets:"Overhead pressing at an angle the shoulder tolerates well"},
-{id:"thoracic-stab-half-kneeling-single-arm-press", region:"thoracic", type:"stability", level:2,
+{id:"thoracic-stab-half-kneeling-single-arm-press", region:"thoracic", alsoRegion:"shoulder", type:"stability", level:2,
  name:"Half-Kneeling Single Arm Press", rx:"3 x 8 each side",
  desc:"Half-kneel and press a dumbbell overhead with the ribs staying down. Build it up: light and slow → heavier → add a pause overhead.",
  targets:"Direct rehearsal of the trunk position at the top of the serve"},
-{id:"thoracic-stab-serratus-wall-slide", region:"thoracic", type:"stability", level:1,
+{id:"thoracic-stab-serratus-wall-slide", region:"thoracic", alsoRegion:"shoulder", type:"stability", level:1,
  name:"Serratus Wall Slide", rx:"3 x 10",
  desc:"Forearms on a wall, push into the wall and slide up, reaching long at the top. Build it up: short range → full reach → add a band around the wrists.",
  targets:"Serratus — the muscle that lets the arm get truly overhead"},
@@ -1006,7 +1010,75 @@ const EX = [
 {id:"thoracic-stab-chop-and-lift-complex", region:"thoracic", type:"stability", level:2,
  name:"Chop and Lift Complex", rx:"3 x 8 each direction",
  desc:"Run the chop and the lift back to back in both directions. Build it up: controlled tempo → faster → full sport speed.",
- targets:"The complete diagonal pattern, both groundstroke and serve directions"}
+ targets:"The complete diagonal pattern, both groundstroke and serve directions"},
+
+/* ---------- CERVICAL NERVE ---------- */
+{id:"cervical-nrv-median-slider", region:"cervical", type:"nerve", level:1,
+ name:"Median Nerve Slider", rx:"1 x 8 each side, slow",
+ desc:"Arm out to the side at shoulder height, palm facing up. As you tip your head TOWARD the arm, bend the wrist and fingers down. As you tip your head AWAY, straighten the wrist and draw the fingers back. One end loads while the other unloads — the nerve slides rather than stretches.",
+ targets:"Median nerve mobility through the neck, shoulder and wrist"},
+{id:"cervical-nrv-median-tensioner", region:"cervical", type:"nerve", level:2,
+ name:"Median Nerve Tensioner", rx:"1 x 5 each side",
+ desc:"Same starting position, but now load both ends at once — tip the head away while straightening the wrist and drawing the fingers back. Hold only 1-2 seconds and release. Progress here only once the slider is completely symptom-free.",
+ targets:"Median nerve tolerance to load — a deliberate step up from the slider"},
+{id:"cervical-nrv-ulnar-slider", region:"cervical", type:"nerve", level:1,
+ name:"Ulnar Nerve Slider", rx:"1 x 8 each side, slow",
+ desc:"Arm out to the side, elbow bent, palm facing you, fingers pointing down toward the shoulder. As you tip your head toward the arm, bring the hand closer to the face. As you tip away, take the hand away and straighten the elbow slightly.",
+ targets:"Ulnar nerve mobility at the elbow and wrist"},
+{id:"cervical-nrv-ulnar-tensioner", region:"cervical", type:"nerve", level:2,
+ name:"Ulnar Nerve Tensioner", rx:"1 x 5 each side",
+ desc:"From the same position, tip the head away while bringing the hand toward the face. Hold 1-2 seconds only. This one provokes easily — go carefully and stop well short of pins and needles.",
+ targets:"Ulnar nerve tolerance to load"},
+{id:"cervical-nrv-radial-slider", region:"cervical", type:"nerve", level:1,
+ name:"Radial Nerve Slider", rx:"1 x 8 each side, slow",
+ desc:"Arm down by your side and slightly behind you, shoulder pressed down, palm turned backward. As you tip your head toward the arm, bend the wrist down and turn the palm further back. As you tip away, release the wrist.",
+ targets:"Radial nerve mobility down the back of the arm"},
+{id:"cervical-nrv-radial-tensioner", region:"cervical", type:"nerve", level:2,
+ name:"Radial Nerve Tensioner", rx:"1 x 5 each side",
+ desc:"Same position, but tip the head away while bending the wrist down. Keep the shoulder pressed down throughout — letting it shrug up takes all the load off. Hold 1-2 seconds.",
+ targets:"Radial nerve tolerance to load"},
+{id:"cervical-nrv-lateral-glide", region:"cervical", type:"nerve", level:1,
+ name:"Cervical Lateral Glide", rx:"1 x 10 each side, slow",
+ desc:"Sitting tall, arm resting supported at your side. Glide the head sideways away from the symptomatic arm — a level side-shift, not a tilt or a turn. Return to the middle. Build it up: arm resting in your lap, then arm out to the side, then arm out with the palm turned up.",
+ targets:"Nerve root and brachial plexus mobility — usually the gentlest place to start upper limb nerve work"},
+
+/* ---------- SHOULDER NERVE ---------- */
+{id:"shoulder-nrv-plexus-opener", region:"shoulder", type:"nerve", level:2,
+ name:"Brachial Plexus Opener", rx:"1 x 6 each side",
+ desc:"Arm out to the side at shoulder height, elbow bent to 90 degrees, palm forward. Press the shoulder down and away from the ear, then slowly open the forearm back. Only go as far as smooth movement allows and come straight back.",
+ targets:"Whole brachial plexus — screening and general upper limb nerve mobility"},
+
+/* ---------- LUMBAR NERVE ---------- */
+{id:"lumbar-nrv-sciatic-slider", region:"lumbar", type:"nerve", level:1,
+ name:"Sciatic Nerve Slider (seated)", rx:"1 x 8 each side, slow",
+ desc:"Sitting on a chair, slouch a little. As you straighten the knee, look up and lift the chest. As you bend the knee back down, tuck the chin and round the back. The two movements trade off, so the nerve glides rather than stretches.",
+ targets:"Sciatic nerve mobility from the low back to the calf"},
+{id:"lumbar-nrv-slump-slider", region:"lumbar", type:"nerve", level:2,
+ name:"Slump Slider", rx:"1 x 6 each side",
+ desc:"Sitting, slump the whole spine and tuck the chin. Straighten one knee and pull the toes up, then release the chin as you bend the knee back. Progress by holding the slump a little longer before moving the leg.",
+ targets:"Sciatic nerve with the spine pre-loaded — a firmer test and treatment than the seated slider"},
+{id:"lumbar-nrv-sciatic-tensioner", region:"lumbar", type:"nerve", level:2,
+ name:"Sciatic Nerve Tensioner (supine)", rx:"1 x 5 each side",
+ desc:"Lying on your back, hands behind one thigh. Straighten the knee and pull the toes up at the same time, hold 1-2 seconds, then release. Only progress here once the sliders cause no lasting symptoms at all.",
+ targets:"Sciatic nerve tolerance to load"},
+
+/* ---------- HIP NERVE ---------- */
+{id:"hip-nrv-femoral-slider", region:"hip", type:"nerve", level:1,
+ name:"Femoral Nerve Slider", rx:"1 x 8 each side, slow",
+ desc:"Lying on your side with the painful leg on top. Draw the heel toward the buttock and take the thigh back behind you, and as you do, tuck the chin to your chest. As you release the leg, look up. Build it up: knee bend only, then add the thigh going back, then add the head movement.",
+ targets:"Femoral nerve mobility down the front of the thigh"},
+
+/* ---------- KNEE NERVE ---------- */
+{id:"knee-nrv-fibular-glide", region:"knee", type:"nerve", level:1,
+ name:"Common Fibular Nerve Glide", rx:"1 x 8 each side, slow",
+ desc:"Lying on your back, lift the straight leg to a comfortable height. Point the foot down and roll the sole inward, then release. Keep the range small — this nerve sits close to the surface at the outside of the knee and provokes easily.",
+ targets:"Common fibular (peroneal) nerve — outside of the shin and top of the foot"},
+
+/* ---------- ANKLE & FOOT NERVE ---------- */
+{id:"ankle-foot-nrv-tibial-glide", region:"ankle-foot", type:"nerve", level:1,
+ name:"Tibial Nerve Glide", rx:"1 x 8 each side, slow",
+ desc:"Lying on your back, lift the straight leg to a comfortable height. Pull the toes and foot up and roll the sole outward, then release. Small, smooth range only.",
+ targets:"Tibial nerve — back of the calf and sole of the foot"}
 ];
 
 /* ============================ STATE ============================ */
@@ -1059,6 +1131,15 @@ const esc = s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt
 
 const phase = ()=>S.phases[U.active];
 const typeName = k=>(TYPES.find(t=>t.k===k)||{}).name || k;
+
+/* A few drills belong to two regions at once — the scapular work is filed under
+   thoracic but is shoulder-girdle material. alsoRegion cross-lists them without
+   changing their id, so no migration is needed. */
+const regionsOf = x => x.alsoRegion ? [x.region, x.alsoRegion] : [x.region];
+/* Which region heading an exercise sits under right now. With no region filter
+   it stays under its primary region, so nothing is ever listed twice. */
+const displayRegion = x => (F.region !== "all" && x.alsoRegion === F.region) ? F.region : x.region;
+const regionLabel = k => (REGIONS.find(r=>r.k===k)||{}).name || k;
 const isSingle = ()=>!!S && S.structure==="single";
 
 /* ============================ DATES & FORMATTING ============================ */
@@ -1570,7 +1651,7 @@ function chips(el, opts, key){
 /* Only offer a region or type that actually has something in it, so the regions
    waiting on content show up as nothing rather than as an empty filter. */
 const regionOpts = [{v:"all",l:"All"}].concat(
-  REGIONS.filter(r=>EX.some(x=>x.region===r.k)).map(r=>({v:r.k, l:r.name})));
+  REGIONS.filter(r=>EX.some(x=>regionsOf(x).indexOf(r.k) >= 0)).map(r=>({v:r.k, l:r.name})));
 const typeOpts = [{v:"all",l:"All"}].concat(
   TYPES.filter(t=>EX.some(x=>x.type===t.k)).map(t=>({v:t.k, l:t.name})));
 
@@ -1645,7 +1726,7 @@ function movePhase(i, d){
 
 /* ============================ RENDER: LIBRARY ============================ */
 function passes(x){
-  if(F.region!=="all" && x.region!==F.region) return false;
+  if(F.region!=="all" && regionsOf(x).indexOf(F.region) < 0) return false;
   if(F.type!=="all" && x.type!==F.type) return false;
   if(F.level!=="all" && String(x.level)!==F.level) return false;
   if(F.maxLevel && x.level > F.maxLevel) return false;
@@ -1671,17 +1752,18 @@ function renderLib(){
   let html = "";
   REGIONS.forEach(r=>{
     TYPES.forEach(t=>{
-      const g = list.filter(x=>x.region===r.k && x.type===t.k);
+      const g = list.filter(x=>displayRegion(x)===r.k && x.type===t.k);
       if(!g.length) return;
       html += `<div class="grp"><span class="lbl">${esc(r.name)} — ${esc(t.name)} · ${g.length}</span></div>`;
       html += g.map(x=>`
-        <label class="ex ${x.region} ${chosen.has(x.id)?"on":""}">
+        <label class="ex ${displayRegion(x)} ${chosen.has(x.id)?"on":""}">
           <input type="checkbox" data-id="${x.id}" ${chosen.has(x.id)?"checked":""}>
           <span class="ex-body">
             <span class="ex-hd">
               <span class="ex-nm">${esc(x.name)}</span>
               <span class="tag stage">${esc(LEVELS[x.level])}</span>
               <span class="tag">${esc(typeName(x.type))}</span>
+              ${x.alsoRegion && displayRegion(x) !== x.alsoRegion ? `<span class="tag">Also ${esc(regionLabel(x.alsoRegion))}</span>` : ""}
             </span>
             <span class="ex-d">${esc(x.desc)}</span>
             <span class="ex-t">Targets: ${esc(x.targets)}</span>
@@ -1795,9 +1877,12 @@ function renderAsg(){
 function renderPatient(){
   const ph = phase();
   const known = ph.items.filter(i=>byId[i.exerciseId]);
-  /* Mobility always prints before stability. */
-  const mob  = known.filter(i=>byId[i.exerciseId].type==="mobility");
-  const stab = known.filter(i=>byId[i.exerciseId].type==="stability");
+  /* Mobility always prints before stability. Nerve glides sit between the two:
+     they are low-load and symptom-limited, so they belong before the patient is
+     tired from strength work, but after the mobility that opens the range. */
+  const mob   = known.filter(i=>byId[i.exerciseId].type==="mobility");
+  const nerve = known.filter(i=>byId[i.exerciseId].type==="nerve");
+  const stab  = known.filter(i=>byId[i.exerciseId].type==="stability");
 
   const card = (it,n)=>{
     const x = byId[it.exerciseId];
@@ -1814,9 +1899,29 @@ function renderPatient(){
     </div>`;
   };
 
-  let n=0;
-  const secMob = mob.length ? `<div class="sheet-sec"><h3>Part 1 — Mobility (do these first)</h3>${mob.map(i=>card(i,++n)).join("")}</div>` : "";
-  const secStab = stab.length ? `<div class="sheet-sec"><h3>Part 2 — Stability &amp; strength</h3>${stab.map(i=>card(i,++n)).join("")}</div>` : "";
+  /* Parts are numbered by what is actually present, so a handout with no nerve
+     work never shows a gap in the numbering. */
+  let n = 0, part = 0;
+  const section = (items, title) => items.length
+    ? `<div class="sheet-sec"><h3>Part ${++part} — ${title}</h3>${items.map(i=>card(i,++n)).join("")}</div>`
+    : "";
+  const secMob   = section(mob,   "Mobility (do these first)");
+  const secNerve = section(nerve, "Nerve glides (small doses)");
+  const secStab  = section(stab,  "Stability &amp; strength");
+
+  /* Not optional and not dismissible: whenever a phase contains nerve work, the
+     handout carries the dosing rules with it. */
+  const nerveCallout = nerve.length ? `
+      <div class="callout">
+        <span class="lbl">About the nerve glides</span>
+        <p>These are different from stretching. You are moving a nerve, not lengthening a muscle, so the dose is deliberately small.</p>
+        <ul>
+          <li>Move smoothly and stop at the first hint of symptoms — do not push into tingling, numbness or burning.</li>
+          <li>Any symptoms you provoke should settle within seconds of stopping. If they linger, you did too many.</li>
+          <li>Fewer is better. A handful of slow repetitions is a full dose.</li>
+          <li>Stop and tell me if symptoms start travelling <strong>further down</strong> the limb than before.</li>
+        </ul>
+      </div>` : "";
 
   const empty = !known.length
     ? `<div class="empty" style="padding:60px 40px"><b>Nothing assigned yet</b>Switch to Build and tick some exercises.</div>`
@@ -1841,7 +1946,8 @@ function renderPatient(){
         </div>
       </div>
       ${empty}
-      ${secMob}${secStab}
+      ${secMob}${secNerve}${secStab}
+      ${nerveCallout}
       ${ph.patientNote?`<div class="callout"><span class="lbl">Notes from your therapist</span><p>${esc(ph.patientNote).replace(/\n/g,"</p><p>")}</p></div>`:""}
       <div class="callout">
         <span class="lbl">How to run this programme</span>
