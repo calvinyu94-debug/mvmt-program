@@ -12,6 +12,7 @@ Printable home-exercise program builder for clinical use. Single self-contained
   blocks `*.json` for this reason — there is no legitimate `.json` to track.
 - **Print fidelity is a feature.** The printed handout is the actual deliverable
   to patients. Preserve and extend the `@media print` rules.
+- **Colour lives in `:root`, nowhere else.** See the theme layer below.
 
 ## `alsoRegion` is coupled to a safety callout — read before cross-tagging
 
@@ -100,6 +101,9 @@ plus two small declarations. There is **no schema change and no migration** — 
 
 1. Add `{k, name}` to `REGIONS` (order in that array is the display order).
 2. Add a `--r-<key>` colour token, plus `.ex.<key>` and `.acard.<key>` rules.
+   The region colours are a scanning aid across a 281-entry list, so a ninth one
+   has to stay distinguishable from the other eight **and** from `--accent` —
+   see the theme section.
 3. Ship the content, with ids prefixed `<key>-`.
 
 The filter chip, the library grouping and the legend entry then appear on their
@@ -108,6 +112,50 @@ filter, so step 1 can safely land ahead of step 3.
 
 If the new region needs a forced safety callout, that is a separate change — see
 the callout section below and the `alsoRegion` warning above.
+
+## The theme layer
+
+Every colour, radius, shadow and font family the page uses is declared on
+`:root` and referenced through `var()`. **Nothing below that block should carry
+a literal colour.** The check is one line, and it should come back empty:
+
+```
+strip the /* */ comments and the :root{...} blocks from the <style>, then grep
+for '#rrggbb' or 'rgba(' — anything left is a colour that escaped the theme
+```
+
+The only other place literals appear is the second `:root` block inside
+`@media print`, which re-points the same tokens at flat white. Print is a token
+swap, deliberately, rather than a pile of overrides scattered through the rules.
+
+### Three things a theme swap is not allowed to forget
+
+**Semantic tokens are not region tokens.** Destructive and error states
+(`.rm:hover`, `.pbtn.danger`, `.ex-acts button.danger`, `.modal-body .ferr`) used
+to read off `--r-lumbar`, which was a burnt orange in the old palette and is a
+green in this one. They are on `--danger` now. The phase-level colours on the
+tabs (`.st1/.st2/.st3`) were likewise aliased onto three region tokens; they are
+on explicit `--level-1/2/3`. **Do not re-alias a semantic colour onto a region
+token** — the region palette is chosen for mutual distinctness, not for meaning.
+
+**Shadows do not print.** The panels carry their structure with `--shadow` and
+no border, so `@media print` puts a real `1px solid var(--line)` back on
+`.panel`, and states `.callout`'s border rather than letting it inherit one that
+the tinted ground was helping. Radii are zeroed there too: a 16px corner on a
+hairline prints as four broken corners on some drivers. If you move a boxed
+element onto elevation, give it a print rule in the same change.
+
+**The chrome is light.** The top bar was built for a dark ground — white text on
+`rgba(255,255,255,…)` borders — which is invisible on a light one. Bar controls
+are on `--chrome`, `--chrome-fg`, `--chrome-dim` and `--chrome-btn`; if the bar
+ever inverts back, those four tokens are the whole job.
+
+### Fonts
+
+`--font-display` (Fraunces) is reserved for the brand mark, the handout's
+patient name and the exercise numbers. Everything else is `--font-body` /
+`--font-ui` (DM Sans). Both carry real fallbacks, because the page has to stay
+legible when the CDN doesn't answer.
 
 ## Forced handout callouts
 
@@ -122,6 +170,12 @@ Both are non-dismissible and render automatically. Where a phase triggers both,
 
 A cervical nerve glide raises **both**, which is correct: it is cervical by
 region and a nerve glide by type, so both sets of rules apply.
+
+Both render as `<div class="callout safety">`. The therapist's note and the
+closing guidance are plain `callout`s. The difference is a heavier left rule and
+the accent wash — **weight, not hue**, so it survives a mono clinic printer,
+where the wash flattens to white and the rule is all that is left. If you add a
+callout, decide which of the two it is.
 
 ## The closing guidance must stay true of the sheet it prints on
 

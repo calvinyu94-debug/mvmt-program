@@ -6,44 +6,93 @@
 <title>MVMT Program</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Narrow:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --ink:#0F343D;
-  --ink-2:#4A6469;
-  --ink-3:#7B9298;
-  --line:#D3DEDD;
-  --line-2:#E7EEED;
-  --paper:#FFFFFF;
-  --bg:#F1F5F4;
-  /* Region accents. hip / lumbar / thoracic are the original three; the rest
-     are defined now so regions added later need no CSS change. */
-  --r-cervical:#8A3A62;
-  --r-shoulder:#2E6E8E;
-  --r-elbow-wrist:#6E5AA8;
-  --r-thoracic:#3F4C93;
-  --r-lumbar:#B0562F;
-  --r-hip:#17707F;
-  --r-knee:#2F7A46;
-  --r-ankle-foot:#8A6A2F;
-  /* Legacy aliases — still used by the phase-level tab colours below. */
-  --hip:var(--r-hip);
-  --lum:var(--r-lumbar);
-  --tsp:var(--r-thoracic);
-  --ball:#CBDD3F;
-  --ball-dk:#A8B92A;
-  --ok:#1F7A54;
-  --display:"Archivo Narrow","Archivo","Helvetica Neue",sans-serif;
-  --body:"Public Sans","Helvetica Neue",Arial,sans-serif;
-  --ui:"Archivo","Helvetica Neue",Arial,sans-serif;
+  /* ======================= Clay Soft =======================
+     The theme layer. Every colour the page uses is declared here and nowhere
+     else, so the next theme change is a rewrite of this block rather than a
+     sweep through the stylesheet. The one other place literals appear is the
+     :root override inside @media print, which re-points the same tokens at
+     flat white — see the print block at the bottom. */
+
+  /* ---- chrome. Light now, which is why the bar controls below are rebuilt
+          rather than retinted: they were drawn for a dark bar. ---- */
+  --chrome:      #FFFDFB;
+  --chrome-fg:   #33241C;
+  --chrome-dim:  #8E7867;
+  --chrome-btn:  #E7DCD1;
+
+  --accent:      #C25A2C;
+  --accent-fg:   #FFFFFF;
+  --accent-dk:   #A84A22;
+  /* The accent at wash strength — selected rows, prescriptions, safety
+     callouts. Goes to white in print, where the borders carry the work. */
+  --accent-wash: #FBF1EA;
+
+  --bg:          #F5EFE8;
+  --panel:       #FFFFFF;
+  --panel-2:     #FAF5EF;   /* group headers, notes block */
+  --hover:       #FCF9F5;   /* row hover — deliberately lighter than panel-2,
+                               which rows sit under */
+
+  --ink:         #2E211A;
+  --ink-2:       #63513F;
+  --ink-3:       #9A8778;
+  --ink-soft:    #45332A;   /* hover for ink-filled controls */
+
+  --line:        #EDE4D9;   /* inputs, and the structure print depends on */
+  --line-2:      #F5EEE6;   /* row separators */
+
+  /* Destructive and warning states. These used to read off --r-lumbar, which
+     is a green in this palette — a green Delete is not a warning. */
+  --danger:      #9E2B2B;
+  --warn:        #9A6B12;
+
+  /* Region accents — a full hue spread, muted to sit on warm paper. All eight
+     are deliberately less saturated than --accent so the accent stays the only
+     bright warm element and never reads as a ninth region. Colour-coding is a
+     scanning aid across 281 entries: these have to stay distinct from each
+     other, so check them side by side in the legend before changing any. */
+  --r-cervical:    #9C4A63;
+  --r-shoulder:    #A66A2E;
+  --r-thoracic:    #7D7A38;
+  --r-lumbar:      #4A7A57;
+  --r-hip:         #2E7181;
+  --r-knee:        #3A5E90;
+  --r-elbow-wrist: #6A5A94;
+  --r-ankle-foot:  #7A5240;
+
+  /* Phase level, on the phase tabs. These were aliased onto three region
+     tokens, which in this palette lands on teal / green / olive — three
+     unrelated cool hues rather than a ramp. Explicit now, and ordered cool to
+     warm so the progression says something. */
+  --level-1: #2E7181;
+  --level-2: #A66A2E;
+  --level-3: #9C4A63;
+
+  --radius-sm: 6px;    /* tags */
+  --radius:    12px;   /* inputs, buttons */
+  --radius-lg: 16px;   /* panels, cards */
+  --pad:       18px;
+  --gap:       20px;
+  --shadow:    0 1px 2px rgba(60,40,25,.05), 0 6px 18px rgba(60,40,25,.06);
+  --shadow-lg: 0 18px 50px rgba(60,40,25,.22);
+  --scrim:     rgba(46,33,26,.5);
+
+  /* Fraunces is reserved for the brand mark, the handout's patient name and
+     the exercise numbers. Everything else is DM Sans. */
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body:    "DM Sans", system-ui, sans-serif;
+  --font-ui:      "DM Sans", system-ui, sans-serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
   background:var(--bg);
   color:var(--ink);
-  font-family:var(--body);
+  font-family:var(--font-body);
   font-size:15px;
   line-height:1.55;
   -webkit-font-smoothing:antialiased;
@@ -54,62 +103,70 @@ button{cursor:pointer}
 
 /* ---------- scoreboard label ---------- */
 .lbl{
-  font-family:var(--display);
+  font-family:var(--font-ui);
   text-transform:uppercase;
-  letter-spacing:.13em;
+  letter-spacing:.08em;
   font-weight:600;
   font-size:11px;
   color:var(--ink-3);
 }
 
 /* ---------- top bar ---------- */
+/* The bar is light now. Everything in here previously assumed a dark ground —
+   white text and rgba(255,255,255,…) borders — which is invisible on #FFFDFB,
+   so the controls are rebuilt on the chrome tokens rather than retinted. The
+   bar is separated from the page by a rule, not a shadow. */
 .topbar{
-  background:var(--ink);
-  color:#EAF2F1;
+  background:var(--chrome);
+  color:var(--chrome-fg);
   padding:14px 22px;
   display:flex;
   align-items:center;
   gap:22px;
   flex-wrap:wrap;
   position:sticky;top:0;z-index:50;
+  border-bottom:1px solid var(--line-2);
 }
 .brand{display:flex;flex-direction:column;line-height:1.15}
 .brand b{
-  font-family:var(--display);
+  font-family:var(--font-display);
   text-transform:uppercase;
-  letter-spacing:.09em;
+  letter-spacing:.06em;
   font-size:17px;
   font-weight:700;
 }
-.brand span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7FA6A9;font-family:var(--display);font-weight:500}
+.brand span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--chrome-dim);font-family:var(--font-ui);font-weight:500}
 .who{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto}
 .who input{
-  background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:3px;padding:7px 10px;color:#fff;width:150px;font-size:13px;
+  background:var(--panel);
+  border:1px solid var(--chrome-btn);
+  border-radius:var(--radius);padding:7px 10px;color:var(--ink);width:150px;font-size:13px;
 }
-.who input::placeholder{color:#83A6A9}
-.acts{display:flex;gap:8px;align-items:center}
+.who input::placeholder{color:var(--ink-3)}
+/* The bar carries identity fields, a three-way view switch and six buttons.
+   On a narrow screen that is more than one line's worth, so it wraps rather
+   than running off the edge. */
+.acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .btn{
-  background:transparent;border:1px solid rgba(255,255,255,.28);color:#EAF2F1;
-  padding:7px 14px;border-radius:3px;
-  font-family:var(--display);text-transform:uppercase;letter-spacing:.09em;font-size:11px;font-weight:600;
+  background:transparent;border:1px solid var(--chrome-btn);color:var(--chrome-fg);
+  padding:7px 14px;border-radius:var(--radius);
+  font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:600;
 }
-.btn:hover{background:rgba(255,255,255,.1)}
-.btn.solid{background:var(--ball);border-color:var(--ball);color:#1B2410}
-.btn.solid:hover{background:var(--ball-dk)}
+.btn:hover{background:var(--panel-2)}
+.btn.solid{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.solid:hover{background:var(--accent-dk);border-color:var(--accent-dk)}
 
 /* view switch */
-.switch{display:flex;border:1px solid rgba(255,255,255,.28);border-radius:3px;overflow:hidden}
+.switch{display:flex;border:1px solid var(--chrome-btn);border-radius:var(--radius);overflow:hidden}
 .switch button{
-  background:transparent;border:0;color:#9DBCBE;padding:7px 15px;
-  font-family:var(--display);text-transform:uppercase;letter-spacing:.09em;font-size:11px;font-weight:600;
+  background:transparent;border:0;color:var(--chrome-dim);padding:7px 15px;
+  font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:600;
 }
-.switch button[aria-pressed="true"]{background:#EAF2F1;color:var(--ink)}
+.switch button[aria-pressed="true"]{background:var(--chrome-btn);color:var(--chrome-fg)}
 
 /* ---------- court strip (signature) ---------- */
 .court{
-  background:var(--paper);border-bottom:1px solid var(--line);
+  background:var(--panel);border-bottom:1px solid var(--line-2);
   padding:0 22px;
 }
 .court-inner{max-width:1500px;margin:0 auto;display:flex;align-items:stretch;gap:0;overflow-x:auto}
@@ -121,55 +178,74 @@ button{cursor:pointer}
   text-align:left;min-width:168px;flex:1;
   display:flex;flex-direction:column;gap:3px;
 }
-.blocktab:hover{background:#F7FAF9}
-.blocktab[aria-selected="true"]{border-bottom-color:var(--ball);background:#FBFDF7}
+.blocktab:hover{background:var(--hover)}
+.blocktab[aria-selected="true"]{border-bottom-color:var(--accent);background:var(--accent-wash)}
 .blocktab .st{
-  font-family:var(--display);font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+  font-family:var(--font-ui);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
 }
-.blocktab .nm{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.02em;color:var(--ink)}
+.blocktab .nm{font-family:var(--font-ui);font-weight:700;font-size:15px;letter-spacing:.02em;color:var(--ink)}
 .blocktab .wk{font-size:11px;color:var(--ink-3)}
 .blocktab .ct{
-  font-family:var(--display);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  font-family:var(--font-ui);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
   color:var(--ink-2);font-weight:600;margin-top:2px;
 }
-.st1{color:var(--hip)} .st2{color:var(--lum)} .st3{color:var(--tsp)}
+.st1{color:var(--level-1)} .st2{color:var(--level-2)} .st3{color:var(--level-3)}
 
 /* ---------- layout ---------- */
 .wrap{max-width:1500px;margin:0 auto;padding:22px}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);align-items:start}
 @media(max-width:1080px){.cols{grid-template-columns:1fr}}
+/* Phone and small tablet. The theme's padding is generous, which is right on a
+   desktop panel and too much once the panel is the whole screen. */
+@media(max-width:860px){
+  .topbar{padding:12px 14px;gap:12px;position:static}
+  .who{margin-left:0;width:100%}
+  .who input{flex:1 1 140px;width:auto;min-width:0}
+  .acts{width:100%}
+  .wrap{padding:14px}
+  .court{padding:0 14px}
+  .legend{padding:12px 14px}
+  .sheet-hd{padding:22px 20px 18px}
+  .sheet-sec{padding:20px 20px 0}
+  .callout{margin:18px 20px 0}
+  .sheet-foot{padding:18px 20px 0}
+}
 
-.panel{background:var(--paper);border:1px solid var(--line);border-radius:4px}
+/* Structure comes from elevation rather than an outline. overflow:hidden is
+   what keeps the scrolling lists from squaring off the bottom corners; the
+   sticky group headers inside .lib are unaffected, since .lib is their own
+   scroll container. Print puts the borders back — see the print block. */
+.panel{background:var(--panel);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden}
 .panel-hd{
-  padding:14px 18px;border-bottom:1px solid var(--line);
+  padding:14px var(--pad);border-bottom:1px solid var(--line-2);
   display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
 }
 .panel-hd h2{
-  margin:0;font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;
+  margin:0;font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.08em;
   font-size:13px;font-weight:700;
 }
-.panel-hd .count{margin-left:auto;font-family:var(--display);font-size:11px;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase;font-weight:600}
+.panel-hd .count{margin-left:auto;font-family:var(--font-ui);font-size:11px;letter-spacing:.08em;color:var(--ink-3);text-transform:uppercase;font-weight:600}
 
 /* ---------- filters ---------- */
-.filters{padding:12px 18px;border-bottom:1px solid var(--line-2);display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+.filters{padding:12px var(--pad);border-bottom:1px solid var(--line-2);display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
 .fgroup{display:flex;flex-direction:column;gap:5px}
 .chips{display:flex;gap:4px;flex-wrap:wrap}
 .chip{
-  border:1px solid var(--line);background:#fff;border-radius:99px;padding:4px 11px;
-  font-family:var(--display);font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;color:var(--ink-2);
+  border:1px solid var(--line);background:var(--panel);border-radius:99px;padding:4px 11px;
+  font-family:var(--font-ui);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--ink-2);
 }
-.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
-.search{border:1px solid var(--line);border-radius:3px;padding:7px 10px;min-width:180px;flex:1}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+.search{border:1px solid var(--line);border-radius:var(--radius);padding:7px 10px;min-width:180px;flex:1}
 
 /* ---------- library list ---------- */
 .lib{max-height:calc(100vh - 300px);overflow-y:auto}
-.grp{padding:11px 18px 5px;background:#F7FAF9;border-bottom:1px solid var(--line-2);position:sticky;top:0;z-index:2}
+.grp{padding:11px var(--pad) 5px;background:var(--panel-2);border-bottom:1px solid var(--line-2);position:sticky;top:0;z-index:2}
 .grp .lbl{color:var(--ink-2)}
 .ex{
-  display:flex;gap:12px;padding:11px 18px;border-bottom:1px solid var(--line-2);
+  display:flex;gap:12px;padding:11px var(--pad);border-bottom:1px solid var(--line-2);
   border-left:3px solid transparent;
 }
-.ex:hover{background:#F9FBFA}
+.ex:hover{background:var(--hover)}
 .ex.cervical{border-left-color:var(--r-cervical)}
 .ex.shoulder{border-left-color:var(--r-shoulder)}
 .ex.elbow-wrist{border-left-color:var(--r-elbow-wrist)}
@@ -178,32 +254,35 @@ button{cursor:pointer}
 .ex.hip{border-left-color:var(--r-hip)}
 .ex.knee{border-left-color:var(--r-knee)}
 .ex.ankle-foot{border-left-color:var(--r-ankle-foot)}
-.ex.on{background:#FBFDF2}
-.ex input[type=checkbox]{margin-top:4px;width:16px;height:16px;accent-color:var(--ink);flex:0 0 auto}
+.ex.on{background:var(--accent-wash)}
+.ex input[type=checkbox]{
+  margin-top:4px;width:16px;height:16px;accent-color:var(--accent);
+  border-radius:calc(var(--radius)/2);flex:0 0 auto;
+}
 .ex-body{flex:1;min-width:0}
 .ex-hd{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
 .ex-nm{font-weight:600;font-size:14.5px}
 .tag{
-  font-family:var(--display);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;font-weight:700;
-  padding:2px 6px;border-radius:2px;background:var(--line-2);color:var(--ink-2);white-space:nowrap;
+  font-family:var(--font-ui);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
+  padding:2px 6px;border-radius:var(--radius-sm);background:var(--line-2);color:var(--ink-2);white-space:nowrap;
 }
-.tag.stage{background:var(--ink);color:#fff}
+.tag.stage{background:var(--ink);color:var(--panel)}
 /* User-authored entries are flagged wherever they appear, so nobody has to
    wonder whether a line came from the shipped library or from their own hand. */
-.tag.custom{background:var(--ball);color:#1B2410}
+.tag.custom{background:var(--accent-dk);color:var(--accent-fg)}
 .ex-acts{margin-left:auto;display:flex;gap:2px}
 .ex-acts button{
   border:0;background:transparent;color:var(--ink-3);
-  font-family:var(--display);font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding:3px 5px;
+  font-family:var(--font-ui);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:3px 5px;
 }
 .ex-acts button:hover{color:var(--ink)}
-.ex-acts button.danger:hover{color:var(--r-lumbar)}
+.ex-acts button.danger:hover{color:var(--danger)}
 .ex-d{font-size:13px;color:var(--ink-2);margin-top:3px}
 .ex-t{font-size:12.5px;color:var(--ink-3);margin-top:3px;font-style:italic}
 
 /* ---------- assigned list ---------- */
 .asg{max-height:calc(100vh - 300px);overflow-y:auto}
-.acard{padding:13px 18px;border-bottom:1px solid var(--line-2);border-left:3px solid transparent}
+.acard{padding:13px var(--pad);border-bottom:1px solid var(--line-2);border-left:3px solid transparent}
 .acard.cervical{border-left-color:var(--r-cervical)}
 .acard.shoulder{border-left-color:var(--r-shoulder)}
 .acard.elbow-wrist{border-left-color:var(--r-elbow-wrist)}
@@ -214,48 +293,48 @@ button{cursor:pointer}
 .acard.ankle-foot{border-left-color:var(--r-ankle-foot)}
 .acard-hd{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
 .acard-hd .num{
-  font-family:var(--display);font-weight:700;color:var(--ink-3);font-size:13px;
+  font-family:var(--font-display);font-weight:700;color:var(--ink-3);font-size:13px;
   min-width:20px;font-variant-numeric:tabular-nums;
 }
 .rx{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
 .rx label{display:flex;flex-direction:column;gap:3px}
-.rx input{border:1px solid var(--line);border-radius:3px;padding:5px 8px;font-size:13px;width:88px}
+.rx input{border:1px solid var(--line);border-radius:var(--radius);padding:5px 8px;font-size:13px;width:88px}
 .rx input.wide{width:100%}
 .rx .grow{flex:1;min-width:190px}
 .rm{
   margin-left:auto;border:0;background:transparent;color:var(--ink-3);
-  font-family:var(--display);font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding:3px 5px;
+  font-family:var(--font-ui);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:3px 5px;
 }
-.rm:hover{color:var(--lum)}
+.rm:hover{color:var(--danger)}
 .empty{padding:40px 22px;text-align:center;color:var(--ink-3);font-size:14px}
-.empty b{display:block;font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;color:var(--ink-2);margin-bottom:6px;font-size:12px}
+.empty b{display:block;font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2);margin-bottom:6px;font-size:12px}
 
 /* notes */
-.notes{padding:15px 18px;border-top:1px solid var(--line);background:#FAFCFB}
+.notes{padding:15px var(--pad);border-top:1px solid var(--line-2);background:var(--panel-2)}
 .notes label{display:block;margin-bottom:13px}
 .notes textarea{
-  width:100%;border:1px solid var(--line);border-radius:3px;padding:9px 10px;
+  width:100%;border:1px solid var(--line);border-radius:var(--radius);padding:9px 10px;
   min-height:66px;resize:vertical;font-size:13.5px;line-height:1.5;margin-top:5px;
 }
 .hint{font-size:11.5px;color:var(--ink-3);margin-top:3px}
 
 /* block meta editing */
-.bmeta{padding:13px 18px;border-bottom:1px solid var(--line-2);display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.bmeta{padding:13px var(--pad);border-bottom:1px solid var(--line-2);display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
 .bmeta label{display:flex;flex-direction:column;gap:4px}
-.bmeta input{border:1px solid var(--line);border-radius:3px;padding:6px 9px;font-size:13px}
+.bmeta input{border:1px solid var(--line);border-radius:var(--radius);padding:6px 9px;font-size:13px}
 .bmeta input.nm{width:180px;font-weight:600}
 .bmeta input.wk{width:130px}
-.bmeta select{border:1px solid var(--line);border-radius:3px;padding:6px 9px;font-size:13px}
+.bmeta select{border:1px solid var(--line);border-radius:var(--radius);padding:6px 9px;font-size:13px}
 
 /* ---------- patient handout ---------- */
 .sheet{
-  background:var(--paper);border:1px solid var(--line);border-radius:4px;
+  background:var(--panel);border-radius:var(--radius-lg);box-shadow:var(--shadow);
   max-width:900px;margin:0 auto;padding:0 0 40px;
 }
 .sheet-hd{padding:30px 40px 22px;border-bottom:4px solid var(--ink)}
-.sheet-hd .eyebrow{font-family:var(--display);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:700;color:var(--ink-3)}
+.sheet-hd .eyebrow{font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:700;color:var(--ink-3)}
 .sheet-hd h1{
-  margin:6px 0 0;font-family:var(--display);font-size:33px;line-height:1.1;
+  margin:6px 0 0;font-family:var(--font-display);font-size:26px;line-height:1.15;
   text-transform:uppercase;letter-spacing:.01em;font-weight:700;
 }
 .sheet-meta{display:flex;gap:32px;flex-wrap:wrap;margin-top:16px}
@@ -263,7 +342,7 @@ button{cursor:pointer}
 .sheet-meta strong{font-size:15px;font-weight:600}
 .sheet-sec{padding:26px 40px 0}
 .sheet-sec h3{
-  font-family:var(--display);text-transform:uppercase;letter-spacing:.13em;font-size:12px;font-weight:700;
+  font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;
   color:var(--ink);margin:0 0 4px;padding-bottom:7px;border-bottom:1px solid var(--line);
 }
 /* Daily modifications body — matches the exercise description type, but sits
@@ -273,21 +352,28 @@ button{cursor:pointer}
 .sheet-sec .modtext p:last-child{margin:0}
 .pex{padding:15px 0;border-bottom:1px solid var(--line-2);display:flex;gap:15px}
 .pex .pnum{
-  font-family:var(--display);font-weight:700;font-size:19px;color:var(--ink-3);
+  font-family:var(--font-display);font-weight:700;font-size:19px;color:var(--ink-3);
   min-width:28px;font-variant-numeric:tabular-nums;line-height:1.2;
 }
 .pex h4{margin:0;font-size:16px;font-weight:600}
 .pex .pd{font-size:14px;color:var(--ink-2);margin-top:5px}
 .pex .pt{font-size:13px;color:var(--ink-3);font-style:italic;margin-top:5px}
 .pex .prx{
-  margin-top:8px;display:inline-block;background:#F3F7F1;border-left:3px solid var(--ball-dk);
+  margin-top:8px;display:inline-block;background:var(--accent-wash);border-left:3px solid var(--accent);
   padding:6px 11px;font-size:13.5px;font-weight:600;
 }
 .pex .pn{font-size:13.5px;margin-top:7px;padding-left:11px;border-left:2px solid var(--line)}
+/* Callouts keep a real border rather than elevation: they sit inside the sheet,
+   and a raised box on a piece of paper reads as a mistake. It is also what
+   survives into print, where the wash goes white. */
 .callout{
-  margin:22px 40px 0;background:#F6F9F5;border:1px solid var(--line);border-left:4px solid var(--ball-dk);
-  padding:16px 20px;font-size:14px;
+  margin:22px 40px 0;background:var(--panel-2);border:1px solid var(--line);border-left:4px solid var(--accent);
+  padding:16px 20px;font-size:14px;border-radius:var(--radius);
 }
+/* The two forced safety callouts, told apart from the therapist's note and the
+   closing guidance by weight of rule and by the accent wash — not by colour
+   alone, so the distinction survives a mono printer. */
+.callout.safety{background:var(--accent-wash);border-left-width:6px}
 .callout .lbl{display:block;margin-bottom:6px}
 .callout p{margin:0 0 8px}
 .callout p:last-child{margin:0}
@@ -302,26 +388,54 @@ button{cursor:pointer}
 
 .toast{
   position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
-  background:var(--ink);color:#fff;padding:11px 20px;border-radius:4px;font-size:13.5px;
+  background:var(--ink);color:var(--panel);padding:11px 20px;border-radius:var(--radius);font-size:13.5px;
   opacity:0;pointer-events:none;transition:opacity .25s;z-index:200;
 }
 .toast.show{opacity:1}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* ---------- print ---------- */
+/* Shadows do not print, and this theme took the panel borders away in exchange
+   for them. Everything that was relying on elevation for its edges gets a real
+   rule back here, and the tinted grounds are flattened to white so nothing
+   lands as a grey block on a mono clinic printer. */
 @media print{
   @page{margin:14mm}
-  body{background:#fff}
+  /* The theme re-pointed at paper. Keeping the literals inside a :root block
+     means print is still a token swap, not a set of overrides scattered
+     through the rules below. */
+  :root{
+    --bg:#FFFFFF;
+    --panel:#FFFFFF;
+    --panel-2:#FFFFFF;
+    --hover:#FFFFFF;
+    --accent-wash:#FFFFFF;
+    --shadow:none;
+    --shadow-lg:none;
+  }
+  body{background:var(--panel)}
   .topbar,.court,.legend,.no-print{display:none!important}
   .wrap{padding:0;max-width:none}
-  .sheet{border:0;max-width:none;padding:0}
+  /* The sheet is the page here, so it keeps no edge of its own — the margin
+     box is its border. Only the elements inside it need their rules restored. */
+  .sheet{border:0;box-shadow:none;border-radius:0;max-width:none;padding:0}
   .sheet-hd{padding:0 0 18px}
   .sheet-sec{padding:20px 0 0;break-inside:auto}
-  .callout{margin:18px 0 0;break-inside:avoid}
+  /* With the wash gone these carry their definition entirely on the border, so
+     it is stated rather than inherited. Square corners: a 16px radius on a
+     hairline prints as four broken corners on some drivers. */
+  .callout{
+    margin:18px 0 0;break-inside:avoid;border-radius:0;
+    border:1px solid var(--line);border-left:4px solid var(--accent);
+  }
+  .callout.safety{border-left-width:6px}
+  .pex .prx{border-left:3px solid var(--accent)}
   .sheet-foot{padding:18px 0 0}
   .pex{break-inside:avoid}
   .sheet-sec .modtext{break-inside:avoid}
-  .panel{border:0}
+  /* Practitioner view: these lost their outline to --shadow on screen and would
+     otherwise print as unbordered text floating on the page. */
+  .panel{border:1px solid var(--line);box-shadow:none;border-radius:0}
   .lib,.asg{max-height:none;overflow:visible}
   .ex-acts{display:none}
   .acard{break-inside:avoid}
@@ -329,38 +443,38 @@ button{cursor:pointer}
 
 /* ---------- saved indicator ---------- */
 .saved{
-  font-family:var(--display);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
-  color:#7FA6A9;font-weight:600;white-space:nowrap;
+  font-family:var(--font-ui);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--chrome-dim);font-weight:600;white-space:nowrap;
 }
-.saved.warn{color:#E8B04B}
+.saved.warn{color:var(--warn)}
 
 /* ---------- add phase ---------- */
 .addphase{
-  border:0;background:transparent;color:var(--ink-3);padding:14px 18px;white-space:nowrap;
-  font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-weight:700;
+  border:0;background:transparent;color:var(--ink-3);padding:14px var(--pad);white-space:nowrap;
+  font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:700;
 }
-.addphase:hover{color:var(--ink);background:#F7FAF9}
+.addphase:hover{color:var(--ink);background:var(--hover)}
 
 /* ---------- small controls ---------- */
 .pctl{display:flex;gap:6px;margin-left:auto;align-items:center}
 .pbtn{
-  border:1px solid var(--line);background:#fff;border-radius:3px;padding:5px 9px;color:var(--ink-2);
-  font-family:var(--display);font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;
+  border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:5px 9px;color:var(--ink-2);
+  font-family:var(--font-ui);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
 }
-.pbtn:hover:not(:disabled){background:#F3F7F6;color:var(--ink)}
+.pbtn:hover:not(:disabled){background:var(--hover);color:var(--ink)}
 .pbtn:disabled{opacity:.35;cursor:not-allowed}
-.pbtn.danger:hover:not(:disabled){border-color:var(--r-lumbar);color:var(--r-lumbar)}
+.pbtn.danger:hover:not(:disabled){border-color:var(--danger);color:var(--danger)}
 
 /* ---------- level hint ---------- */
 .hintbar{
-  padding:9px 18px;background:#FBFDF2;border-bottom:1px solid var(--line-2);
+  padding:9px var(--pad);background:var(--accent-wash);border-bottom:1px solid var(--line-2);
   font-size:12.5px;color:var(--ink-2);display:flex;gap:10px;align-items:center;flex-wrap:wrap;
 }
 .hintbar button{border:0;background:transparent;color:var(--ink);font-weight:600;text-decoration:underline;font-size:12.5px;padding:0}
 
 /* ---------- saved programs list ---------- */
-.prow{display:flex;gap:14px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line-2);flex-wrap:wrap}
-.prow:hover{background:#F9FBFA}
+.prow{display:flex;gap:14px;align-items:center;padding:13px var(--pad);border-bottom:1px solid var(--line-2);flex-wrap:wrap}
+.prow:hover{background:var(--hover)}
 .prow .pnm{font-weight:600;font-size:15px;min-width:150px}
 .prow .pnm .anon{color:var(--ink-3);font-weight:400;font-style:italic}
 .prow .pmeta{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-3)}
@@ -368,31 +482,31 @@ button{cursor:pointer}
 
 /* ---------- modal ---------- */
 .modal{
-  position:fixed;inset:0;background:rgba(15,52,61,.55);z-index:300;
+  position:fixed;inset:0;background:var(--scrim);z-index:300;
   display:flex;align-items:flex-start;justify-content:center;padding:6vh 18px;overflow-y:auto;
 }
 .modal[hidden]{display:none}
-.modal-box{background:var(--paper);border-radius:5px;width:100%;max-width:520px;box-shadow:0 18px 50px rgba(0,0,0,.28)}
-.modal-hd{padding:18px 22px 0;font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;font-size:13px;font-weight:700}
+.modal-box{background:var(--panel);border-radius:var(--radius-lg);width:100%;max-width:520px;box-shadow:var(--shadow-lg)}
+.modal-hd{padding:18px 22px 0;font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.08em;font-size:13px;font-weight:700}
 .modal-body{padding:16px 22px}
 .modal-body label{display:block;margin-bottom:13px}
 .modal-body input,.modal-body select{
-  width:100%;border:1px solid var(--line);border-radius:3px;padding:8px 10px;font-size:14px;margin-top:5px;background:#fff;
+  width:100%;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-size:14px;margin-top:5px;background:var(--panel);
 }
 .modal-body textarea{
-  width:100%;border:1px solid var(--line);border-radius:3px;padding:8px 10px;font-size:14px;margin-top:5px;
-  background:#fff;min-height:74px;resize:vertical;line-height:1.5;
+  width:100%;border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;font-size:14px;margin-top:5px;
+  background:var(--panel);min-height:74px;resize:vertical;line-height:1.5;
 }
 .modal-body p{font-size:13.5px;color:var(--ink-2);margin:0 0 13px}
 .modal-body .fhint{display:block;font-size:11.5px;color:var(--ink-3);margin-top:4px}
-.modal-body .ferr{color:var(--r-lumbar);font-weight:600}
+.modal-body .ferr{color:var(--danger);font-weight:600}
 .modal-body .ferr[hidden]{display:none}
 .modal-foot{padding:0 22px 20px;display:flex;gap:9px;justify-content:flex-end}
-.btn.dark{background:var(--ink);border-color:var(--ink);color:#fff}
-.btn.dark:hover{background:#17454F}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+.btn.dark:hover{background:var(--ink-soft);border-color:var(--ink-soft)}
 .btn.ghost{border-color:var(--line);color:var(--ink-2)}
 .btn.ghost:hover{background:var(--line-2)}
-.rx select{border:1px solid var(--line);border-radius:3px;padding:5px 8px;font-size:13px;width:112px;background:#fff}
+.rx select{border:1px solid var(--line);border-radius:var(--radius);padding:5px 8px;font-size:13px;width:112px;background:var(--panel)}
 </style>
 </head>
 <body>
@@ -3161,7 +3275,7 @@ function renderPatient(){
      both, cervical prints first and nerve second — see the render order below. */
   const hasCervical = known.some(i=>regionsOf(byId[i.exerciseId]).indexOf("cervical") >= 0);
   const cervicalCallout = hasCervical ? `
-      <div class="callout">
+      <div class="callout safety">
         <span class="lbl">About the neck exercises</span>
         <ul>
           <li>Stay within a range that feels comfortable. Neck work is deliberately low effort — pushing harder does not speed it up.</li>
@@ -3171,7 +3285,7 @@ function renderPatient(){
       </div>` : "";
 
   const nerveCallout = nerve.length ? `
-      <div class="callout">
+      <div class="callout safety">
         <span class="lbl">About the nerve glides</span>
         <p>These are different from stretching. You are moving a nerve, not lengthening a muscle, so the dose is deliberately small.</p>
         <ul>
