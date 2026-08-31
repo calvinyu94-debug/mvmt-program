@@ -2634,13 +2634,23 @@ function renderPatient(){
   /* Every line of the closing guidance has to be true of the sheet it prints on.
      The ordering line assumes both mobility and stability work are present — on a
      sheet of nerve glides alone it referred to exercises the patient did not have. */
+  /* The library writes progressions as "Build it up: …" inside desc. If nothing
+     prescribed has one, the progressing line sends the patient looking for stages
+     that are not there — and on nerve glides, inventing their own is the exact
+     failure the safety callout exists to prevent. */
+  const hasProgressions = known.some(i => byId[i.exerciseId].desc.includes("Build it up"));
+
   const guidance = []
     .concat(mob.length && stab.length
       ? [`<p><strong>Mobility first, then strength.</strong> The mobility work opens the range; the stability work teaches you to hold it. Doing it in the other order wastes both.</p>`]
       : [])
     .concat([
-      `<p><strong>Where you should feel it.</strong> A stretch or a working muscle is fine. Sharp, pinching, or nerve-like pain is not — back off that exercise and tell me at the next appointment.</p>`,
-      `<p><strong>Progressing.</strong> Each exercise has stages built into the description. Move to the next stage only once the current one feels controlled and easy for all your reps.</p>`,
+      `<p><strong>Where you should feel it.</strong> A stretch or a working muscle is fine. Sharp, pinching, or nerve-like pain is not — back off that exercise and tell me at the next appointment.</p>`
+    ])
+    .concat(hasProgressions
+      ? [`<p><strong>Progressing.</strong> Each exercise has stages built into the description. Move to the next stage only once the current one feels controlled and easy for all your reps.</p>`]
+      : [])
+    .concat([
       `<p><strong>Consistency beats intensity.</strong> Short and frequent beats long and occasional every time.</p>`
     ]);
   /* Nothing prescribed means nothing to give guidance about. */
