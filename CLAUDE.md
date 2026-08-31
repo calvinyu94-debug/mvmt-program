@@ -15,10 +15,11 @@ Printable home-exercise program builder for clinical use. Single self-contained
 
 ## `alsoRegion` is coupled to a safety callout — read before cross-tagging
 
-`alsoRegion` exists for **discoverability**: it cross-lists an exercise under a
-second region's filter without changing its `id`, so no migration is needed. The
-ten scapular drills filed under `region: "thoracic"` carry
-`alsoRegion: "shoulder"` for exactly this reason.
+`alsoRegion` exists for **discoverability**: it cross-lists an exercise under one
+or more further region filters without changing its `id`, so no migration is
+needed. It takes a string or an array — the ten scapular drills filed under
+`region: "thoracic"` carry `alsoRegion: "shoulder"`, and single leg balance is
+`["knee","ankle-foot"]` on top of its hip primary.
 
 **But it is not purely cosmetic.** The patient handout renders the neck safety
 callout whenever a phase contains any exercise that reports `"cervical"` from
@@ -44,7 +45,7 @@ future region gains its own forced callout, this note needs updating alongside i
 {
   id: "hip-mob-9090-switch",   // {region}-{mob|stab|nrv}-{name-slug}, stable
   region: "hip",               // cervical|shoulder|elbow-wrist|thoracic|lumbar|hip|knee|ankle-foot
-  alsoRegion: "shoulder",      // optional — see the coupling warning above
+  alsoRegion: "shoulder",      // optional, string or array — see the coupling warning above
   type: "mobility",            // mobility | stability | nerve
   level: 1,                    // 1 Foundational | 2 Intermediate | 3 Advanced
   name: "90/90 Hip Switch",
