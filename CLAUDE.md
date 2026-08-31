@@ -169,13 +169,30 @@ Do not "fix" the asymmetry.
 are on `--chrome`, `--chrome-fg`, `--chrome-dim` and `--chrome-btn`; if the bar
 ever inverts back, those four tokens are the whole job.
 
-### `--ink-3` has a contrast floor
+### The two muted tokens have a contrast floor
 
-It carries `What it's for:` on the printed handout — read by patients in pain,
-often older, rarely in good light. It must clear **4.5:1 against every ground it
-sits on**: `--panel`, `--panel-2`, `--accent-wash` and `--hover`. The current
-value is the least-shifted colour that does, which is why the third step of the
-ink ramp is 11.1 L* where the first two are ~21.7. That compression is bought
+`--ink-3` and `--chrome-dim` are the tokens a theme reaches for when something
+should recede. Both are already at their floor: each is the **least-shifted
+colour that clears 4.5:1 against every ground it sits on**, and neither has room
+to be lightened again.
+
+`--ink-3` carries `What it's for:` on the printed handout — read by patients in
+pain, often older, rarely in good light. Its grounds are `--panel`, `--panel-2`,
+`--accent-wash` and `--hover`; the binding one is a safety callout's heading on
+`--accent-wash`, which is tighter than white and is the case a white-only check
+misses.
+
+`--chrome-dim` carries the **unselected** view-switch labels. The control someone
+is about to click is by definition the unselected one, so it is a bad place for
+text that is merely almost readable. Its only ground is `--chrome`.
+
+**Check them against the real computed ancestor background, not the ground you
+assume is in play.** Walk up from the element to the first non-transparent
+background and measure against that — assuming white is how the callout-heading
+case got missed once already.
+
+The cost of `--ink-3` sitting at its floor is that the third step of the ink ramp
+is 11.1 L* where the first two are ~21.7. That compression is bought
 deliberately. Do not lighten it back for the sake of an even ramp; if the ramp
 needs evening out, move `--ink-2`.
 
