@@ -128,15 +128,28 @@ The only other place literals appear is the second `:root` block inside
 `@media print`, which re-points the same tokens at flat white. Print is a token
 swap, deliberately, rather than a pile of overrides scattered through the rules.
 
-### Three things a theme swap is not allowed to forget
+### Semantic states must never alias a categorical token — read before any palette change
 
-**Semantic tokens are not region tokens.** Destructive and error states
-(`.rm:hover`, `.pbtn.danger`, `.ex-acts button.danger`, `.modal-body .ferr`) used
-to read off `--r-lumbar`, which was a burnt orange in the old palette and is a
-green in this one. They are on `--danger` now. The phase-level colours on the
-tabs (`.st1/.st2/.st3`) were likewise aliased onto three region tokens; they are
-on explicit `--level-1/2/3`. **Do not re-alias a semantic colour onto a region
-token** — the region palette is chosen for mutual distinctness, not for meaning.
+Same shape as the `alsoRegion` coupling above, and it will recur on the next
+theme change.
+
+`--r-lumbar` was serving as the danger colour. That was invisible while the
+palette happened to be orange, and wrong the moment it wasn't: the Clay Soft
+swap turned it green, and a green Delete hover and green validation errors would
+have shipped. The affected rules were `.rm:hover`, `.pbtn.danger`,
+`.ex-acts button.danger` and `.modal-body .ferr`; they are on `--danger` now.
+The phase-level colours on the tabs (`.st1/.st2/.st3`) had the same defect,
+aliased onto `--r-hip` / `--r-lumbar` / `--r-thoracic` via `--hip/--lum/--tsp`;
+they are on explicit `--level-1/2/3`, ordered cool to warm.
+
+> **Before any palette change, grep every colour token for uses outside its
+> named category.** A `--r-*` token outside a `.ex.<region>` / `.acard.<region>`
+> rule or the legend is a coupling, not a colour choice.
+
+The region palette is chosen for mutual distinctness, not for meaning. Nothing
+that carries meaning — danger, warning, success, level — may point at it.
+
+### Two more a theme swap is not allowed to forget
 
 **Shadows do not print.** The panels carry their structure with `--shadow` and
 no border, so `@media print` puts a real `1px solid var(--line)` back on
@@ -145,10 +158,26 @@ the tinted ground was helping. Radii are zeroed there too: a 16px corner on a
 hairline prints as four broken corners on some drivers. If you move a boxed
 element onto elevation, give it a print rule in the same change.
 
+**`.sheet` takes no border in print, deliberately.** It is the only boxed element
+that does not get its outline restored, because on paper the sheet *is* the page
+— the `@page` margin box is its border, and drawing another one boxes the
+handout inside the margin. On screen it carries `--shadow` like any other panel.
+Do not "fix" the asymmetry.
+
 **The chrome is light.** The top bar was built for a dark ground — white text on
 `rgba(255,255,255,…)` borders — which is invisible on a light one. Bar controls
 are on `--chrome`, `--chrome-fg`, `--chrome-dim` and `--chrome-btn`; if the bar
 ever inverts back, those four tokens are the whole job.
+
+### `--ink-3` has a contrast floor
+
+It carries `What it's for:` on the printed handout — read by patients in pain,
+often older, rarely in good light. It must clear **4.5:1 against every ground it
+sits on**: `--panel`, `--panel-2`, `--accent-wash` and `--hover`. The current
+value is the least-shifted colour that does, which is why the third step of the
+ink ramp is 11.1 L* where the first two are ~21.7. That compression is bought
+deliberately. Do not lighten it back for the sake of an even ramp; if the ramp
+needs evening out, move `--ink-2`.
 
 ### Fonts
 
