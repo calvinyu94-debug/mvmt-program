@@ -1,0 +1,7 @@
+# Patient data must never enter this repo — it is public.
+*.json
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+.vscode/
