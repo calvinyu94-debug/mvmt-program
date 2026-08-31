@@ -455,6 +455,10 @@ button{cursor:pointer}
             <textarea id="nPatient" placeholder="Order to run them in, what it should feel like, when to stop, what to progress to…"></textarea>
           </label>
           <label>
+            <span class="lbl">Daily modifications — prints on their copy</span>
+            <textarea id="nDaily" placeholder="Sitting, sleeping, lifting, driving, desk setup, what to ease off for now…"></textarea>
+          </label>
+          <label>
             <span class="lbl">Practitioner notes — stays on your copy only</span>
             <textarea id="nPrac" placeholder="Findings, compensations seen, regression/progression triggers, what to reassess next visit…"></textarea>
             <span class="hint">Hidden from the patient copy.</span>
@@ -1794,7 +1798,7 @@ function uuid(){
 }
 
 function blankPhase(name){
-  return {name:name||"Phase", timeframe:"", level:null, items:[], patientNote:"", practitionerNote:""};
+  return {name:name||"Phase", timeframe:"", level:null, items:[], patientNote:"", dailyMods:"", practitionerNote:""};
 }
 
 function makeProgram(o){
@@ -1961,6 +1965,7 @@ function normalize(d){
       level: [1,2,3].indexOf(Number(ph && ph.level)) >= 0 ? Number(ph.level) : null,
       items: migrateItems(ph && ph.items),
       patientNote: (ph && ph.patientNote) || "",
+      dailyMods: (ph && ph.dailyMods) || "",
       practitionerNote: (ph && ph.practitionerNote) || ""
     })),
     updatedAt: d.updatedAt || new Date().toISOString()
@@ -2166,7 +2171,7 @@ function createFromSetup(){
   const structure = $("#suStruct").value;
   let names;
   if(structure === "single"){
-    names = ["Programme"];
+    names = ["Program"];
   }else{
     const n = +$("#suCount").value;
     const naming = $("#suNaming").value;
@@ -2619,9 +2624,31 @@ function renderPatient(){
   const section = (items, title) => items.length
     ? `<div class="sheet-sec"><h3>Part ${++part} — ${title}</h3>${items.map(i=>card(i,++n)).join("")}</div>`
     : "";
-  const secMob   = section(mob,   "Mobility (do these first)");
+  /* "do these first" only says something when there is a second part to be
+     before. On a mobility-only sheet it points at nothing. */
+  const multiPart = [mob, nerve, stab].filter(s=>s.length).length > 1;
+  const secMob   = section(mob,   "Mobility" + (multiPart ? " (do these first)" : ""));
   const secNerve = section(nerve, "Nerve glides (small doses)");
   const secStab  = section(stab,  "Stability &amp; strength");
+
+  /* Every line of the closing guidance has to be true of the sheet it prints on.
+     The ordering line assumes both mobility and stability work are present — on a
+     sheet of nerve glides alone it referred to exercises the patient did not have. */
+  const guidance = []
+    .concat(mob.length && stab.length
+      ? [`<p><strong>Mobility first, then strength.</strong> The mobility work opens the range; the stability work teaches you to hold it. Doing it in the other order wastes both.</p>`]
+      : [])
+    .concat([
+      `<p><strong>Where you should feel it.</strong> A stretch or a working muscle is fine. Sharp, pinching, or nerve-like pain is not — back off that exercise and tell me at the next appointment.</p>`,
+      `<p><strong>Progressing.</strong> Each exercise has stages built into the description. Move to the next stage only once the current one feels controlled and easy for all your reps.</p>`,
+      `<p><strong>Consistency beats intensity.</strong> Short and frequent beats long and occasional every time.</p>`
+    ]);
+  /* Nothing prescribed means nothing to give guidance about. */
+  const howToRun = known.length ? `
+      <div class="callout">
+        <span class="lbl">How to run this program</span>
+        ${guidance.join("\n        ")}
+      </div>` : "";
 
   /* Region and type safety callouts. Neither is optional or dismissible: if the
      phase contains the work, the handout carries its rules. Where a phase has
@@ -2656,7 +2683,7 @@ function renderPatient(){
   const single = isSingle();
   /* Eyebrow is built from what actually exists — no invented level copy. */
   const eyebrow = ["MVMT Program"].concat(ph.level ? [LEVELS[ph.level]] : []).join(" · ");
-  const heading = single ? (S.patient || "Home programme") : ph.name;
+  const heading = single ? (S.patient || "Home program") : ph.name;
 
   $("#patientView").innerHTML = `
     <div class="sheet">
@@ -2675,13 +2702,8 @@ function renderPatient(){
       ${secMob}${secNerve}${secStab}
       ${cervicalCallout}${nerveCallout}
       ${ph.patientNote?`<div class="callout"><span class="lbl">Notes from your therapist</span><p>${esc(ph.patientNote).replace(/\n/g,"</p><p>")}</p></div>`:""}
-      <div class="callout">
-        <span class="lbl">How to run this programme</span>
-        <p><strong>Mobility first, then strength.</strong> The mobility work opens the range; the stability work teaches you to hold it. Doing it in the other order wastes both.</p>
-        <p><strong>Where you should feel it.</strong> A stretch or a working muscle is fine. Sharp, pinching, or nerve-like pain is not — back off that exercise and tell me at the next appointment.</p>
-        <p><strong>Progressing.</strong> Each exercise has stages built into the description. Move to the next stage only once the current one feels controlled and easy for all your reps.</p>
-        <p><strong>Consistency beats intensity.</strong> Short and frequent beats long and occasional every time.</p>
-      </div>
+      ${ph.dailyMods?`<div class="callout"><span class="lbl">Day-to-day changes</span><p>${esc(ph.dailyMods).replace(/\n/g,"</p><p>")}</p></div>`:""}
+      ${howToRun}
       <div class="sheet-foot">
         Prepared${S.practitioner?" by "+esc(S.practitioner):""} for ${single?"you":"this phase only"}. Bring this sheet to your next appointment so we can progress it.
       </div>
@@ -2726,6 +2748,7 @@ function renderAll(){
   renderTabs(); renderMeta(); renderLib(); renderAsg();
   const ph = phase();
   $("#nPatient").value = ph.patientNote;
+  $("#nDaily").value = ph.dailyMods;
   $("#nPrac").value = ph.practitionerNote;
   if(U.view==="pat") renderPatient();
 }
@@ -2737,6 +2760,7 @@ function syncHeader(){
 }
 
 $("#nPatient").oninput = e=>{phase().patientNote = e.target.value; touch();};
+$("#nDaily").oninput = e=>{phase().dailyMods = e.target.value; touch();};
 $("#nPrac").oninput = e=>{phase().practitionerNote = e.target.value; touch();};
 ["fPatient","fPrac","fDate"].forEach((id,i)=>{
   const k = ["patient","practitioner","startDate"][i];
