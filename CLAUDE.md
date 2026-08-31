@@ -74,19 +74,29 @@ downstream has to know the difference. See the custom-exercise section below.
 
 The tool was rebranded away from its origin as a return-to-tennis builder, and
 one acceptance check was written as *"no occurrence of 'tennis' in any UI-facing
-string"*. Three occurrences survive on purpose, all in elbow-wrist `targets`:
+string"*. Six occurrences survive on purpose. Three are in elbow-wrist `targets`:
 
 - "the group involved in tennis elbow"
 - "the reliable starting point for a painful tennis elbow"
 - "Tendon loading for tennis elbow"
 
-**Do not "fix" these.** Tennis elbow is lateral epicondylitis — the condition
-name patients actually use. It is clinical vocabulary, not sport framing. The
-acceptance check was written too literally; the rule it was protecting is that
-nothing frames the tool around a sport.
+and three more arrived with the anatomy index, in `ANATOMY` `action` / `clinical`:
 
-If you grep for `tennis` and get exactly these three hits in `targets`, that is
-the correct state. More than three, or any hit outside `targets`, is not.
+- `elbow-common-extensor` — "Tennis elbow. Isometrics first, eccentrics second…"
+- `elbow-ecrb` — "the primary tendon involved in tennis elbow"
+- `nerve-radial` — "Can mimic tennis elbow closely"
+
+**Do not "fix" any of these.** Tennis elbow is lateral epicondylitis — the
+condition name patients actually use. It is clinical vocabulary, not sport
+framing. The acceptance check was written too literally; the rule it was
+protecting is that nothing frames the tool around a sport.
+
+The check as originally phrased — *exactly three hits, all in `targets`* — is
+now stale, and its literal form was already the thing that made it wrong. State
+it against the rule instead: **every hit must be the condition name, and none
+may frame the tool around the sport.** Six hits across `targets`, `action` and
+`clinical` is the correct state today. A hit anywhere else, or one that reads as
+sport rather than diagnosis, is not.
 
 Every `id` must start with its own `region` key. Ids are referenced by saved
 programs, so changing one costs a `LEGACY_ID_MAP` entry — get them right before
@@ -287,6 +297,69 @@ never overwrites an existing id: an incoming clash is kept under a fresh id and
 **before `migrate()` runs**, or `migrateItems()` drops every reference as unknown.
 An incoming entry identical to one already held is recognised as the same entry
 and skipped, so re-importing your own export does not breed duplicates.
+
+## The anatomy index
+
+`ANATOMY` is a flat array of 116 structures — muscles, joints, ligaments, fascia
+and nerves — each resolving to the library drills that load it. It backs the
+Anatomy view, and a separate 3D viewer project consumes the same dataset and
+treats this file as its source. **Keep it liftable:** plain data, one top-level
+array, no reference to anything that renders it.
+
+```js
+{
+  id: "shoulder-rotator-cuff",   // stable slug
+  name: "Rotator Cuff",
+  latin: "mm. supraspinatus, infraspinatus, …",
+  region: "shoulder",            // an MVMT region, not an anatomical one
+  system: "muscular",            // muscular | skeletal | articular | nervous | fascial
+  layer: 2,                      // 1 superficial · 2 deep · 3 skeletal
+  action: "…", clinical: "…",
+  ex: ["Side-lying External Rotation", …]   // NAMES, not ids
+}
+```
+
+`region` is the MVMT region so a structure's drills and the region filter agree.
+That is why psoas is filed under **lumbar** rather than hip, and why the nerves
+are filed where you would *look* for them rather than where they end — median
+under cervical, tibial under ankle-foot. Anatomically arbitrary, clinically
+correct. `layer` is stored and never surfaced; it exists for the 3D viewer.
+
+### `ex` holds names, and an unresolved name is a hard error
+
+There is no build step, so `resolveAnatomy()` does the lookup at load and again
+on every library change — it is called from `rebuildLibrary()`, because a custom
+exercise can satisfy a name and deleting one can take a name away again.
+
+Exact match first; then a case-and-whitespace-insensitive fallback. **The
+fallback still reports**, because a match that needed it means the map's wording
+has drifted from the library's. A name that resolves neither way is reported to
+the console *and* to a banner at the top of the Anatomy view, and is flagged on
+the structure itself.
+
+> **Never let a name fail quietly.** A structure that silently loses a drill is
+> invisible — a clinician sees a short list and has no reason to distrust it.
+> The structure keeps the drills that did resolve; it is never emptied.
+
+### `clinical` is practitioner-only and must never print
+
+`action` is plain enough to read aloud to a patient. `clinical` names
+compensation patterns and things people get wrong — useful to CYU, unhelpful or
+alarming to a patient reading over a shoulder. They are separate fields so
+hiding one is a toggle, not a rewrite. **Do not concatenate them.**
+
+Three things keep `clinical` off paper, and all three have to stay true:
+
+1. `#anatView` carries `no-print`, whose rule is `display:none!important` —
+   which beats the inline `display` the views are toggled with.
+2. Nothing copies anatomy text into a program. Add-to-handout pushes the same
+   id-only item the library's own checkbox does, so `clinical` cannot reach a
+   saved program, an export or a handout by that route.
+3. `renderPatient()` never reads `ANATOMY`.
+
+The Patient view toggle hides `clinical` and nothing else. It is **module state,
+never storage** — the safe state is practitioner, so that has to be the state a
+reload lands in. Do not make it sticky.
 
 ## Storage
 
