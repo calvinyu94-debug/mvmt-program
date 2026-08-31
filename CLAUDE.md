@@ -112,6 +112,39 @@ Both are non-dismissible and render automatically. Where a phase triggers both,
 A cervical nerve glide raises **both**, which is correct: it is cervical by
 region and a nerve glide by type, so both sets of rules apply.
 
+## The closing guidance must stay true of the sheet it prints on
+
+Every line of "How to run this program" is conditional, because each one asserts
+something about the sheet's contents. This was found the hard way: a sheet of two
+nerve glides printed *"Move to the next stage once the current one feels
+controlled"* a few centimetres below a safety callout reading *"Fewer is better.
+A handful of slow repetitions is a full dose."* The guidance was arguing with the
+warning above it.
+
+| Line | Prints when |
+|---|---|
+| Mobility first, then strength | phase has **both** mobility and stability work |
+| Where you should feel it | always |
+| Progressing | at least one prescribed exercise has a progression |
+| Consistency beats intensity | always |
+| the whole block | phase has at least one exercise |
+
+The same rule applies to section headings — `Part 1 — Mobility (do these first)`
+drops its qualifier when there is no second part to be before.
+
+**If you add a line here, gate it on whatever it claims.**
+
+### The "Progressing" gate is a substring match — know its failure mode
+
+It tests `desc.includes("Build it up")`, which is how the library writes
+progressions. Currently accurate at 216 of 281 entries (and only 2 of the 14 nerve
+glides, which is why the failure surfaced there first).
+
+If a future content batch writes progressions as "Progress by…" or "Work up to…",
+those entries silently stop counting and the line disappears from sheets that
+deserve it. **If the convention ever loosens, replace the string test with a real
+`progression` field** — do not accumulate more substrings.
+
 ## Storage
 
 ```

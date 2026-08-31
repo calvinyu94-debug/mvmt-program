@@ -256,6 +256,11 @@ button{cursor:pointer}
   font-family:var(--display);text-transform:uppercase;letter-spacing:.13em;font-size:12px;font-weight:700;
   color:var(--ink);margin:0 0 4px;padding-bottom:7px;border-bottom:1px solid var(--line);
 }
+/* Daily modifications body — matches the exercise description type, but sits
+   directly under the part heading rather than inside a numbered row. */
+.sheet-sec .modtext{padding:15px 0;font-size:14px;color:var(--ink-2)}
+.sheet-sec .modtext p{margin:0 0 9px}
+.sheet-sec .modtext p:last-child{margin:0}
 .pex{padding:15px 0;border-bottom:1px solid var(--line-2);display:flex;gap:15px}
 .pex .pnum{
   font-family:var(--display);font-weight:700;font-size:19px;color:var(--ink-3);
@@ -305,6 +310,7 @@ button{cursor:pointer}
   .callout{margin:18px 0 0;break-inside:avoid}
   .sheet-foot{padding:18px 0 0}
   .pex{break-inside:avoid}
+  .sheet-sec .modtext{break-inside:avoid}
   .panel{border:0}
   .lib,.asg{max-height:none;overflow:visible}
   .acard{break-inside:avoid}
@@ -2631,6 +2637,15 @@ function renderPatient(){
   const secNerve = section(nerve, "Nerve glides (small doses)");
   const secStab  = section(stab,  "Stability &amp; strength");
 
+  /* Prescribed for this patient, not generic guidance, so it sits with the parts
+     rather than in the callout stack. Always last, taking the next part number
+     off the same counter — which one that is depends on what precedes it. It
+     holds no numbered items, so the running exercise count is untouched. */
+  const secDaily = ph.dailyMods
+    ? `<div class="sheet-sec"><h3>Part ${++part} — Daily modifications</h3>
+        <div class="modtext"><p>${esc(ph.dailyMods).replace(/\n/g,"</p><p>")}</p></div></div>`
+    : "";
+
   /* Every line of the closing guidance has to be true of the sheet it prints on.
      The ordering line assumes both mobility and stability work are present — on a
      sheet of nerve glides alone it referred to exercises the patient did not have. */
@@ -2686,7 +2701,8 @@ function renderPatient(){
         </ul>
       </div>` : "";
 
-  const empty = !known.length
+  /* Daily modifications alone is still a sheet with something on it. */
+  const empty = (!known.length && !ph.dailyMods)
     ? `<div class="empty" style="padding:60px 40px"><b>Nothing assigned yet</b>Switch to Build and tick some exercises.</div>`
     : "";
 
@@ -2709,10 +2725,9 @@ function renderPatient(){
         </div>
       </div>
       ${empty}
-      ${secMob}${secNerve}${secStab}
+      ${secMob}${secNerve}${secStab}${secDaily}
       ${cervicalCallout}${nerveCallout}
       ${ph.patientNote?`<div class="callout"><span class="lbl">Notes from your therapist</span><p>${esc(ph.patientNote).replace(/\n/g,"</p><p>")}</p></div>`:""}
-      ${ph.dailyMods?`<div class="callout"><span class="lbl">Day-to-day changes</span><p>${esc(ph.dailyMods).replace(/\n/g,"</p><p>")}</p></div>`:""}
       ${howToRun}
       <div class="sheet-foot">
         Prepared${S.practitioner?" by "+esc(S.practitioner):""} for ${single?"you":"this phase only"}. Bring this sheet to your next appointment so we can progress it.
