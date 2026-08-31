@@ -401,12 +401,7 @@ button{cursor:pointer}
 
 <div class="court no-print" id="courtWrap"><div class="court-inner" id="tabs" role="tablist"></div></div>
 
-<div class="legend no-print" id="legend">
-  <span><i class="dot" style="background:var(--r-hip)"></i> Hip</span>
-  <span><i class="dot" style="background:var(--r-lumbar)"></i> Lumbar</span>
-  <span><i class="dot" style="background:var(--r-thoracic)"></i> Thoracic</span>
-  <span>· Level shows the earliest point in a program an exercise is appropriate.</span>
-</div>
+<div class="legend no-print" id="legend"></div>
 
 <div class="wrap">
 
@@ -2365,6 +2360,14 @@ const regionOpts = [{v:"all",l:"All"}].concat(
   REGIONS.filter(r=>EX.some(x=>regionsOf(x).indexOf(r.k) >= 0)).map(r=>({v:r.k, l:r.name})));
 const typeOpts = [{v:"all",l:"All"}].concat(
   TYPES.filter(t=>EX.some(x=>x.type===t.k)).map(t=>({v:t.k, l:t.name})));
+
+/* The legend mirrors whatever the library actually contains. Hardcoding it meant
+   it still listed three regions long after there were eight. */
+$("#legend").innerHTML =
+  REGIONS.filter(r=>EX.some(x=>regionsOf(x).indexOf(r.k) >= 0))
+    .map(r=>`<span><i class="dot" style="background:var(--r-${r.k})"></i> ${esc(r.name)}</span>`)
+    .join("")
+  + `<span>· Level shows the earliest point in a program an exercise is appropriate.</span>`;
 
 chips($("#fRegion"), regionOpts, "region");
 chips($("#fType"),   typeOpts, "type");
