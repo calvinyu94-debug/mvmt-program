@@ -188,6 +188,16 @@ button{cursor:pointer}
   padding:2px 6px;border-radius:2px;background:var(--line-2);color:var(--ink-2);white-space:nowrap;
 }
 .tag.stage{background:var(--ink);color:#fff}
+/* User-authored entries are flagged wherever they appear, so nobody has to
+   wonder whether a line came from the shipped library or from their own hand. */
+.tag.custom{background:var(--ball);color:#1B2410}
+.ex-acts{margin-left:auto;display:flex;gap:2px}
+.ex-acts button{
+  border:0;background:transparent;color:var(--ink-3);
+  font-family:var(--display);font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding:3px 5px;
+}
+.ex-acts button:hover{color:var(--ink)}
+.ex-acts button.danger:hover{color:var(--r-lumbar)}
 .ex-d{font-size:13px;color:var(--ink-2);margin-top:3px}
 .ex-t{font-size:12.5px;color:var(--ink-3);margin-top:3px;font-style:italic}
 
@@ -313,6 +323,7 @@ button{cursor:pointer}
   .sheet-sec .modtext{break-inside:avoid}
   .panel{border:0}
   .lib,.asg{max-height:none;overflow:visible}
+  .ex-acts{display:none}
   .acard{break-inside:avoid}
 }
 
@@ -368,7 +379,14 @@ button{cursor:pointer}
 .modal-body input,.modal-body select{
   width:100%;border:1px solid var(--line);border-radius:3px;padding:8px 10px;font-size:14px;margin-top:5px;background:#fff;
 }
+.modal-body textarea{
+  width:100%;border:1px solid var(--line);border-radius:3px;padding:8px 10px;font-size:14px;margin-top:5px;
+  background:#fff;min-height:74px;resize:vertical;line-height:1.5;
+}
 .modal-body p{font-size:13.5px;color:var(--ink-2);margin:0 0 13px}
+.modal-body .fhint{display:block;font-size:11.5px;color:var(--ink-3);margin-top:4px}
+.modal-body .ferr{color:var(--r-lumbar);font-weight:600}
+.modal-body .ferr[hidden]{display:none}
 .modal-foot{padding:0 22px 20px;display:flex;gap:9px;justify-content:flex-end}
 .btn.dark{background:var(--ink);border-color:var(--ink);color:#fff}
 .btn.dark:hover{background:#17454F}
@@ -427,6 +445,10 @@ button{cursor:pointer}
       <section class="panel">
         <div class="panel-hd">
           <h2>Exercise library</h2>
+          <button class="pbtn" id="bAddEx" title="Add an exercise that isn't in the library">+ Add your own exercise</button>
+          <button class="pbtn" id="bExportCustom" title="Save the exercises you've written as a .json file">Export my exercises</button>
+          <button class="pbtn" id="bImportCustom" title="Load exercises from a .json file">Import exercises</button>
+          <input type="file" id="fCustomFile" accept=".json,application/json" style="display:none">
           <span class="count" id="libCount"></span>
         </div>
         <div class="filters">
@@ -441,6 +463,10 @@ button{cursor:pointer}
           <div class="fgroup">
             <span class="lbl">Level</span>
             <div class="chips" id="fLevel"></div>
+          </div>
+          <div class="fgroup" id="fSourceGroup" style="display:none">
+            <span class="lbl">Source</span>
+            <div class="chips" id="fSource"></div>
           </div>
           <input class="search" id="fSearch" placeholder="Search exercises…">
         </div>
@@ -1827,10 +1853,18 @@ let S = null;
 let U = {view:"list", active:0};
 /* maxLevel is the soft filter a phase's own level applies. It is a convenience,
    not a restriction, and any click on the Level chips clears it. */
-let F = {region:"all", type:"all", level:"all", q:"", maxLevel:null};
+let F = {region:"all", type:"all", level:"all", source:"all", q:"", maxLevel:null};
 let listQuery = "";
 
-const byId = {}; EX.forEach(e=>byId[e.id]=e);
+/* The library the app actually works from is the built-in EX plus whatever the
+   user has authored. EX itself is never touched — customs are a separate array
+   merged on top of it, so nothing a user types can reach the shipped content.
+   Everything downstream (filters, grouping, handout, both safety callouts)
+   reads ALL and byId, never EX, so a custom entry behaves exactly like a
+   built-in one without any of them knowing the difference. */
+let CUSTOM = [];
+let ALL = EX.slice();
+const byId = {}; ALL.forEach(e=>byId[e.id]=e);
 const $ = s=>document.querySelector(s);
 const esc = s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
@@ -2104,6 +2138,421 @@ function renderSaved(){
 }
 setInterval(()=>{ if(S && !saveTimer && !saveFailed) renderSaved(); }, 30000);
 
+/* ============================ CUSTOM EXERCISES ============================ */
+/* Exercises the practitioner writes themselves. They are clinical IP, so they
+   are held to the same durability bar as programs: stored under their own key,
+   carried inside program exports, and exportable on their own. */
+
+const TYPE_ABBR = {mobility:"mob", stability:"stab", nerve:"nrv"};
+/* The library writes progressions as a "Build it up:" sentence inside desc, and
+   the closing guidance gates its Progressing line on finding one. Assembling it
+   here rather than asking the user to type it is the whole point of the
+   separate Progression field — see the note in CLAUDE.md. */
+const BUILD_SEP = "\nBuild it up: ";
+
+function readCustom(){
+  const a = readJSON(KEYS.custom, []);
+  return Array.isArray(a) ? a.filter(isCustomExercise) : [];
+}
+function writeCustom(list){ return writeJSON(KEYS.custom, list); }
+
+/* A record missing any field the renderers assume is not a usable exercise.
+   Rejecting it here keeps a truncated or hand-edited blob out of byId. */
+function isCustomExercise(x){
+  return !!x && typeof x === "object"
+    && typeof x.id === "string" && !!x.id
+    && REGIONS.some(r=>r.k === x.region)
+    && TYPES.some(t=>t.k === x.type)
+    && [1,2,3].indexOf(Number(x.level)) >= 0
+    && typeof x.name === "string" && !!x.name.trim()
+    && typeof x.desc === "string" && !!x.desc.trim()
+    && typeof x.targets === "string" && !!x.targets.trim();
+}
+
+/* Rebuilds the merged view after any change to the custom library. byId is
+   repopulated in place because closures all over the file already hold it. */
+function rebuildLibrary(){
+  CUSTOM = readCustom();
+  ALL = EX.concat(CUSTOM);
+  Object.keys(byId).forEach(k=>delete byId[k]);
+  ALL.forEach(e=>byId[e.id]=e);
+}
+
+/* desc is stored assembled so nothing downstream needs to know a custom entry
+   is different. A blank progression writes no sentence, so the entry correctly
+   does not count toward the Progressing line. */
+function assembleDesc(description, progression){
+  const d = String(description==null?"":description).trim();
+  const p = String(progression==null?"":progression).trim();
+  return p ? d + BUILD_SEP + p : d;
+}
+/* And back apart again, so the edit form round-trips. */
+function splitDesc(desc){
+  const s = String(desc==null?"":desc);
+  const i = s.indexOf(BUILD_SEP);
+  return i < 0 ? {description:s, progression:""}
+               : {description:s.slice(0,i), progression:s.slice(i + BUILD_SEP.length)};
+}
+
+/* Ids go into HTML attributes and into saved programs, so anything arriving
+   from a file is reduced to the characters a slug can contain. */
+function safeId(v){
+  return String(v==null?"":v).trim().replace(/[^\w-]/g,"").slice(0,120);
+}
+/* custom- prefixed and randomly suffixed: a user-typed name can never collide
+   with a built-in id, nor with another custom entry of the same name. */
+function customId(region, type, name){
+  const stem = "custom-" + region + "-" + (TYPE_ABBR[type]||"ex") + "-" + (slug(name) || "exercise");
+  return suffixId(stem, byId);
+}
+function suffixId(stem, taken){
+  let out;
+  do { out = stem + "-" + Math.random().toString(36).slice(2,6); } while(taken[out]);
+  return out;
+}
+
+/* An alsoRegion of the primary region, or of something that isn't a region at
+   all, is noise — drop it rather than let it reach regionsOf(). */
+function normalizeAlso(v, primary){
+  const out = [];
+  (Array.isArray(v) ? v : [v]).forEach(k=>{
+    const key = String(k==null?"":k).trim();
+    if(!key || key === primary) return;
+    if(!REGIONS.some(r=>r.k === key)) return;
+    if(out.indexOf(key) < 0) out.push(key);
+  });
+  return out.length ? (out.length === 1 ? out[0] : out) : null;
+}
+
+/* Everything arriving from a file is rebuilt field by field rather than trusted
+   wholesale, so an imported blob can't smuggle extra keys into the library the
+   renderers read. Returns null for anything that isn't a usable exercise. */
+function sanitizeCustom(raw){
+  if(!raw || typeof raw !== "object") return null;
+  const region = REGIONS.some(r=>r.k === raw.region) ? raw.region : "";
+  const type   = TYPES.some(t=>t.k === raw.type) ? raw.type : "";
+  const level  = [1,2,3].indexOf(Number(raw.level)) >= 0 ? Number(raw.level) : 0;
+  const name    = String(raw.name==null?"":raw.name).trim();
+  const targets = String(raw.targets==null?"":raw.targets).trim();
+  let description = String(raw.description==null?"":raw.description).trim();
+  let progression = String(raw.progression==null?"":raw.progression).trim();
+  /* A file written by hand, or by an older build, may carry only the assembled
+     desc. Split it so the two halves are editable again. */
+  if(!description){
+    const halves = splitDesc(String(raw.desc==null?"":raw.desc).trim());
+    description = halves.description;
+    if(!progression) progression = halves.progression;
+  }
+  const desc = assembleDesc(description, progression);
+  if(!region || !type || !level || !name || !targets || !desc) return null;
+  const x = {
+    id: safeId(raw.id) || customId(region, type, name),
+    region: region, type: type, level: level, name: name,
+    desc: desc,
+    description: description,
+    progression: progression,
+    targets: targets,
+    rx: String(raw.rx==null?"":raw.rx).trim(),
+    custom: true,
+    createdAt: String(raw.createdAt||"") || new Date().toISOString(),
+    updatedAt: String(raw.updatedAt||"") || new Date().toISOString()
+  };
+  const also = normalizeAlso(raw.alsoRegion, region);
+  if(also) x.alsoRegion = also;
+  return x;
+}
+
+const SAME_FIELDS = ["name","region","type","level","desc","targets","rx"];
+function sameExercise(a, b){
+  return SAME_FIELDS.every(f=>String(a[f]==null?"":a[f]) === String(b[f]==null?"":b[f]))
+      && regionsOf(a).join("|") === regionsOf(b).join("|");
+}
+
+/* Merge incoming exercises into the custom library. An id already in use is
+   never overwritten — the incoming entry is kept under a fresh id, and the
+   caller remaps every reference to it. Re-importing a file you exported earlier
+   is the common case and must not breed duplicates, so an identical entry under
+   the same id is recognised as the same entry and skipped.
+   Returns {added, renamed, skipped, map} — or null if the write failed. */
+function mergeCustom(incoming){
+  const list = readCustom();
+  const taken = {};
+  ALL.forEach(e=>taken[e.id] = true);
+  list.forEach(e=>taken[e.id] = true);
+  const map = {};
+  let added = 0, renamed = 0, skipped = 0;
+  (Array.isArray(incoming) ? incoming : []).forEach(raw=>{
+    const x = sanitizeCustom(raw);
+    if(!x) return;
+    if(taken[x.id]){
+      const existing = list.find(e=>e.id === x.id) || byId[x.id];
+      if(existing && sameExercise(existing, x)){ skipped++; return; }
+      const fresh = suffixId(x.id, taken);
+      map[x.id] = fresh;
+      x.id = fresh;
+      renamed++;
+    }
+    taken[x.id] = true;
+    list.push(x);
+    added++;
+  });
+  if(added && !writeCustom(list)) return null;
+  if(added) rebuildLibrary();
+  return {added:added, renamed:renamed, skipped:skipped, map:map};
+}
+
+/* Applied to a file before migrate() sees it, so a suffixed import still points
+   at the entry it arrived with. Handles both the v2 and the v1 item shapes. */
+function remapIds(d, map){
+  if(!d || typeof d !== "object" || !Object.keys(map).length) return d;
+  const lists = [];
+  (Array.isArray(d.phases) ? d.phases : []).forEach(ph=>{
+    if(ph && Array.isArray(ph.items)) lists.push(ph.items);
+  });
+  (Array.isArray(d.blocks) ? d.blocks : []).forEach(b=>{
+    if(b && Array.isArray(b.items)) lists.push(b.items);
+  });
+  lists.forEach(items=>items.forEach(it=>{
+    if(!it) return;
+    if(it.exerciseId && map[it.exerciseId]) it.exerciseId = map[it.exerciseId];
+    else if(it.id && map[it.id]) it.id = map[it.id];
+  }));
+  return d;
+}
+
+/* The custom exercises a program references, so an export can carry them and
+   land intact on a machine that has never seen them. */
+function customUsedBy(p){
+  const used = {};
+  (Array.isArray(p && p.phases) ? p.phases : []).forEach(ph=>{
+    (((ph && ph.items) || [])).forEach(it=>{ if(it && it.exerciseId) used[it.exerciseId] = true; });
+  });
+  return CUSTOM.filter(x=>used[x.id]);
+}
+
+/* Saved programs referencing an exercise, by patient name. Callers flushSave()
+   first, or the open program's newest edits aren't counted. */
+function programsUsing(id){
+  return readPrograms().filter(p=>
+    (Array.isArray(p.phases) ? p.phases : []).some(ph=>
+      (((ph && ph.items) || [])).some(it=>it && (it.exerciseId || it.id) === id)))
+    .map(p=>p.patient || "Unnamed patient");
+}
+
+function listNames(names){
+  const q = names.map(n=>"“" + n + "”");
+  if(q.length <= 2) return q.join(" and ");
+  if(q.length === 3) return q.slice(0,2).join(", ") + " and " + q[2];
+  return q.slice(0,2).join(", ") + " and " + (q.length-2) + " others";
+}
+
+/* ---- the add / edit form ---- */
+function customForm(x){
+  const val = f => esc(x ? (x[f]==null ? "" : x[f]) : "");
+  const halves = x ? splitDesc(x.desc) : {description:"", progression:""};
+  const description = x ? (x.description || halves.description) : "";
+  const progression = x ? (x.progression || halves.progression) : "";
+  const also = x ? ([].concat(x.alsoRegion || []).filter(Boolean)[0] || "") : "";
+  const regionOptions = sel => REGIONS.map(r=>
+    `<option value="${r.k}"${sel === r.k ? " selected" : ""}>${esc(r.name)}</option>`).join("");
+  return `
+    <p class="ferr" id="cxErr" hidden></p>
+    <label><span class="lbl">Name</span>
+      <input id="cxName" autocomplete="off" value="${val("name")}" placeholder="e.g. Scapular Wall Crawl"></label>
+    <label><span class="lbl">Region</span>
+      <select id="cxRegion">
+        <option value="">Choose a region…</option>
+        ${regionOptions(x ? x.region : "")}
+      </select></label>
+    <label><span class="lbl">Also region</span>
+      <select id="cxAlso"><option value="">None</option>${regionOptions(also)}</select>
+      <span class="fhint">Cross-lists it under a second region filter. Choosing Cervical will add the neck safety guidance to the patient's handout.</span></label>
+    <label><span class="lbl">Type</span>
+      <select id="cxType">${TYPES.map(t=>
+        `<option value="${t.k}"${x && x.type === t.k ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</select></label>
+    <label><span class="lbl">Level</span>
+      <select id="cxLevel">${[1,2,3].map(n=>
+        `<option value="${n}"${x && Number(x.level) === n ? " selected" : ""}>${esc(LEVELS[n])}</option>`).join("")}</select></label>
+    <label><span class="lbl">Description</span>
+      <textarea id="cxDesc" placeholder="How the patient performs it. This is what they read on the handout.">${esc(description)}</textarea></label>
+    <label><span class="lbl">Progression — optional</span>
+      <textarea id="cxProg" placeholder="e.g. hold 10 seconds → hold 20 → add a band">${esc(progression)}</textarea>
+      <span class="fhint">Prints as the exercise's stages, the same way the built-in library writes them. Leave it blank if there isn't a progression.</span></label>
+    <label><span class="lbl">What it targets</span>
+      <input id="cxTargets" autocomplete="off" value="${val("targets")}" placeholder="Prints as “What it's for:” on the handout"></label>
+    <label><span class="lbl">Default sets &amp; reps — optional</span>
+      <input id="cxRx" autocomplete="off" value="${val("rx")}" placeholder="e.g. 2 x 8 each side, slow"></label>`;
+}
+
+function readCustomForm(){
+  return {
+    name: $("#cxName").value.trim(),
+    region: $("#cxRegion").value,
+    also: $("#cxAlso").value,
+    type: $("#cxType").value,
+    level: Number($("#cxLevel").value),
+    description: $("#cxDesc").value.trim(),
+    progression: $("#cxProg").value.trim(),
+    targets: $("#cxTargets").value.trim(),
+    rx: $("#cxRx").value.trim()
+  };
+}
+
+/* Checked in the order the fields appear, so the message points at the first
+   thing the user needs to go back to. */
+function customFormError(f){
+  if(!f.name) return "Give the exercise a name.";
+  if(!f.region) return "Choose a region — it decides where the exercise files and which safety guidance applies.";
+  if(!f.description) return "Add a description. It's what the patient reads on the handout.";
+  if(!f.targets) return "Add what it targets. It prints as “What it's for:” on the handout.";
+  return "";
+}
+function showCustomError(msg){
+  const el = $("#cxErr");
+  if(!el) return;
+  el.textContent = msg;
+  el.hidden = !msg;
+}
+
+function addCustomFlow(){
+  openModal("Add your own exercise", customForm(null), ()=>{
+    const f = readCustomForm();
+    const err = customFormError(f);
+    if(err){ showCustomError(err); return false; }
+
+    const x = {
+      id: customId(f.region, f.type, f.name),
+      region: f.region, type: f.type, level: f.level, name: f.name,
+      desc: assembleDesc(f.description, f.progression),
+      description: f.description, progression: f.progression,
+      targets: f.targets, rx: f.rx,
+      custom: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    const also = normalizeAlso(f.also, f.region);
+    if(also) x.alsoRegion = also;
+
+    const list = readCustom();
+    list.push(x);
+    if(!writeCustom(list)){
+      showCustomError("Couldn't save it in this browser. Export your exercises to a file instead.");
+      return false;
+    }
+    rebuildLibrary();
+    renderFilterChips();
+    /* The reason anyone opens this form is that they want the exercise on the
+       sheet in front of them, so put it there. */
+    let placed = false;
+    if(S && !phase().items.some(i=>i.exerciseId === x.id)){
+      phase().items.push({exerciseId:x.id, rx:x.rx, freq:"", note:""});
+      touch();
+      placed = true;
+    }
+    renderAll();
+    toast("Added “" + x.name + "” to your library"
+      + (placed ? " and to this " + (isSingle() ? "handout" : "phase") : "") + ".");
+  }, "Add exercise");
+}
+
+function editCustomFlow(id){
+  const cur = CUSTOM.find(x=>x.id === id);
+  if(!cur){ toast("That exercise is no longer in your library."); return; }
+  openModal("Edit exercise", customForm(cur), ()=>{
+    const f = readCustomForm();
+    const err = customFormError(f);
+    if(err){ showCustomError(err); return false; }
+
+    const list = readCustom();
+    const t = list.find(x=>x.id === id);
+    if(!t){ showCustomError("That exercise is no longer in your library."); return false; }
+    /* The id is deliberately left alone — saved programs point at it. */
+    t.name = f.name; t.region = f.region; t.type = f.type; t.level = f.level;
+    t.description = f.description; t.progression = f.progression;
+    t.desc = assembleDesc(f.description, f.progression);
+    t.targets = f.targets; t.rx = f.rx;
+    const also = normalizeAlso(f.also, f.region);
+    if(also) t.alsoRegion = also; else delete t.alsoRegion;
+    t.updatedAt = new Date().toISOString();
+
+    if(!writeCustom(list)){
+      showCustomError("Couldn't save the change in this browser.");
+      return false;
+    }
+    rebuildLibrary();
+    renderFilterChips();
+    renderAll();
+    toast("Updated “" + f.name + "”.");
+  }, "Save changes");
+}
+
+function deleteCustomFlow(id){
+  const cur = CUSTOM.find(x=>x.id === id);
+  if(!cur) return;
+  /* Land any pending autosave first, or the open program's newest edits are
+     missing from the list this warning is built from. */
+  flushSave();
+  const used = programsUsing(id);
+  /* Dropping an unknown id with a toast on the next load is the right fallback,
+     but finding out on a handout is not — so name the programs up front. */
+  const msg = used.length
+    ? "“" + cur.name + "” is used in " + listNames(used) + ". Deleting it takes it off "
+      + (used.length === 1 ? "that program's handout" : "those programs' handouts")
+      + " — the programs themselves are kept. This can't be undone."
+    : "Delete “" + cur.name + "” from your library? This can't be undone.";
+  confirmModal("Delete exercise", msg, ()=>{
+    const list = readCustom().filter(x=>x.id !== id);
+    if(!writeCustom(list)){ toast("Couldn't save that change."); return; }
+    rebuildLibrary();
+    /* The open program would otherwise hold an item pointing at nothing, which
+       is the state migrate() clears on the next load anyway. Clear it now so
+       the counts on screen stay honest. */
+    if(S){
+      let hit = 0;
+      S.phases.forEach(ph=>{
+        const before = ph.items.length;
+        ph.items = ph.items.filter(i=>i.exerciseId !== id);
+        hit += before - ph.items.length;
+      });
+      if(hit) touch();
+    }
+    /* A filter narrowed to something that no longer has content would show an
+       empty library with no obvious way back. */
+    if(F.region !== "all" && !ALL.some(x=>regionsOf(x).indexOf(F.region) >= 0)) F.region = "all";
+    if(F.type !== "all" && !ALL.some(x=>x.type === F.type)) F.type = "all";
+    if(!CUSTOM.length) F.source = "all";
+    renderFilterChips();
+    renderAll();
+    toast("Deleted “" + cur.name + "”.");
+  }, "Delete exercise");
+}
+
+/* ---- custom library files ---- */
+function customAddedMsg(r){
+  let m = r.added + (r.added === 1 ? " exercise added." : " exercises added.");
+  if(r.renamed) m += " " + r.renamed + (r.renamed === 1
+    ? " had an id you were already using and was kept as a separate entry."
+    : " had ids you were already using and were kept as separate entries.");
+  return m;
+}
+
+function importCustomFile(d){
+  const list = Array.isArray(d) ? d
+             : (d && Array.isArray(d.exercises)) ? d.exercises
+             : (d && Array.isArray(d.customExercises)) ? d.customExercises
+             : null;
+  if(!list){ toast("That file isn't an exercise file."); return false; }
+  const r = mergeCustom(list);
+  if(!r){ toast("Couldn't save those exercises in this browser."); return false; }
+  renderFilterChips();
+  if(S && U.view !== "list") renderAll();
+  toast(r.added ? customAddedMsg(r)
+                : "Nothing new in that file — you already have those exercises.");
+  return true;
+}
+
+rebuildLibrary();
+
 /* ============================ MODAL ============================ */
 let modalOk = null;
 
@@ -2366,23 +2815,40 @@ function chips(el, opts, key){
   };
 }
 /* Only offer a region or type that actually has something in it, so the regions
-   waiting on content show up as nothing rather than as an empty filter. */
-const regionOpts = [{v:"all",l:"All"}].concat(
-  REGIONS.filter(r=>EX.some(x=>regionsOf(x).indexOf(r.k) >= 0)).map(r=>({v:r.k, l:r.name})));
-const typeOpts = [{v:"all",l:"All"}].concat(
-  TYPES.filter(t=>EX.some(x=>x.type===t.k)).map(t=>({v:t.k, l:t.name})));
+   waiting on content show up as nothing rather than as an empty filter. A custom
+   exercise can be the thing that puts content into one, so these are recomputed
+   whenever the custom library changes rather than fixed at load. */
+function regionOptsNow(){
+  return [{v:"all",l:"All"}].concat(
+    REGIONS.filter(r=>ALL.some(x=>regionsOf(x).indexOf(r.k) >= 0)).map(r=>({v:r.k, l:r.name})));
+}
+function typeOptsNow(){
+  return [{v:"all",l:"All"}].concat(
+    TYPES.filter(t=>ALL.some(x=>x.type===t.k)).map(t=>({v:t.k, l:t.name})));
+}
+const levelOpts = [{v:"all",l:"All"},{v:"1",l:"1"},{v:"2",l:"2"},{v:"3",l:"3"}];
 
 /* The legend mirrors whatever the library actually contains. Hardcoding it meant
    it still listed three regions long after there were eight. */
-$("#legend").innerHTML =
-  REGIONS.filter(r=>EX.some(x=>regionsOf(x).indexOf(r.k) >= 0))
-    .map(r=>`<span><i class="dot" style="background:var(--r-${r.k})"></i> ${esc(r.name)}</span>`)
-    .join("")
-  + `<span>· Level shows the earliest point in a program an exercise is appropriate.</span>`;
+function renderLegend(){
+  $("#legend").innerHTML =
+    REGIONS.filter(r=>ALL.some(x=>regionsOf(x).indexOf(r.k) >= 0))
+      .map(r=>`<span><i class="dot" style="background:var(--r-${r.k})"></i> ${esc(r.name)}</span>`)
+      .join("")
+    + `<span>· Level shows the earliest point in a program an exercise is appropriate.</span>`;
+}
 
-chips($("#fRegion"), regionOpts, "region");
-chips($("#fType"),   typeOpts, "type");
-chips($("#fLevel"),  [{v:"all",l:"All"},{v:"1",l:"1"},{v:"2",l:"2"},{v:"3",l:"3"}], "level");
+function renderFilterChips(){
+  chips($("#fRegion"), regionOptsNow(), "region");
+  chips($("#fType"),   typeOptsNow(), "type");
+  chips($("#fLevel"),  levelOpts, "level");
+  /* A few custom entries are unfindable among 281 built-ins without this — but
+     the filter is noise until there is something to filter down to. */
+  $("#fSourceGroup").style.display = CUSTOM.length ? "" : "none";
+  chips($("#fSource"), [{v:"all",l:"All"},{v:"custom",l:"Custom only"}], "source");
+  renderLegend();
+}
+renderFilterChips();
 $("#fSearch").oninput = e=>{F.q=e.target.value.toLowerCase(); renderLib();};
 
 /* ============================ RENDER: TABS ============================ */
@@ -2414,7 +2880,7 @@ function setActivePhase(i){
 function applyPhaseLevel(){
   F.maxLevel = (S && phase() && phase().level) ? phase().level : null;
   F.level = "all";
-  chips($("#fLevel"), [{v:"all",l:"All"},{v:"1",l:"1"},{v:"2",l:"2"},{v:"3",l:"3"}], "level");
+  chips($("#fLevel"), levelOpts, "level");
 }
 
 function addPhase(){
@@ -2451,6 +2917,7 @@ function movePhase(i, d){
 
 /* ============================ RENDER: LIBRARY ============================ */
 function passes(x){
+  if(F.source==="custom" && !x.custom) return false;
   if(F.region!=="all" && regionsOf(x).indexOf(F.region) < 0) return false;
   if(F.type!=="all" && x.type!==F.type) return false;
   if(F.level!=="all" && String(x.level)!==F.level) return false;
@@ -2471,8 +2938,8 @@ function renderLibHint(){
 function renderLib(){
   renderLibHint();
   const chosen = new Set(phase().items.map(i=>i.exerciseId));
-  const list = EX.filter(passes);
-  $("#libCount").textContent = list.length + " shown of " + EX.length;
+  const list = ALL.filter(passes);
+  $("#libCount").textContent = list.length + " shown of " + ALL.length;
 
   let html = "";
   REGIONS.forEach(r=>{
@@ -2482,13 +2949,18 @@ function renderLib(){
       html += `<div class="grp"><span class="lbl">${esc(r.name)} — ${esc(t.name)} · ${g.length}</span></div>`;
       html += g.map(x=>`
         <label class="ex ${displayRegion(x)} ${chosen.has(x.id)?"on":""}">
-          <input type="checkbox" data-id="${x.id}" ${chosen.has(x.id)?"checked":""}>
+          <input type="checkbox" data-id="${esc(x.id)}" ${chosen.has(x.id)?"checked":""}>
           <span class="ex-body">
             <span class="ex-hd">
               <span class="ex-nm">${esc(x.name)}</span>
               <span class="tag stage">${esc(LEVELS[x.level])}</span>
               <span class="tag">${esc(typeName(x.type))}</span>
               ${alsoTag(x)}
+              ${x.custom?`<span class="tag custom">Custom</span>
+              <span class="ex-acts no-print">
+                <button type="button" data-cx="edit" data-id="${esc(x.id)}">Edit</button>
+                <button type="button" data-cx="del" class="danger" data-id="${esc(x.id)}">Delete</button>
+              </span>`:""}
             </span>
             <span class="ex-d">${esc(x.desc)}</span>
             <span class="ex-t">Targets: ${esc(x.targets)}</span>
@@ -2498,6 +2970,15 @@ function renderLib(){
   });
   if(!html) html = `<div class="empty"><b>Nothing matches</b>Widen a filter or clear the search box.</div>`;
   $("#lib").innerHTML = html;
+
+  /* The row is a <label>, so a click anywhere in it toggles the checkbox —
+     including on these buttons unless the default is stopped. */
+  $("#lib").onclick = e=>{
+    const b = e.target.closest("[data-cx]"); if(!b) return;
+    e.preventDefault(); e.stopPropagation();
+    if(b.dataset.cx === "edit") editCustomFlow(b.dataset.id);
+    else deleteCustomFlow(b.dataset.id);
+  };
 
   $("#lib").onchange = e=>{
     const cb = e.target; if(cb.type!=="checkbox") return;
@@ -2813,7 +3294,13 @@ $("#bPrint").onclick = printCurrent;
 $("#bBackup").onclick = ()=>{
   if(!S) return;
   S.updatedAt = new Date().toISOString();
-  const blob = new Blob([JSON.stringify(S,null,2)], {type:"application/json"});
+  /* Any custom exercises the program uses travel with it, so the file still
+     builds the same handout on a machine that has never seen them. The key is
+     attached to a copy — normalize() doesn't carry it, and it has no business
+     in the stored record. */
+  const carried = customUsedBy(S);
+  const out = carried.length ? Object.assign({}, S, {customExercises:carried}) : S;
+  const blob = new Blob([JSON.stringify(out,null,2)], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = (slug(S.patient)||"program")+"-program.json";
@@ -2828,7 +3315,23 @@ $("#fFile").onchange = e=>{
   const rd = new FileReader();
   rd.onload = ()=>{
     try{
-      const p = migrate(JSON.parse(rd.result));
+      const d = JSON.parse(rd.result);
+      /* A file of exercises on its own is a reasonable thing to open here too. */
+      if(d && !Array.isArray(d.phases) && !Array.isArray(d.blocks)
+           && (Array.isArray(d.exercises) || Array.isArray(d.customExercises))){
+        importCustomFile(d);
+        e.target.value = "";
+        return;
+      }
+      /* Custom exercises riding along inside a program file have to be merged
+         before migrate() runs, or migrateItems drops every reference to them as
+         an unknown id. A merge that had to suffix an id remaps the references. */
+      const merged = (d && Array.isArray(d.customExercises)) ? mergeCustom(d.customExercises) : null;
+      if(merged){
+        renderFilterChips();
+        remapIds(d, merged.map);
+      }
+      const p = migrate(d);
       if(!p) throw 0;
       flushSave();
       S = p;
@@ -2837,10 +3340,44 @@ $("#fFile").onchange = e=>{
       persist(false);
       syncHeader();
       setView("prac");
-      if(!reportMigration()) toast("Loaded "+(S.patient||"program")+".");
+      if(!reportMigration()){
+        toast("Loaded "+(S.patient||"program")+"."
+          + (merged && merged.added ? " " + customAddedMsg(merged) : ""));
+      }
     }catch(err){
       toast("That file isn't a program file. Pick the .json this tool saved.");
     }
+    e.target.value = "";
+  };
+  rd.readAsText(f);
+};
+
+/* ---- the custom library on its own ---- */
+$("#bAddEx").onclick = addCustomFlow;
+
+$("#bExportCustom").onclick = ()=>{
+  if(!CUSTOM.length){ toast("You haven't written any exercises of your own yet."); return; }
+  const blob = new Blob([JSON.stringify({
+    type: "mvmt-custom-exercises",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    exercises: CUSTOM
+  },null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "my-exercises.json";
+  a.click(); URL.revokeObjectURL(a.href);
+  toast("Your exercises are saved to a file. Import it to put them back.");
+};
+
+$("#bImportCustom").onclick = ()=>$("#fCustomFile").click();
+$("#fCustomFile").onchange = e=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    try{ importCustomFile(JSON.parse(rd.result)); }
+    catch(err){ toast("That file isn't an exercise file."); }
     e.target.value = "";
   };
   rd.readAsText(f);

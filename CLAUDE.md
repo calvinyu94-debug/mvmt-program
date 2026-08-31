@@ -39,6 +39,11 @@ the neck warnings, the callout logic needs to change first — do not tag and ho
 Cross-tagging into any other region carries no such side-effect today. If a
 future region gains its own forced callout, this note needs updating alongside it.
 
+The manual-entry form exposes `alsoRegion` as a dropdown, so this decision is now
+made by whoever is typing rather than by whoever is editing the library. That is
+why the field carries an inline note naming the consequence. **Keep that note
+truthful if the callout rules change.**
+
 ## Exercise schema
 
 ```js
@@ -57,6 +62,12 @@ future region gains its own forced callout, this note needs updating alongside i
 
 `desc` and `targets` are written to be read by patients. Do not rewrite,
 summarise or "improve" them without being asked.
+
+User-authored entries use this same shape and are indistinguishable to every
+renderer. They carry four fields on top of it — `custom: true`, the raw
+`description` and `progression` the form was filled in with, and `createdAt` /
+`updatedAt`. `desc` is stored **assembled** from the first two, so nothing
+downstream has to know the difference. See the custom-exercise section below.
 
 ### "Tennis elbow" is a deliberate, approved exception
 
@@ -145,11 +156,43 @@ those entries silently stop counting and the line disappears from sheets that
 deserve it. **If the convention ever loosens, replace the string test with a real
 `progression` field** — do not accumulate more substrings.
 
+Hand-typed custom entries were the likeliest source of that drift, and they are
+no longer able to cause it: the form takes a separate Progression field and
+`assembleDesc()` writes the "Build it up: " sentence itself. A blank field writes
+no sentence, so the entry correctly does not count. **Do not ask the user to type
+the convention, and do not let a second way of writing it in creep back.**
+
+## Custom exercises
+
+Everything the renderers read comes from `ALL` and `byId` — the built-in `EX`
+concatenated with `CUSTOM`. **`EX` is never mutated**, and nothing outside the
+custom-exercise section should reference it directly: read `ALL` instead, or a
+custom entry silently stops existing for whatever you are writing.
+
+`rebuildLibrary()` is the only thing that reassembles them, and it repopulates
+`byId` **in place** because closures all over the file already hold that object.
+Call it after any change to the custom library, then `renderFilterChips()` — the
+region and type chips and the colour legend are derived from `ALL`, so a custom
+entry can be the thing that puts content into a region.
+
+Ids are `custom-{region}-{mob|stab|nrv}-{slug}-{4 random chars}`. The suffix is
+what makes two entries typed with the same name distinct, and what makes a
+user-typed slug unable to collide with a built-in. **Ids never change on edit** —
+saved programs point at them.
+
+Anything arriving from a file goes through `sanitizeCustom()`, which rebuilds the
+record field by field rather than trusting it, and through `mergeCustom()`, which
+never overwrites an existing id: an incoming clash is kept under a fresh id and
+`remapIds()` rewrites the program's references to match. That remap has to happen
+**before `migrate()` runs**, or `migrateItems()` drops every reference as unknown.
+An incoming entry identical to one already held is recognised as the same entry
+and skipped, so re-importing your own export does not breed duplicates.
+
 ## Storage
 
 ```
 homecare:programs   → array of program objects
-homecare:custom     → user-authored exercises (not built yet)
+homecare:custom     → user-authored exercises, merged over the built-in library
 homecare:settings   → { practitioner, lastProgramId }
 rtt:program         → legacy v1 key, read once on first load, never written
 ```
