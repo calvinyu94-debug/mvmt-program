@@ -21,7 +21,11 @@
           rather than retinted: they were drawn for a dark bar. ---- */
   --chrome:      #FFFDFB;
   --chrome-fg:   #33241C;
-  --chrome-dim:  #8E7867;
+  /* Carries the unselected view-switch labels — the control you are about to
+     click is by definition the one that isn't selected, so sub-AA is the wrong
+     thing for it to be. Least-shifted value clearing 4.5:1 on --chrome, the
+     only ground any of its three uses sits on. */
+  --chrome-dim:  #867262;
   --chrome-btn:  #E7DCD1;
 
   --accent:      #C25A2C;
