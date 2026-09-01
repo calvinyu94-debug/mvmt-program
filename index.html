@@ -1408,7 +1408,7 @@ const EX = [
  desc:"Place a small ball between your forehead and a wall and lean in gently to hold it there. Build it up: forehead → back of head against the wall behind you → side of head.",
  targets:"Sustained neck holding in a functional standing position"},
 {id:"cervical-stab-wall-ball-circles", region:"cervical", type:"stability", level:3,
- name:"Wall Ball Circles", rx:"3 x 5 circles each direction",
+ name:"Wall Ball Head Circles", rx:"3 x 5 circles each direction",
  desc:"With the ball held between the head and the wall, trace slow circles by moving the head, keeping steady pressure so the ball never drops. Build it up: small circles → larger circles → figure-8 → write the alphabet.",
  targets:"Neck control through range while under load"},
 {id:"cervical-stab-chin-tuck-row", region:"cervical", type:"stability", level:2,
@@ -3248,6 +3248,14 @@ let anatEx = {};        /* structure id -> resolved ids, inherited ones first */
 let anatOwn = {};       /* structure id -> only the ids it named itself */
 let anatMissing = [];   /* {id, structure, name} — did not resolve at all */
 let anatLoose = [];     /* {structure, name, matched} — needed the fallback */
+/* Two exercises answering to one name. ANATOMY resolves by name and takes the
+   first match, so a duplicate is worse than a missing name: the lookup succeeds
+   and reports nothing while handing back a drill the map did not mean. Grouped
+   by the same case-and-space-insensitive key the fallback uses, because two
+   names that differ only in capitalisation are equally indistinguishable to it. */
+let anatDupNames = [];  /* {key, entries:[{id,name}], reachable} */
+/* The subset that actually bit: a structure that named an ambiguous name. */
+let anatAmbiguous = []; /* {id, structure, name, chosen, others} */
 /* Defects in the map's own wiring rather than in a name: a dangling or looping
    inherits, an unexplained empty drill list, a stated reason contradicted by a
    list that is not empty. Reported exactly like a failed name, because the
@@ -3257,13 +3265,27 @@ let anatDefects = [];   /* {id, structure, problem} */
 
 function resolveAnatomy(){
   anatEx = {}; anatOwn = {}; anatMissing = []; anatLoose = []; anatDefects = [];
+  anatDupNames = []; anatAmbiguous = [];
   /* EX comes first in ALL, so a custom entry sharing a built-in's name can
      never shadow the library entry the map meant. */
   const exact = Object.create(null), loose = Object.create(null);
+  const nameKey = n => String(n).trim().toLowerCase();
+  const grouped = Object.create(null);
   ALL.forEach(x=>{
     if(!(x.name in exact)) exact[x.name] = x.id;
-    const k = String(x.name).trim().toLowerCase();
+    const k = nameKey(x.name);
     if(!(k in loose)) loose[k] = x.id;
+    (grouped[k] = grouped[k] || []).push({id:x.id, name:x.name});
+  });
+
+  /* Uniqueness is a hard requirement of the map, not a tidiness preference:
+     everything after the first entry under a name is unreachable by name, and
+     any reference meaning one of them silently gets the other. Checked here
+     rather than once at boot because a custom entry can introduce a clash long
+     after load, and removing it takes the clash away again. */
+  Object.keys(grouped).forEach(k=>{
+    if(grouped[k].length < 2) return;
+    anatDupNames.push({key:k, entries:grouped[k], reachable:grouped[k][0].id});
   });
 
   /* Pass one: the names each structure lists for itself. */
@@ -3273,8 +3295,14 @@ function resolveAnatomy(){
   ANATOMY.forEach(s=>{
     const ids = [];
     (s.ex || []).forEach(n=>{
+      const k = nameKey(n);
+      /* Note it before resolving: whichever way the lookup goes, a name with
+         more than one holder gave this structure a drill it cannot vouch for. */
+      if(grouped[k] && grouped[k].length > 1){
+        anatAmbiguous.push({id:s.id, structure:s.name, name:n,
+          chosen:grouped[k][0].id, others:grouped[k].slice(1).map(e=>e.id)});
+      }
       if(n in exact){ ids.push(exact[n]); return; }
-      const k = String(n).trim().toLowerCase();
       if(k in loose){
         anatLoose.push({structure:s.name, name:n, matched:byId[loose[k]].name});
         ids.push(loose[k]);
@@ -3352,6 +3380,19 @@ function resolveAnatomy(){
   if(anatDefects.length){
     console.error("Anatomy index: " + anatDefects.length + " structure(s) are wired wrongly.",
       anatDefects.map(d=>d.structure + " (" + d.id + ") — " + d.problem));
+  }
+  if(anatDupNames.length){
+    console.error("Exercise library: " + anatDupNames.length + " name(s) are held by more than one "
+      + "exercise. Names are how ANATOMY resolves drills, so only the first entry under each name "
+      + "can be reached and any reference meaning another silently gets the wrong one. Rename all "
+      + "but one.",
+      anatDupNames.map(d=>d.entries.map(e=>JSON.stringify(e.name) + " (" + e.id + ")").join("  vs  ")));
+  }
+  if(anatAmbiguous.length){
+    console.error("Anatomy index: " + anatAmbiguous.length + " reference(s) name an exercise that is "
+      + "not uniquely named. These structures may be showing the wrong drill.",
+      anatAmbiguous.map(m=>m.structure + " (" + m.id + ") → " + JSON.stringify(m.name)
+        + " resolved to " + m.chosen + ", not " + m.others.join(" / ")));
   }
 }
 
@@ -4464,8 +4505,32 @@ function anatPasses(s){
 
 function renderAnatWarn(){
   const el = $("#anatWarn");
-  if(!anatMissing.length && !anatLoose.length && !anatDefects.length){ el.innerHTML = ""; return; }
+  if(!anatMissing.length && !anatLoose.length && !anatDefects.length
+     && !anatDupNames.length && !anatAmbiguous.length){ el.innerHTML = ""; return; }
   let h = "";
+  /* The clash comes first: it is the cause, and the ambiguous references below
+     are only its symptom. */
+  if(anatDupNames.length){
+    h += `<div class="anat-warn">
+      <span class="lbl">${anatDupNames.length} exercise name${anatDupNames.length===1?"":"s"} held by more than one entry</span>
+      Names are how <code>ANATOMY</code> finds drills, so only the first entry under a name can ever
+      be reached — the rest are invisible to the map, and a reference meaning one of them gets the
+      other with no error. Rename all but one.
+      <ul>${anatDupNames.map(d=>
+        `<li>${d.entries.map((e,i)=>
+          `<code>${esc(e.name)}</code> (${esc(e.id)}${i?"":" — the one that resolves"})`).join(" · ")}</li>`).join("")}</ul>
+    </div>`;
+  }
+  if(anatAmbiguous.length){
+    const by = {};
+    anatAmbiguous.forEach(m=>{ (by[m.structure] = by[m.structure] || []).push(m.name); });
+    h += `<div class="anat-warn">
+      <span class="lbl">${anatAmbiguous.length} reference${anatAmbiguous.length===1?"":"s"} to a name that is not unique</span>
+      These structures may be showing the wrong drill. Fixing the clash above fixes them.
+      <ul>${Object.keys(by).map(k=>
+        `<li>${esc(k)} — ${by[k].map(n=>`<code>${esc(n)}</code>`).join(", ")}</li>`).join("")}</ul>
+    </div>`;
+  }
   if(anatDefects.length){
     h += `<div class="anat-warn">
       <span class="lbl">${anatDefects.length} structure${anatDefects.length===1?"":"s"} wired wrongly</span>
@@ -4548,6 +4613,7 @@ function renderAnatDetail(){
   const inPhase = S ? new Set(phase().items.map(i=>i.exerciseId)) : null;
   const missing = anatMissing.filter(m=>m.id === s.id);
   const defects = anatDefects.filter(d=>d.id === s.id);
+  const ambiguous = anatAmbiguous.filter(m=>m.id === s.id);
   const parent = s.inherits ? ANATOMY.find(x=>x.id === s.inherits) : null;
   const where = S ? (isSingle() ? "this handout" : phase().name) : "";
 
@@ -4599,6 +4665,14 @@ function renderAnatDetail(){
     ${defects.length ? `<div class="anat-warn">
       <span class="lbl">Wired wrongly</span>
       <ul>${defects.map(d=>`<li>${esc(d.problem)}</li>`).join("")}</ul>
+    </div>` : ""}
+
+    ${ambiguous.length ? `<div class="anat-warn">
+      <span class="lbl">Possibly the wrong drill</span>
+      ${ambiguous.length===1?"A name":"Names"} listed here belong${ambiguous.length===1?"s":""} to more than one
+      exercise, so the drill shown is whichever the library holds first — not necessarily the one meant:
+      <ul>${ambiguous.map(m=>`<li><code>${esc(m.name)}</code> → <code>${esc(m.chosen)}</code>,
+        not <code>${esc(m.others.join(", "))}</code></li>`).join("")}</ul>
     </div>` : ""}
   `;
 

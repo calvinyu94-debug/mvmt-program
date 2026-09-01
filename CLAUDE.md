@@ -13,6 +13,18 @@ Printable home-exercise program builder for clinical use. Single self-contained
 - **Print fidelity is a feature.** The printed handout is the actual deliverable
   to patients. Preserve and extend the `@media print` rules.
 - **Colour lives in `:root`, nowhere else.** See the theme layer below.
+- **The library is user-mutable. Nothing may assume it is fixed at boot.** Any
+  check, assertion or resolution over `EX` must run on **library change**, not
+  once at boot. Boot-time-only logic misses clashes and resolutions introduced
+  by custom entries, and misses their removal.
+
+  `rebuildLibrary()` is that hook, and it is also what runs at boot — so putting
+  the work there gets the boot pass for free and cannot drift out of step. Two
+  things live there today for exactly this reason: `resolveAnatomy()`'s
+  name-to-id lookup (a custom entry can satisfy a name the map needs, and
+  deleting one takes it away again) and the exercise-name uniqueness assertion
+  (a custom entry can introduce a clash long after load). This has been got
+  wrong twice; assume the next one too, and check before writing `// at load`.
 
 ## `alsoRegion` is coupled to a safety callout — read before cross-tagging
 
@@ -58,7 +70,7 @@ truthful if the callout rules change.**
   alsoRegion: "shoulder",      // optional, string or array — see the coupling warning above
   type: "mobility",            // mobility | stability | nerve
   level: 1,                    // 1 Foundational | 2 Intermediate | 3 Advanced
-  name: "90/90 Hip Switch",
+  name: "90/90 Hip Switch",   // MUST BE UNIQUE — it is a resolution key, see below
   desc: "...",                 // clinical copy handed to patients — do not reword
   targets: "...",              // likewise
   rx: "2 x 8 each side, slow"  // default prescription; every entry must have one
@@ -67,6 +79,34 @@ truthful if the callout rules change.**
 
 `desc` and `targets` are written to be read by patients. Do not rewrite,
 summarise or "improve" them without being asked.
+
+### `name` is a resolution key, not just a label
+
+The whole `ANATOMY` map points at exercises **by name**. `resolveAnatomy()` takes
+the first match and reports success, so a second exercise under an existing name
+does not collide loudly — it does something worse:
+
+> Adding a drill whose name already exists makes it **unreachable by the map**,
+> and silently hands every reference that meant it a different exercise.
+
+This has happened once. A shoulder *Wall Ball Circles* and a cervical one were
+written in separate batches; nothing broke, because no structure happened to
+reference the name yet. The cervical one is now **Wall Ball Head Circles**. The
+next collision would not necessarily be found by luck, so it is asserted instead.
+
+`resolveAnatomy()` groups every entry in `ALL` by the same
+case-and-whitespace-insensitive key its own fallback lookup uses — two names
+differing only in capitalisation are equally indistinguishable to it — and
+reports any name held by more than one entry to the console, to the Anatomy
+banner, and, for each structure that referenced an ambiguous name, on the
+structure itself. It runs on every library change, not once at boot, because a
+**custom entry can introduce a clash long after load** and deleting it takes the
+clash away again.
+
+Renaming an exercise is cheap in a way that renaming an id is not: saved programs
+store `exerciseId`, so a `name` change costs nothing downstream. The one thing it
+touches is any `ANATOMY` `ex` entry naming it — and that will report itself
+immediately if you forget. **Fix a clash by renaming, never by leaving both.**
 
 User-authored entries use this same shape and are indistinguishable to every
 renderer. They carry four fields on top of it — `custom: true`, the raw
@@ -368,6 +408,11 @@ fallback still reports**, because a match that needed it means the map's wording
 has drifted from the library's. A name that resolves neither way is reported to
 the console *and* to a banner at the top of the Anatomy view, and is flagged on
 the structure itself.
+
+This only works while names are unique, which is why `resolveAnatomy()` also
+asserts that — see **`name` is a resolution key** above. A duplicate is the worse
+failure of the two: an unresolved name shows up as a short list, a duplicated one
+shows up as a plausible wrong drill.
 
 > **Never let a name fail quietly.** A structure that silently loses a drill is
 > invisible — a clinician sees a short list and has no reason to distrust it.
