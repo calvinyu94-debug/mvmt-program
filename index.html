@@ -405,6 +405,55 @@ button{cursor:pointer}
 .toast.show{opacity:1}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
+/* ---------- anatomy index ---------- */
+/* The result rows reuse .acard's padding and its eight region border rules
+   rather than restating them — a ninth region then needs no edit here. */
+.srow{
+  display:block;width:100%;text-align:left;border-top:0;border-right:0;border-bottom:1px solid var(--line-2);
+  background:transparent;font:inherit;color:inherit;cursor:pointer;
+}
+.srow:hover{background:var(--hover)}
+.srow[aria-pressed="true"]{background:var(--accent-wash)}
+.srow-hd{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.srow-nm{font-weight:600;font-size:14.5px}
+.srow-lat{display:block;font-size:12.5px;color:var(--ink-3);font-style:italic;margin-top:2px}
+
+.anat-detail{padding:var(--pad);max-height:calc(100vh - 240px);overflow-y:auto}
+.anat-detail h3{
+  font-family:var(--font-ui);font-size:19px;font-weight:600;margin:0;letter-spacing:-.01em;
+}
+.anat-detail .lat{font-style:italic;color:var(--ink-3);font-size:13.5px;margin:2px 0 10px}
+.anat-detail .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.anat-sec{margin-top:16px}
+.anat-sec .lbl{display:block;margin-bottom:5px}
+.anat-sec p{margin:0;font-size:14px;color:var(--ink-2)}
+/* The practitioner-only field. Marked by a rule and the muted ground so it is
+   visibly not the same kind of text as `action` — it is never for the patient. */
+.anat-sec.clin{
+  background:var(--panel-2);border-left:3px solid var(--ink-3);
+  padding:12px 14px;border-radius:var(--radius);
+}
+
+.anat-drill{
+  display:flex;gap:10px;align-items:baseline;
+  padding:10px 0;border-bottom:1px solid var(--line-2);
+}
+.anat-drill:last-child{border-bottom:0}
+.anat-drill .dn{flex:1;min-width:0;font-size:14px}
+.anat-drill .dm{display:block;font-size:12.5px;color:var(--ink-3);margin-top:2px}
+
+/* A structure that lost an exercise is a build error, not a display state, so
+   it reads as one — semantic danger, never a region token. */
+.anat-warn{
+  margin:var(--pad);padding:14px 16px;border-radius:var(--radius);
+  border:1px solid var(--danger);border-left:4px solid var(--danger);
+  font-size:13.5px;color:var(--ink-2);
+}
+.anat-warn .lbl{display:block;color:var(--danger);margin-bottom:6px}
+.anat-warn ul{margin:6px 0 0;padding-left:19px}
+.anat-warn li{margin:0 0 4px}
+.anat-warn code{font-family:var(--font-ui);font-size:12.5px;color:var(--ink)}
+
 /* ---------- print ---------- */
 /* Shadows do not print, and this theme took the panel borders away in exchange
    for them. Everything that was relying on elevation for its edges gets a real
@@ -538,6 +587,7 @@ button{cursor:pointer}
       <button id="vList" aria-pressed="true">Programs</button>
       <button id="vPrac" aria-pressed="false">Build</button>
       <button id="vPat" aria-pressed="false">Patient copy</button>
+      <button id="vAnat" aria-pressed="false">Anatomy</button>
     </div>
     <button class="btn" id="bNew" title="Start a new program">New program</button>
     <button class="btn" id="bSave" title="Keeps your work in this browser">Save</button>
@@ -626,6 +676,42 @@ button{cursor:pointer}
   </div>
 
   <div id="patientView" style="display:none"></div>
+
+  <!-- The anatomy index is reference material, never handout material. It
+       carries no-print so `clinical` cannot reach paper by any route: the rule
+       is display:none!important, which beats the inline display this view is
+       toggled with. -->
+  <div id="anatView" class="no-print" style="display:none">
+    <div class="cols">
+      <section class="panel">
+        <div class="panel-hd">
+          <h2>Structures</h2>
+          <span class="count" id="anatCount"></span>
+        </div>
+        <div id="anatWarn"></div>
+        <div class="filters">
+          <div class="fgroup">
+            <span class="lbl">Region</span>
+            <div class="chips" id="aRegion"></div>
+          </div>
+          <div class="fgroup">
+            <span class="lbl">System</span>
+            <div class="chips" id="aSystem"></div>
+          </div>
+          <input class="search" id="aSearch" placeholder="Search muscle, joint or nerve…">
+        </div>
+        <div class="lib" id="anatList"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-hd">
+          <h2 id="anatDetailTitle">Detail</h2>
+          <button class="pbtn" id="bAnatMode" title="Hides the practitioner-only notes so the screen can be turned toward a patient">Patient view: off</button>
+        </div>
+        <div class="anat-detail" id="anatDetail"></div>
+      </section>
+    </div>
+  </div>
 </div>
 
 <div class="modal no-print" id="modal" hidden>
@@ -1937,6 +2023,626 @@ const EX = [
  targets:"Tibial nerve — back of the calf and sole of the foot"}
 ];
 
+/* ============================ ANATOMY INDEX ============================ */
+/* A structure-to-exercise map: look up a muscle, joint, ligament or nerve and
+   get the drills from the library that load, lengthen or mobilise it.
+
+   This array is the canonical copy — a separate 3D viewer project consumes the
+   same dataset and treats this as its source. It is therefore deliberately
+   self-contained: plain data, with no reference to anything that renders it,
+   so it can be lifted out whole.
+
+     region  one of the eight MVMT regions, NOT the anatomical one, so a
+             structure's drills and the region filter agree. Psoas is filed
+             under lumbar rather than hip because it attaches to every lumbar
+             vertebra; the nerves are filed where you would look for them
+             rather than where they end.
+     system  muscular | skeletal | articular | nervous | fascial
+     layer   1 superficial, 2 deep, 3 skeletal. Stored, never surfaced — it
+             exists for the 3D viewer, not for this interface.
+     ex      exercise NAMES, not ids. The names are stable and readable where
+             the slugs are not. resolveAnatomy() turns them into ids at load
+             and fails loudly if one does not match — see the note there.
+
+   action is plain enough to read aloud to a patient. clinical is not: it names
+   compensation patterns and things people get wrong. They are separate fields
+   so hiding one is a toggle rather than a rewrite. clinical is reference-only
+   and must never reach a printed handout — #anatView carries no-print for
+   exactly that reason, and nothing copies these strings into a program. */
+
+const ANATOMY = [
+
+/* ---- Cervical — 12 ---- */
+{id:"cervical-scm", name:"Sternocleidomastoid", latin:"m. sternocleidomastoideus", region:"cervical", system:"muscular", layer:1,
+ action:"Turns the head to the opposite side and tips it toward the same shoulder.",
+ clinical:"Prominent, easily provoked, and commonly guarded after whiplash. Reaches end range fast — never force it.",
+ ex:["Sternocleidomastoid Stretch","Neck Rotation","Cranio-cervical Flexion","Chin Nod"]},
+
+{id:"cervical-scalenes", name:"Scalenes", latin:"mm. scaleni anterior, medius, posterior", region:"cervical", system:"muscular", layer:2,
+ action:"Side-bend the neck and lift the first two ribs during breathing.",
+ clinical:"Often involved where neck tightness comes with symptoms into the arm — the brachial plexus passes between them.",
+ ex:["Scalene Stretch","First Rib Self-Mobilization","Rib Roll Breathing","Cervical Lateral Glide"]},
+
+{id:"cervical-upper-trap", name:"Upper Trapezius", latin:"m. trapezius pars descendens", region:"cervical", system:"muscular", layer:1,
+ action:"Lifts the shoulder blade and side-bends the neck.",
+ clinical:"Rarely genuinely weak. Usually overworking because lower trapezius and serratus are not holding their end — treat the cause, not the ache.",
+ ex:["Upper Trapezius Stretch","Prone Trap Raise","Serratus Wall Slide","Axial Elongation"]},
+
+{id:"cervical-levator", name:"Levator Scapulae", latin:"m. levator scapulae", region:"cervical", system:"muscular", layer:2,
+ action:"Lifts the top corner of the shoulder blade and side-bends the neck.",
+ clinical:"The ropey band people point to at the neck-shoulder angle. Stretching it fails unless the shoulder is anchored down.",
+ ex:["Levator Scapulae Stretch","Scapular Circles","Prone Trap Raise","Axial Elongation"]},
+
+{id:"cervical-suboccipitals", name:"Suboccipitals", latin:"mm. suboccipitales", region:"cervical", system:"muscular", layer:2,
+ action:"Fine control of the head on the top two neck joints.",
+ clinical:"Dense with position sensors, so dysfunction here disturbs head-position sense as much as movement. A common headache source.",
+ ex:["Sub-occipital Stretch","Sub-occipital Release","Chin Nod","Head Repositioning"]},
+
+{id:"cervical-deep-flexors", name:"Deep Neck Flexors", latin:"mm. longus colli et longus capitis", region:"cervical", system:"muscular", layer:2,
+ action:"Hold the head balanced over the neck and support the front of the spine.",
+ clinical:"The single most under-trained group in the neck. Fails early, and the superficial muscles take over — which is why the neck feels tight rather than weak.",
+ ex:["Cranio-cervical Flexion","Chin Tuck Head Lift","Head Hover Hold","Sub-maximal Mid-range Holds"]},
+
+{id:"cervical-splenius", name:"Splenius Capitis & Cervicis", latin:"mm. splenius capitis et cervicis", region:"cervical", system:"muscular", layer:2,
+ action:"Extend the head and turn it to the same side.",
+ clinical:"Works with the opposite sternocleidomastoid to rotate. Guarded together with it after neck injury.",
+ ex:["Neck Rotation","Rotation in Flexion","Prone Neck Extension","Isometric Rotation"]},
+
+{id:"cervical-semispinalis", name:"Semispinalis Capitis", latin:"m. semispinalis capitis", region:"cervical", system:"muscular", layer:2,
+ action:"Extends the head and supports the back of the neck.",
+ clinical:"The greater occipital nerve pierces it — a frequent contributor to headache at the back of the skull.",
+ ex:["Prone Neck Extension","Sub-occipital Stretch","Chin Nod","Isometric Extension"]},
+
+{id:"cervical-facets", name:"Cervical Facet Joints", latin:"articulationes zygapophysiales cervicales", region:"cervical", system:"articular", layer:3,
+ action:"Paired joints at the back of each level that steer and limit neck movement.",
+ clinical:"Pain is typically one-sided and worse turning toward the painful side. Sustained end-range extension plus rotation is the position to avoid.",
+ ex:["Neck Rotation","Rotation with Self Overpressure","Segmental Rotation","Neck CARs"]},
+
+{id:"cervical-discs", name:"Cervical Discs", latin:"disci intervertebrales cervicales", region:"cervical", system:"articular", layer:3,
+ action:"Shock absorbers between the neck vertebrae.",
+ clinical:"Disc-driven pain typically worsens with sustained flexion and eases with retraction — screen with press-ups before prescribing flexion work.",
+ ex:["Chin Retraction","Retraction with Extension","Prone on Elbows Retraction","Axial Elongation"]},
+
+{id:"cervical-vertebrae", name:"Cervical Vertebrae", latin:"vertebrae cervicales C1-C7", region:"cervical", system:"skeletal", layer:3,
+ action:"Seven bones carrying the head, with the top two built for rotation rather than weight.",
+ clinical:"Around half of all neck rotation happens at C1-C2 alone. Test it in full flexion, which locks the levels below.",
+ ex:["Rotation in Flexion","Chin Nod","Neck CARs","Seated-on-Heels Rotation"]},
+
+{id:"cervical-first-rib", name:"First Rib", latin:"costa prima", region:"cervical", system:"skeletal", layer:3,
+ action:"The top rib, sitting under the collarbone where nerves and vessels pass into the arm.",
+ clinical:"An elevated first rib narrows that passage. Suspect it where neck tightness comes with arm symptoms and scalene work keeps relapsing.",
+ ex:["First Rib Self-Mobilization","Scalene Stretch","Rib Roll Breathing","Cervical Lateral Glide"]},
+
+/* ---- Shoulder — 18 ---- */
+{id:"shoulder-deltoid", name:"Deltoid", latin:"m. deltoideus", region:"shoulder", system:"muscular", layer:1,
+ action:"Lifts the arm away from the body, forward and back.",
+ clinical:"Takes over when the cuff cannot centre the joint. A shrugging, deltoid-dominant raise is the visible sign.",
+ ex:["Full Can Raise","Landmine Press","Half-Kneeling Single Arm Press","Shoulder CARs"]},
+
+{id:"shoulder-supraspinatus", name:"Supraspinatus", latin:"m. supraspinatus", region:"shoulder", system:"muscular", layer:2,
+ action:"Starts the arm moving away from the body and holds the humeral head down in the socket.",
+ clinical:"The most commonly injured cuff tendon. Loads heavily in the first 30 degrees, which is why the full can raise stops at shoulder height.",
+ ex:["Full Can Raise","Side-lying External Rotation","Doorframe Isometrics","Prone Y-T-W-I"]},
+
+{id:"shoulder-infraspinatus", name:"Infraspinatus", latin:"m. infraspinatus", region:"shoulder", system:"muscular", layer:2,
+ action:"Rotates the arm outward and holds the head of the humerus back in the socket.",
+ clinical:"The main external rotator and the main brake on a throw or a serve. Trained far too heavy by almost everyone.",
+ ex:["Side-lying External Rotation","Band External Rotation at 90/90","Band External Rotation, Arm at Side","Doorframe Isometrics"]},
+
+{id:"shoulder-teres-minor", name:"Teres Minor", latin:"m. teres minor", region:"shoulder", system:"muscular", layer:2,
+ action:"Rotates the arm outward alongside infraspinatus.",
+ clinical:"Small, and usually trained together with infraspinatus rather than separately.",
+ ex:["Side-lying External Rotation","Band External Rotation at 90/90","Face Pull","Bottoms-Up Kettlebell Hold"]},
+
+{id:"shoulder-subscapularis", name:"Subscapularis", latin:"m. subscapularis", region:"shoulder", system:"muscular", layer:2,
+ action:"Rotates the arm inward and is the largest of the four cuff muscles.",
+ clinical:"The forgotten cuff muscle — everyone trains external rotation and skips this. Sits on the front of the shoulder blade, so it is not directly palpable.",
+ ex:["Band Internal Rotation","Doorframe Isometrics","Towel Internal Rotation Stretch","Bottoms-Up Kettlebell Hold"]},
+
+{id:"shoulder-pec-major", name:"Pectoralis Major", latin:"m. pectoralis major", region:"shoulder", system:"muscular", layer:1,
+ action:"Draws the arm forward and across the body.",
+ clinical:"Shortens with desk posture, pulls the shoulders forward and caps overhead reach. Each of its three parts shortens differently — stretch at three heights.",
+ ex:["Doorway Pec Stretch","Push-Up Plus","Dowel Pass-Throughs","Band Pull-Apart"]},
+
+{id:"shoulder-pec-minor", name:"Pectoralis Minor", latin:"m. pectoralis minor", region:"shoulder", system:"muscular", layer:2,
+ action:"Pulls the shoulder blade forward and down over the ribs.",
+ clinical:"Short pec minor tips the shoulder blade forward and narrows the space nerves pass through. A frequent hidden driver of both shoulder and arm symptoms.",
+ ex:["Doorway Pec Stretch","Wall Plank Protraction Hold","Prone Trap Raise","Serratus Wall Slide"]},
+
+{id:"shoulder-lats", name:"Latissimus Dorsi", latin:"m. latissimus dorsi", region:"shoulder", system:"muscular", layer:1,
+ action:"Pulls the arm down and back and rotates it inward.",
+ clinical:"A major and frequently missed limiter of overhead reach, routinely mistaken for a stiff shoulder joint. It also attaches to the pelvis, so it links shoulder and low back.",
+ ex:["Kneeling Lat Stretch","Dowel Pass-Throughs","Ring or Inverted Row","Supine Snow Angel"]},
+
+{id:"shoulder-teres-major", name:"Teres Major", latin:"m. teres major", region:"shoulder", system:"muscular", layer:2,
+ action:"Draws the arm down and back with latissimus dorsi.",
+ clinical:"Restricts overhead reach with the lats. Often the tender spot found at the back of the armpit.",
+ ex:["Kneeling Lat Stretch","Cross-Body Stretch","Dowel-Assisted Flexion","Ring or Inverted Row"]},
+
+{id:"shoulder-mid-trap", name:"Middle Trapezius", latin:"m. trapezius pars transversa", region:"shoulder", system:"muscular", layer:1,
+ action:"Draws the shoulder blades toward the spine.",
+ clinical:"Endurance rather than strength is what fails here. Train it in long sets.",
+ ex:["Band Pull-Apart","Prone Y-T-W-I","Ring or Inverted Row","Face Pull"]},
+
+{id:"shoulder-lower-trap", name:"Lower Trapezius", latin:"m. trapezius pars ascendens", region:"shoulder", system:"muscular", layer:2,
+ action:"Draws the shoulder blade down and rotates it upward for overhead reach.",
+ clinical:"Sets the shoulder blade before the arm goes overhead. Weak in almost everyone with a desk job, and the direct counterpart to an overworking upper trapezius.",
+ ex:["Prone Trap Raise","Prone Y-T-W-I","Face Pull","Banded Wall Slide"]},
+
+{id:"shoulder-rhomboids", name:"Rhomboids", latin:"mm. rhomboidei major et minor", region:"shoulder", system:"muscular", layer:2,
+ action:"Draw the shoulder blades together and slightly upward.",
+ clinical:"Where people feel the ache between the shoulder blades. Usually a length and endurance problem rather than a strength one.",
+ ex:["Band Pull-Apart","Prone Y-T-W-I","Prone Swimmers","Ring or Inverted Row"]},
+
+{id:"shoulder-serratus", name:"Serratus Anterior", latin:"m. serratus anterior", region:"shoulder", system:"muscular", layer:2,
+ action:"Holds the shoulder blade flat against the ribs and rotates it upward.",
+ clinical:"The muscle that actually lets the arm reach overhead. When it fails the blade wings and the cuff absorbs the load instead.",
+ ex:["Push-Up Plus","Serratus Wall Slide","Wall Plank Protraction Hold","Quadruped Protraction Rock"]},
+
+{id:"shoulder-biceps-long-head", name:"Biceps Long Head", latin:"caput longum m. bicipitis brachii", region:"shoulder", system:"muscular", layer:2,
+ action:"Runs through the shoulder joint in a groove at the front of the humerus.",
+ clinical:"Pain at the front of the shoulder in overhead athletes often traces here rather than to the cuff. Provoked by resisted forward reach.",
+ ex:["Doorframe Isometrics","Side-lying External Rotation","Prone Extension Reach","Dowel-Assisted External Rotation"]},
+
+{id:"shoulder-gh-joint", name:"Glenohumeral Joint", latin:"articulatio humeri", region:"shoulder", system:"articular", layer:3,
+ action:"Ball and shallow socket — the most mobile joint in the body.",
+ clinical:"The shallow socket is why it moves further than any other joint and dislocates most easily. Stability is muscular, not bony.",
+ ex:["Shoulder CARs","Supine 90/90 Rotation Arcs","Sleeper Stretch","Rhythmic Stabilization"]},
+
+{id:"shoulder-ac-joint", name:"Acromioclavicular Joint", latin:"articulatio acromioclavicularis", region:"shoulder", system:"articular", layer:3,
+ action:"Small joint at the top of the shoulder where the collarbone meets the shoulder blade.",
+ clinical:"Point tenderness right on top, worse with reaching across the body. The cross-body stretch is also the provocation test — use it to screen before prescribing.",
+ ex:["Scapular Circles","Cross-Body Stretch","Band Pull-Apart","Prone Trap Raise"]},
+
+{id:"shoulder-scapulothoracic", name:"Scapulothoracic Articulation", latin:"junctura scapulothoracica", region:"shoulder", system:"articular", layer:2,
+ action:"Not a true joint — the shoulder blade gliding on the back of the ribcage.",
+ clinical:"A stiff ribcage caps shoulder blade movement no matter how strong the muscles are. Ribs before blade, blade before arm.",
+ ex:["Scapular Circles","Serratus Wall Slide","Foam Roller Thoracic Extension","Wall Angels"]},
+
+{id:"shoulder-scapula", name:"Scapula", latin:"os scapula", region:"shoulder", system:"skeletal", layer:3,
+ action:"A floating bone suspended on muscle, with its only bony link to the trunk through the collarbone.",
+ clinical:"Its resting position and its ability to rotate upward govern nearly everything the shoulder can do.",
+ ex:["Scapular Circles","Side-lying Scapular Punch","Scap Push-Up","Prone Trap Raise"]},
+
+/* ---- Elbow & Wrist — 12 ---- */
+{id:"elbow-common-extensor", name:"Common Extensor Origin", latin:"origo communis extensorum", region:"elbow-wrist", system:"muscular", layer:2,
+ action:"Shared attachment of the wrist extensors at the outer elbow.",
+ clinical:"Tennis elbow. Isometrics first, eccentrics second — loading it early beats resting it, but the dose has to be right.",
+ ex:["Wrist Extensor Isometric","Eccentric Wrist Extension","Rubber Bar Twist","Wrist Extensor Stretch"]},
+
+{id:"elbow-common-flexor", name:"Common Flexor Origin", latin:"origo communis flexorum", region:"elbow-wrist", system:"muscular", layer:2,
+ action:"Shared attachment of the wrist flexors at the inner elbow.",
+ clinical:"Golfer's elbow. Same principle as the outer side, and the ulnar nerve sits right behind it — screen for nerve symptoms before loading.",
+ ex:["Wrist Flexor Isometric","Eccentric Wrist Flexion","Wrist Flexor Stretch","Ulnar Nerve Slider"]},
+
+{id:"elbow-ecrb", name:"Extensor Carpi Radialis Brevis", latin:"m. extensor carpi radialis brevis", region:"elbow-wrist", system:"muscular", layer:2,
+ action:"Extends the wrist and is the primary tendon involved in tennis elbow.",
+ clinical:"The specific tendon at fault in most lateral elbow pain. Loads most with the elbow straight — which is why gripping with a straight arm hurts most.",
+ ex:["Wrist Extensor Isometric","Eccentric Wrist Extension","Rubber Bar Twist","Wrist Extensor Stretch"]},
+
+{id:"elbow-wrist-flexors", name:"Wrist Flexors", latin:"mm. flexores carpi radialis et ulnaris", region:"elbow-wrist", system:"muscular", layer:1,
+ action:"Bend the wrist and contribute to grip.",
+ clinical:"Short flexors reduce the wrist extension needed to bear weight through the hand — check before prescribing any floor work.",
+ ex:["Wrist Flexor Stretch","Eccentric Wrist Flexion","Quadruped Wrist Rocks","Prayer and Reverse Prayer"]},
+
+{id:"elbow-biceps", name:"Biceps Brachii", latin:"m. biceps brachii", region:"elbow-wrist", system:"muscular", layer:1,
+ action:"Bends the elbow and turns the palm upward.",
+ clinical:"The strongest forearm supinator. Loss of full elbow straightening after injury is often biceps guarding rather than a joint block.",
+ ex:["Elbow Flexion and Extension","Elbow Extension Hold","Forearm Rotation","Hammer Rotation"]},
+
+{id:"elbow-triceps", name:"Triceps Brachii", latin:"m. triceps brachii", region:"elbow-wrist", system:"muscular", layer:1,
+ action:"Straightens the elbow; its long head also crosses the shoulder.",
+ clinical:"Because the long head crosses both joints, a tight triceps limits overhead reach as well as elbow bend.",
+ ex:["Elbow Flexion and Extension","Kneeling Lat Stretch","Half-Kneeling Overhead Reach","Landmine Press"]},
+
+{id:"elbow-brachioradialis", name:"Brachioradialis", latin:"m. brachioradialis", region:"elbow-wrist", system:"muscular", layer:1,
+ action:"Bends the elbow, strongest with the thumb pointing up.",
+ clinical:"Frequently tender in anyone doing repetitive gripping with a neutral forearm — hammering, racquet sports, manual therapy itself.",
+ ex:["Hammer Rotation","Forearm Rotation","Grip Squeeze","Wrist Extensor Stretch"]},
+
+{id:"elbow-pronator-teres", name:"Pronator Teres", latin:"m. pronator teres", region:"elbow-wrist", system:"muscular", layer:2,
+ action:"Turns the palm downward.",
+ clinical:"The median nerve passes between its two heads — a compression site that mimics carpal tunnel but with forearm symptoms too.",
+ ex:["Forearm Rotation","Median Nerve Slider","Hammer Rotation","Wrist Flexor Stretch"]},
+
+{id:"elbow-carpal-tunnel", name:"Carpal Tunnel", latin:"canalis carpi", region:"elbow-wrist", system:"fascial", layer:2,
+ action:"Passage at the front of the wrist carrying the median nerve and finger flexor tendons.",
+ clinical:"Symptoms in the thumb, index and middle fingers, typically worse at night. Glide the nerve, do not stretch it — and check the neck and pronator teres before assuming the wrist.",
+ ex:["Median Nerve Slider","Tendon Glides","Wrist Flexor Stretch","Cervical Lateral Glide"]},
+
+{id:"elbow-first-compartment", name:"First Dorsal Compartment", latin:"compartimentum extensorum primum", region:"elbow-wrist", system:"fascial", layer:2,
+ action:"Sheath at the thumb side of the wrist carrying the thumb's long tendons.",
+ clinical:"De Quervain's. Extremely common in new parents from repeated lifting with the thumb out. Provokes easily — go gently.",
+ ex:["Thumb and First Compartment Stretch","Wrist Circles","Radial and Ulnar Deviation","Hammer Radial Deviation"]},
+
+{id:"elbow-joint", name:"Elbow Joint", latin:"articulatio cubiti", region:"elbow-wrist", system:"articular", layer:3,
+ action:"Hinge for bending, plus a rotating joint at the radial head for turning the forearm.",
+ clinical:"The last few degrees of straightening are the first thing lost and the hardest to get back. Time under a light load beats forcing.",
+ ex:["Elbow Extension Hold","Elbow Flexion and Extension","Forearm Rotation","Prone Hang"]},
+
+{id:"elbow-wrist-joint", name:"Wrist Joint Complex", latin:"articulationes carpi", region:"elbow-wrist", system:"articular", layer:3,
+ action:"Two rows of small bones giving the wrist movement in every direction.",
+ clinical:"Weight-bearing through the hand needs roughly 70 degrees of extension. Most desk-bound people are well short and load the joint at end range instead.",
+ ex:["Quadruped Wrist Rocks","Reverse Quadruped Wrist Rocks","Wrist Weight-Bearing Progression","Wrist Circles"]},
+
+/* ---- Thoracic — 10 ---- */
+{id:"thoracic-erector-spinae", name:"Thoracic Erector Spinae", latin:"m. erector spinae pars thoracis", region:"thoracic", system:"muscular", layer:2,
+ action:"Runs the length of the back, extending the spine and controlling forward bending.",
+ clinical:"Works eccentrically far more than concentrically — it controls the descent rather than driving the lift.",
+ ex:["Foam Roller Thoracic Extension","Sphinx to Cobra","Prone Y-T-W-I","Bench Thoracic Extension"]},
+
+{id:"thoracic-multifidus", name:"Thoracic Multifidus", latin:"m. multifidus thoracis", region:"thoracic", system:"muscular", layer:2,
+ action:"Small deep muscles crossing two or three levels, controlling movement segment by segment.",
+ clinical:"Provides local control rather than gross movement. Segmental work reaches it; global extension does not.",
+ ex:["Cat-Cow","Segmental Bridge","Bird Dog","Quadruped Rotation (hand behind head)"]},
+
+{id:"thoracic-facets", name:"Thoracic Facet Joints", latin:"articulationes zygapophysiales thoracicae", region:"thoracic", system:"articular", layer:3,
+ action:"Oriented to favour rotation, which is why the upper back is the body's main rotation engine.",
+ clinical:"When these stiffen, the lumbar spine supplies the rotation instead — and it is not built for it. The most consequential stiffness in the body.",
+ ex:["Open Book","Quadruped Rotation (hand behind head)","Seated-on-Heels Rotation","Standing Wall Rotation (ball between knees)"]},
+
+{id:"thoracic-costovertebral", name:"Costovertebral Joints", latin:"articulationes costovertebrales", region:"thoracic", system:"articular", layer:3,
+ action:"Where each rib meets the spine — they move with every breath.",
+ clinical:"Sharp, well-localised back pain that catches on a deep breath usually sits here. Breathing work reaches it better than stretching does.",
+ ex:["Rib Roll Breathing","Open Book","Foam Roller Thoracic Extension","Child's Pose Lateral Reach"]},
+
+{id:"thoracic-ribs", name:"Ribs", latin:"costae", region:"thoracic", system:"skeletal", layer:3,
+ action:"Twelve pairs forming the ribcage, moving with breathing.",
+ clinical:"Ribcage expansion caps upper back rotation. If the ribs do not move, rotation work has a ceiling no amount of stretching will lift.",
+ ex:["Rib Roll Breathing","Child's Pose Lateral Reach","Open Book","Standing Lateral Flexion with Reach"]},
+
+{id:"thoracic-diaphragm", name:"Diaphragm", latin:"diaphragma", region:"thoracic", system:"muscular", layer:2,
+ action:"The primary breathing muscle, and part of the pressure system that stabilises the trunk.",
+ clinical:"Breathing and trunk stability share the same muscle. Someone breathing through their neck is not going to brace well, whatever core work you give them.",
+ ex:["Rib Roll Breathing","Pelvic Tilts","Dead Bug","Child's Pose Lateral Reach"]},
+
+{id:"thoracic-intercostals", name:"Intercostals", latin:"mm. intercostales", region:"thoracic", system:"muscular", layer:2,
+ action:"Between the ribs, controlling their movement during breathing.",
+ clinical:"Restriction here limits both breathing depth and trunk rotation. Side-bending with a long exhale reaches them best.",
+ ex:["Child's Pose Lateral Reach","Rib Roll Breathing","Standing Lateral Flexion with Reach","Side-Lying Windmill"]},
+
+{id:"thoracic-vertebrae", name:"Thoracic Vertebrae", latin:"vertebrae thoracicae T1-T12", region:"thoracic", system:"skeletal", layer:3,
+ action:"Twelve bones, each anchored to a pair of ribs, forming the least mobile part of the spine.",
+ clinical:"The cervicothoracic junction at the top is usually the stiffest point and the true cause of many complaints blamed on the neck.",
+ ex:["Cervicothoracic Junction Extension","Foam Roller Thoracic Extension","Peanut Segmental Extension","Bench Thoracic Extension"]},
+
+{id:"thoracic-tl-junction", name:"Thoracolumbar Junction", latin:"junctura thoracolumbalis", region:"thoracic", system:"articular", layer:3,
+ action:"Where the rotating upper back meets the non-rotating lower back at T12-L1.",
+ clinical:"A transition point and therefore a concentration point for load. Frequently symptomatic in rotational athletes.",
+ ex:["Standing Wall Rotation (ball between knees)","Half-Kneeling Rotation with Dowel","Bird Dog","Pallof Press"]},
+
+{id:"thoracic-serratus-posterior", name:"Serratus Posterior", latin:"mm. serrati posteriores", region:"thoracic", system:"muscular", layer:2,
+ action:"Thin sheets under the shoulder blade assisting rib movement in breathing.",
+ clinical:"Often the source of a deep ache under the shoulder blade that resists surface work because it sits beneath the blade.",
+ ex:["Rib Roll Breathing","Thread the Needle","Open Book","Prone Swimmers"]},
+
+/* ---- Lumbar — 12 ---- */
+{id:"lumbar-erector-spinae", name:"Lumbar Erector Spinae", latin:"m. erector spinae pars lumborum", region:"lumbar", system:"muscular", layer:2,
+ action:"Extends the low back and controls the descent into forward bending.",
+ clinical:"Almost always overworking rather than weak. It stays switched on because the deeper system is not doing its job — chasing it with more extension work makes things worse.",
+ ex:["Prone Press-Up","Cat-Cow","Bird Dog","Child's Pose Lateral Reach"]},
+
+{id:"lumbar-multifidus", name:"Lumbar Multifidus", latin:"m. multifidus lumborum", region:"lumbar", system:"muscular", layer:2,
+ action:"Small deep muscles controlling one or two segments at a time.",
+ clinical:"Measurably shrinks within days of a back injury and does not recover on its own once pain settles. Segmental control work reaches it; deadlifts do not.",
+ ex:["Segmental Bridge","Bird Dog","Dead Bug","Cat-Cow"]},
+
+{id:"lumbar-ql", name:"Quadratus Lumborum", latin:"m. quadratus lumborum", region:"lumbar", system:"muscular", layer:2,
+ action:"Hikes the hip, side-bends the trunk, and steadies the twelfth rib for breathing.",
+ clinical:"The classic one-sided low back ache in people who stand on one leg, carry a child on one hip, or sit twisted. Side plank work is the answer more often than stretching.",
+ ex:["Side Plank","Standing Lateral Flexion with Reach","Suitcase Carry","Child's Pose Lateral Reach"]},
+
+{id:"lumbar-psoas", name:"Psoas Major", latin:"m. psoas major", region:"lumbar", system:"muscular", layer:2,
+ action:"Lifts the thigh and attaches directly to every lumbar vertebra.",
+ clinical:"Filed under lumbar rather than hip because it attaches to the spine — a short psoas pulls the low back into extension. It also fatigues into the arched-back posture at the end of a long day.",
+ ex:["Half-Kneeling Hip Flexor Series","Dead Bug","Wall Press March","Pelvic Tilts"]},
+
+{id:"lumbar-tva", name:"Transversus Abdominis", latin:"m. transversus abdominis", region:"lumbar", system:"muscular", layer:2,
+ action:"The deepest abdominal layer, wrapping the trunk like a corset and raising internal pressure.",
+ clinical:"Timing matters more than strength — it should fire fractionally before a limb moves, and after injury it fires late. Train the timing, not the crunch.",
+ ex:["Dead Bug","Pelvic Tilts","Bird Dog","Bear Crawl"]},
+
+{id:"lumbar-obliques", name:"Obliques", latin:"mm. obliquus externus et internus abdominis", region:"lumbar", system:"muscular", layer:1,
+ action:"Rotate and side-bend the trunk, and resist both.",
+ clinical:"In a rotational athlete their main job is resisting rotation, not producing it. Anti-rotation work loads them harder than any twisting exercise.",
+ ex:["Pallof Press","Side Plank","Half-Kneeling Chop","Offset / Uneven Carry"]},
+
+{id:"lumbar-rectus-abdominis", name:"Rectus Abdominis", latin:"m. rectus abdominis", region:"lumbar", system:"muscular", layer:1,
+ action:"Bends the trunk forward and resists the back arching.",
+ clinical:"Its useful role is anti-extension — holding the ribs down under load — rather than curling up. That is what the serve position and the overhead press demand.",
+ ex:["Dead Bug","Hollow Body Hold","Ab Wheel / Ball Rollout","Standing Banded Overhead Press"]},
+
+{id:"lumbar-tl-fascia", name:"Thoracolumbar Fascia", latin:"fascia thoracolumbalis", region:"lumbar", system:"fascial", layer:2,
+ action:"Broad sheet across the low back linking the lats above to the glutes below.",
+ clinical:"The mechanical link between opposite shoulder and hip. Explains why a shoulder problem shows up as low back stiffness and the reverse.",
+ ex:["Bird Dog","Kneeling Lat Stretch","Glute Bridge Series","Half-Kneeling Chop"]},
+
+{id:"lumbar-facets", name:"Lumbar Facet Joints", latin:"articulationes zygapophysiales lumbales", region:"lumbar", system:"articular", layer:3,
+ action:"Oriented to permit bending and block rotation.",
+ clinical:"Pain worse with extension and rotation, easier with flexion — the opposite pattern to a disc. Loads hard in the kick serve and the overhead position.",
+ ex:["Quadruped Rock Back","Supine Lower Trunk Rotation","Pallof Press","Dead Bug"]},
+
+{id:"lumbar-discs", name:"Lumbar Discs", latin:"disci intervertebrales lumbales", region:"lumbar", system:"articular", layer:3,
+ action:"Shock absorbers between the lumbar vertebrae.",
+ clinical:"Typically worse sitting and bending, easier standing and walking, worst first thing in the morning. Screen the direction of preference before prescribing anything.",
+ ex:["Prone Press-Up","Sphinx to Cobra","Pelvic Tilts","Dead Bug"]},
+
+{id:"lumbar-sij", name:"Sacroiliac Joint", latin:"articulatio sacroiliaca", region:"lumbar", system:"articular", layer:3,
+ action:"Where the spine meets the pelvis. Very little movement — its job is transferring load between trunk and legs.",
+ clinical:"Pain typically pointed to with one finger just below the belt line. Usually a load-transfer problem, so single leg strength work beats mobilisation.",
+ ex:["Single Leg RDL","Glute Bridge Series","Side Plank","Suitcase Carry"]},
+
+{id:"lumbar-pelvic-floor", name:"Pelvic Floor", latin:"diaphragma pelvis", region:"lumbar", system:"muscular", layer:2,
+ action:"Forms the base of the abdominal pressure system and works with the diaphragm on every breath.",
+ clinical:"Part of the same canister as the diaphragm and transversus abdominis. Breath-holding through effort is a sign the system is not coordinating — and it belongs in any low back conversation, including with men.",
+ ex:["Dead Bug","Rib Roll Breathing","Pelvic Tilts","Glute Bridge Series"]},
+
+/* ---- Hip — 15 ---- */
+{id:"hip-glute-max", name:"Gluteus Maximus", latin:"m. gluteus maximus", region:"hip", system:"muscular", layer:1,
+ action:"Extends the hip and rotates it outward. The largest muscle in the body.",
+ clinical:"Strong in almost everyone, poorly recruited in many. If the hamstrings cramp during bridging, it is not firing.",
+ ex:["Glute Bridge Series","Split Squat to Bulgarian","Single Leg RDL","Step Up"]},
+
+{id:"hip-glute-med", name:"Gluteus Medius", latin:"m. gluteus medius", region:"hip", system:"muscular", layer:2,
+ action:"Holds the pelvis level when standing on one leg.",
+ clinical:"The single most important muscle for single leg control. Its failure shows as a dropping pelvis or a knee falling inward — and it shows on the stance leg, not the moving one.",
+ ex:["Standing Banded Abduction","Lateral Band Walks","Side Plank with Clam","Single Leg Squat to Box"]},
+
+{id:"hip-glute-min", name:"Gluteus Minimus", latin:"m. gluteus minimus", region:"hip", system:"muscular", layer:2,
+ action:"Works with gluteus medius to steady the pelvis and rotate the hip inward.",
+ clinical:"Refers pain down the outside of the leg convincingly enough to be mistaken for sciatica.",
+ ex:["Lateral Band Walks","Standing Banded Abduction","Hip Airplane","Single Leg Balance Progression"]},
+
+{id:"hip-tfl", name:"Tensor Fasciae Latae", latin:"m. tensor fasciae latae", region:"hip", system:"muscular", layer:1,
+ action:"Bends and abducts the hip, and tensions the IT band.",
+ clinical:"Takes over abduction when gluteus medius is weak. Persistent TFL tightness is usually a symptom, not the problem — train the glute rather than stretching this.",
+ ex:["Half-Kneeling Hip Flexor Series","Lateral Thigh Roll","Standing Banded Abduction","Supine Figure-4 to Active Pigeon"]},
+
+{id:"hip-itb", name:"Iliotibial Band", latin:"tractus iliotibialis", region:"hip", system:"fascial", layer:1,
+ action:"Thick fascial band from the pelvis to just below the knee.",
+ clinical:"It does not meaningfully lengthen — it is not a stretchable structure. Symptoms come from compression at the knee under poor hip control, so treat the hip.",
+ ex:["Lateral Thigh Roll","Standing Banded Abduction","Eccentric Step Down","Lateral Band Walks"]},
+
+{id:"hip-piriformis", name:"Piriformis", latin:"m. piriformis", region:"hip", system:"muscular", layer:2,
+ action:"Rotates the hip outward with the leg straight, and inward once the hip is bent past 90 degrees.",
+ clinical:"The sciatic nerve runs beneath it, and through it in a minority of people. Buttock pain with leg symptoms — test the nerve before deciding it is the muscle.",
+ ex:["Supine Figure-4 to Active Pigeon","Hip CARs (Controlled Rotations)","Sciatic Nerve Slider (seated)","Prone Windshield Wipers"]},
+
+{id:"hip-deep-rotators", name:"Deep External Rotators", latin:"mm. obturatorii, gemelli, quadratus femoris", region:"hip", system:"muscular", layer:2,
+ action:"Small deep muscles steering hip rotation and holding the head of the femur in the socket.",
+ clinical:"The hip's equivalent of the rotator cuff. Rarely trained directly, and limited internal rotation usually traces here.",
+ ex:["Prone Windshield Wipers","Seated 90/90 Lift-Offs","Hip CARs (Controlled Rotations)","Hip Airplane"]},
+
+{id:"hip-adductor-longus", name:"Adductor Longus & Brevis", latin:"mm. adductor longus et brevis", region:"hip", system:"muscular", layer:1,
+ action:"Draw the leg toward the midline and assist hip flexion.",
+ clinical:"Adductor longus is the most commonly strained groin muscle in change-of-direction sport. Copenhagen work is the strongest protection and is almost universally skipped.",
+ ex:["Copenhagen Plank","Adductor Rock Back","Cossack Squat","Frog Rock"]},
+
+{id:"hip-adductor-magnus", name:"Adductor Magnus", latin:"m. adductor magnus", region:"hip", system:"muscular", layer:2,
+ action:"The largest adductor. Its rear portion functions as a hip extensor alongside the hamstrings.",
+ clinical:"Effectively a fourth hamstring. Contributes significantly to hip extension power and is frequently missed in hamstring rehab.",
+ ex:["Copenhagen Plank","Cossack Squat","Single Leg RDL","Deep Squat Hold"]},
+
+{id:"hip-gracilis", name:"Gracilis", latin:"m. gracilis", region:"hip", system:"muscular", layer:1,
+ action:"Long thin adductor crossing both hip and knee.",
+ clinical:"Crossing two joints means knee position changes its length — test adduction with the knee both bent and straight.",
+ ex:["Adductor Rock Back","Frog Rock","Cossack Squat","Copenhagen Plank"]},
+
+{id:"hip-iliacus", name:"Iliacus", latin:"m. iliacus", region:"hip", system:"muscular", layer:2,
+ action:"Lines the inner pelvis and joins psoas to lift the thigh.",
+ clinical:"Unlike psoas it does not attach to the spine, so it affects hip position without directly pulling on the low back.",
+ ex:["Half-Kneeling Hip Flexor Series","Wall Press March","Pelvic Tilts","Deep Squat Hold"]},
+
+{id:"hip-rectus-femoris", name:"Rectus Femoris", latin:"m. rectus femoris", region:"hip", system:"muscular", layer:1,
+ action:"The only quadriceps head crossing the hip as well as the knee.",
+ clinical:"Because it crosses both, it must be tested with the hip extended and knee bent together. A tight rectus femoris tips the pelvis forward and is frequently misread as a low back problem.",
+ ex:["Half-Kneeling Hip Flexor Series","Quadriceps Stretch","Reverse Nordic","Bretzel 2"]},
+
+{id:"hip-hamstring-origin", name:"Hamstring Origin", latin:"origo ischiocruralis, tuber ischiadicum", region:"hip", system:"muscular", layer:2,
+ action:"Common attachment of the hamstrings at the sitting bone.",
+ clinical:"High hamstring tendinopathy — deep buttock pain, worse sitting on a hard chair and worse with stretching. Stretch it and it gets worse; load it and it improves.",
+ ex:["Hamstring Bridge","Single Leg RDL","Nordic Hamstring Curl","Slider Hamstring Curl"]},
+
+{id:"hip-joint", name:"Hip Joint & Labrum", latin:"articulatio coxae, labrum acetabuli", region:"hip", system:"articular", layer:3,
+ action:"Deep ball and socket, built for stability under load.",
+ clinical:"Deep front-of-groin pain with a pinch at end-range flexion and internal rotation. Limited internal rotation is the earliest sign — measure it every visit.",
+ ex:["Hip CARs (Controlled Rotations)","Banded Hip Distraction","Prone Windshield Wipers","90/90 Hip Switch"]},
+
+{id:"hip-pubic-symphysis", name:"Pubic Symphysis", latin:"symphysis pubica", region:"hip", system:"articular", layer:3,
+ action:"The cartilage joint at the front of the pelvis.",
+ clinical:"Loads where the two sides of the pelvis move asymmetrically — kicking, lunging, or late pregnancy. Adductor and deep abdominal work together, not either alone.",
+ ex:["Copenhagen Plank","Dead Bug","Adductor Rock Back","Side Plank"]},
+
+/* ---- Knee — 14 ---- */
+{id:"knee-quadriceps", name:"Quadriceps", latin:"mm. vasti lateralis, medialis, intermedius", region:"knee", system:"muscular", layer:1,
+ action:"Straighten the knee and control the descent of every step down.",
+ clinical:"Switches off remarkably fast after knee swelling — within days. Reawakening it with quad sets comes before anything else.",
+ ex:["Quad Set","Short Arc Quad","Squat Progression","Sit-to-Stand Progression"]},
+
+{id:"knee-vmo", name:"Vastus Medialis Oblique", latin:"m. vastus medialis obliquus", region:"knee", system:"muscular", layer:2,
+ action:"The inner fibres of the quadriceps that steady the kneecap in its groove.",
+ clinical:"Cannot be trained in isolation despite decades of claims otherwise. Train the quadriceps through full range and it comes with it.",
+ ex:["Short Arc Quad","Spanish Squat","Step Up","Terminal Knee Extension"]},
+
+{id:"knee-hamstrings", name:"Hamstrings", latin:"mm. biceps femoris, semitendinosus, semimembranosus", region:"knee", system:"muscular", layer:1,
+ action:"Bend the knee and extend the hip.",
+ clinical:"Injuries happen while lengthening under load, not while shortening — which is why Nordic curls protect and hamstring curls largely do not.",
+ ex:["Nordic Hamstring Curl","Slider Hamstring Curl","Single Leg RDL","Hamstring Bridge"]},
+
+{id:"knee-popliteus", name:"Popliteus", latin:"m. popliteus", region:"knee", system:"muscular", layer:2,
+ action:"Unlocks the fully straight knee by rotating the shin inward.",
+ clinical:"Small, deep and easily missed. A source of vague back-of-knee pain, particularly in downhill running.",
+ ex:["Shin Rotation","Knee CARs","Heel Slides","Calf Stretch, Knee Bent"]},
+
+{id:"knee-patellar-tendon", name:"Patellar Tendon", latin:"ligamentum patellae", region:"knee", system:"fascial", layer:2,
+ action:"Connects the kneecap to the shin and transmits all quadriceps force.",
+ clinical:"Jumper's knee. Isometrics reduce pain for hours; heavy slow loading and decline work rebuild it. Rest alone reliably fails.",
+ ex:["Isometric Wall Sit at 60 Degrees","Decline Squat","Spanish Squat","Single Leg Wall Sit"]},
+
+{id:"knee-quad-tendon", name:"Quadriceps Tendon", latin:"tendo m. quadricipitis femoris", region:"knee", system:"fascial", layer:2,
+ action:"Connects the quadriceps to the top of the kneecap.",
+ clinical:"Less common than patellar tendon problems but managed identically. Tenderness sits above the kneecap rather than below.",
+ ex:["Isometric Wall Sit at 60 Degrees","Spanish Squat","Squat Progression","Reverse Nordic"]},
+
+{id:"knee-acl", name:"Anterior Cruciate Ligament", latin:"ligamentum cruciatum anterius", region:"knee", system:"articular", layer:3,
+ action:"Stops the shin sliding forward on the thigh and controls rotation.",
+ clinical:"Most injuries are non-contact, on landing or cutting with the knee collapsing inward. Landing mechanics and hop control are the prevention and the return-to-sport gate.",
+ ex:["Landing Mechanics","Hop and Stick","Nordic Hamstring Curl","Lateral Step Down"]},
+
+{id:"knee-pcl", name:"Posterior Cruciate Ligament", latin:"ligamentum cruciatum posterius", region:"knee", system:"articular", layer:3,
+ action:"Stops the shin sliding backward on the thigh.",
+ clinical:"Usually injured by a direct blow to the front of a bent knee — a dashboard or a fall onto the shin. Quadriceps strength is the mainstay of management.",
+ ex:["Quad Set","Short Arc Quad","Terminal Knee Extension","Squat Progression"]},
+
+{id:"knee-mcl", name:"Medial Collateral Ligament", latin:"ligamentum collaterale mediale", region:"knee", system:"articular", layer:3,
+ action:"Resists the knee being forced inward.",
+ clinical:"The most commonly injured knee ligament and the one that heals best without surgery. Protect from sideways load early, then load progressively.",
+ ex:["Quad Set","Straight Leg Raise","Sit-to-Stand Progression","Step Up"]},
+
+{id:"knee-lcl", name:"Lateral Collateral Ligament", latin:"ligamentum collaterale laterale", region:"knee", system:"articular", layer:3,
+ action:"Resists the knee being forced outward.",
+ clinical:"Injured less often and heals less readily than the medial side. The common fibular nerve runs close by — check for foot drop.",
+ ex:["Quad Set","Single Leg Balance Progression","Lateral Step Down","Common Fibular Nerve Glide"]},
+
+{id:"knee-menisci", name:"Menisci", latin:"menisci lateralis et medialis", region:"knee", system:"articular", layer:3,
+ action:"Wedge-shaped cartilage spreading load across the joint surface.",
+ clinical:"Degenerative tears are common and often incidental on scan. Loading and strengthening outperforms surgery for most non-locking presentations.",
+ ex:["Quad Set","Sit-to-Stand Progression","Stationary Bike Range Progression","Squat Progression"]},
+
+{id:"knee-pes-anserinus", name:"Pes Anserinus", latin:"pes anserinus", region:"knee", system:"fascial", layer:2,
+ action:"Shared attachment of three muscles on the inner shin below the knee.",
+ clinical:"Tender inner knee pain, often confused with a medial meniscus or MCL problem but sitting lower and more superficial.",
+ ex:["Hamstring Stretch","Adductor Rock Back","Hamstring Bridge","Step Up"]},
+
+{id:"knee-tibiofemoral", name:"Tibiofemoral Joint", latin:"articulatio tibiofemoralis", region:"knee", system:"articular", layer:3,
+ action:"The main knee joint — hinging, with a small amount of rotation.",
+ clinical:"The last few degrees of straightening matter more than the last few of bending. Lose full extension and every step costs more.",
+ ex:["Prone Hang","Heel Slides","Knee CARs","Terminal Knee Extension"]},
+
+{id:"knee-patellofemoral", name:"Patellofemoral Joint", latin:"articulatio patellofemoralis", region:"knee", system:"articular", layer:3,
+ action:"Where the kneecap tracks in its groove on the thigh bone.",
+ clinical:"Pain on stairs, hills and prolonged sitting. The problem is usually above and below — hip control and foot position — rather than at the kneecap itself.",
+ ex:["Lateral Step Down","Standing Banded Abduction","Kneecap Mobilization","Spanish Squat"]},
+
+/* ---- Ankle & Foot — 13 ---- */
+{id:"ankle-gastrocnemius", name:"Gastrocnemius", latin:"m. gastrocnemius", region:"ankle-foot", system:"muscular", layer:1,
+ action:"The upper calf. Points the foot down and crosses the knee.",
+ clinical:"Because it crosses the knee, it must be tested with the knee straight. Restriction here caps ankle bending and pushes the problem up to the knee and hip.",
+ ex:["Calf Stretch, Knee Straight","Calf Raise","Eccentric Heel Drop","Knee-to-Wall Dorsiflexion"]},
+
+{id:"ankle-soleus", name:"Soleus", latin:"m. soleus", region:"ankle-foot", system:"muscular", layer:2,
+ action:"The deep calf, lying under gastrocnemius and not crossing the knee.",
+ clinical:"The real workhorse of walking and standing, and it limits ankle bending more than the upper calf does. Almost never trained directly — the seated calf raise is how you reach it.",
+ ex:["Calf Stretch, Knee Bent","Seated Calf Raise","Isometric Calf Hold","Knee-to-Wall Dorsiflexion"]},
+
+{id:"ankle-achilles", name:"Achilles Tendon", latin:"tendo calcaneus", region:"ankle-foot", system:"fascial", layer:2,
+ action:"The strongest tendon in the body, joining both calf muscles to the heel bone.",
+ clinical:"Midportion and insertional problems load differently — insertional cases often worsen with heel drops below neutral. Ask where it hurts before choosing the exercise.",
+ ex:["Eccentric Heel Drop","Isometric Calf Hold","Single Leg Calf Raise off a Step","Seated Calf Raise"]},
+
+{id:"ankle-tib-post", name:"Tibialis Posterior", latin:"m. tibialis posterior", region:"ankle-foot", system:"muscular", layer:2,
+ action:"The main dynamic support of the arch, turning the foot inward and pointing it down.",
+ clinical:"Its failure is the usual cause of a progressively flattening adult foot. Inability to perform a single leg heel raise is the classic sign.",
+ ex:["Band Inversion","Single Leg Calf Raise off a Step","Short Foot","Foot Tripod Balance"]},
+
+{id:"ankle-tib-ant", name:"Tibialis Anterior", latin:"m. tibialis anterior", region:"ankle-foot", system:"muscular", layer:1,
+ action:"Pulls the foot up and controls its lowering to the ground after heel strike.",
+ clinical:"Works eccentrically with every step. Central to shin splints, and its weakness is why tired runners slap their feet down.",
+ ex:["Band Dorsiflexion","Heel Walk and Toe Walk","Ankle Alphabet","Ankle CARs"]},
+
+{id:"ankle-fibularis", name:"Fibularis Longus & Brevis", latin:"mm. fibularis longus et brevis", region:"ankle-foot", system:"muscular", layer:1,
+ action:"Run down the outside of the shin and turn the foot outward.",
+ clinical:"The primary active defence against rolling the ankle. Priority after any lateral sprain, and routinely under-dosed.",
+ ex:["Band Eversion","Lateral Hop and Stick","Foot Tripod Balance","Single Leg Balance Progression"]},
+
+{id:"ankle-fhl", name:"Flexor Hallucis Longus", latin:"m. flexor hallucis longus", region:"ankle-foot", system:"muscular", layer:2,
+ action:"Bends the big toe and contributes to push-off.",
+ clinical:"Symptomatic in dancers and sprinters, and behind some persistent inner-ankle pain. Test it with the big toe extended.",
+ ex:["Toe Flexion and Extension","Big Toe Extension Mobilization","Toe Yoga","Towel Scrunch"]},
+
+{id:"ankle-plantar-fascia", name:"Plantar Fascia", latin:"aponeurosis plantaris", region:"ankle-foot", system:"fascial", layer:2,
+ action:"Thick band along the sole, tensioning the arch as the big toe extends at push-off.",
+ clinical:"Worst with the first steps in the morning. Because big toe extension tensions it, limited big toe range is a frequent and overlooked driver.",
+ ex:["Plantar Fascia Stretch","Plantar Ball Roll","Big Toe Extension Mobilization","Short Foot"]},
+
+{id:"ankle-intrinsics", name:"Intrinsic Foot Muscles", latin:"mm. intrinseci pedis", region:"ankle-foot", system:"muscular", layer:2,
+ action:"Small muscles within the foot that hold the arch and fine-tune balance.",
+ clinical:"Weak in almost anyone who has worn supportive shoes for decades. The foot's local stabilisers, and the equivalent of deep neck flexors or multifidus.",
+ ex:["Short Foot","Toe Yoga","Toe Splay","Towel Scrunch"]},
+
+{id:"ankle-talocrural", name:"Talocrural Joint", latin:"articulatio talocruralis", region:"ankle-foot", system:"articular", layer:3,
+ action:"The main ankle hinge — pointing the foot up and down.",
+ clinical:"Bending range is the single most useful ankle measurement. Restriction here pushes compensation up into the knee and hip on every squat and stair.",
+ ex:["Knee-to-Wall Dorsiflexion","Banded Ankle Distraction","Kneeling Ankle Rock","Ankle CARs"]},
+
+{id:"ankle-subtalar", name:"Subtalar Joint", latin:"articulatio subtalaris", region:"ankle-foot", system:"articular", layer:3,
+ action:"Sits below the ankle and handles side-to-side foot movement on uneven ground.",
+ clinical:"Stiffens after ankle sprains and gets missed because everyone tests bending range instead. Heel bone work is what reaches it.",
+ ex:["Subtalar Inversion and Eversion","Heel Bone Mobilization","Ankle CARs","Foot Tripod Balance"]},
+
+{id:"ankle-first-mtp", name:"First MTP Joint", latin:"articulatio metatarsophalangealis prima", region:"ankle-foot", system:"articular", layer:3,
+ action:"The big toe joint, which must extend roughly 60 degrees for a normal step.",
+ clinical:"Restriction here alters every step and drives compensation up the whole chain. One of the most commonly missed causes of foot, knee and hip complaints.",
+ ex:["Big Toe Extension Mobilization","Toe Flexion and Extension","Toe Yoga","Plantar Fascia Stretch"]},
+
+{id:"ankle-lateral-ligaments", name:"Lateral Ankle Ligaments", latin:"ligg. talofibulare anterius et calcaneofibulare", region:"ankle-foot", system:"articular", layer:3,
+ action:"Resist the ankle rolling outward at the outside of the joint.",
+ clinical:"The classic sprain. Roughly a third of people develop ongoing instability, almost always because balance and eversion work was stopped once the pain settled.",
+ ex:["Band Eversion","Foot Tripod Balance","Lateral Hop and Stick","Single Leg Balance Progression"]},
+
+/* ---- Peripheral nerves — 10 ---- */
+{id:"nerve-cervical-roots", name:"Cervical Nerve Roots", latin:"radices nervorum cervicalium", region:"cervical", system:"nervous", layer:3,
+ action:"Emerge from the neck between vertebrae and form the nerve supply to the arm.",
+ clinical:"Root irritation follows a band down the arm rather than a nerve's own territory. Lateral glide is usually the gentlest and safest place to start.",
+ ex:["Cervical Lateral Glide","Chin Retraction","Median Nerve Slider","Rotation with Self Overpressure"]},
+
+{id:"nerve-brachial-plexus", name:"Brachial Plexus", latin:"plexus brachialis", region:"shoulder", system:"nervous", layer:2,
+ action:"The nerve bundle running from the neck, between the scalenes and under the collarbone, into the arm.",
+ clinical:"Arm symptoms often trace here rather than to the shoulder. Three narrow points along its path — between the scalenes, under the collarbone, and beneath pectoralis minor.",
+ ex:["Brachial Plexus Opener","Cervical Lateral Glide","First Rib Self-Mobilization","Doorway Pec Stretch"]},
+
+{id:"nerve-median", name:"Median Nerve", latin:"nervus medianus", region:"cervical", system:"nervous", layer:2,
+ action:"Supplies most of the forearm flexors and sensation to the thumb, index and middle fingers.",
+ clinical:"Compressible at the neck, at pronator teres, and at the wrist. Symptoms at the wrist do not mean the problem is at the wrist — check all three.",
+ ex:["Median Nerve Slider","Median Nerve Tensioner","Cervical Lateral Glide","Tendon Glides"]},
+
+{id:"nerve-ulnar", name:"Ulnar Nerve", latin:"nervus ulnaris", region:"cervical", system:"nervous", layer:2,
+ action:"Runs behind the inner elbow and supplies the little and ring fingers.",
+ clinical:"Most exposed at the elbow, where prolonged bending compresses it — hence symptoms on waking or after a long phone call. Provokes very easily; dose the glides low.",
+ ex:["Ulnar Nerve Slider","Ulnar Nerve Tensioner","Cervical Lateral Glide","Wrist Flexor Stretch"]},
+
+{id:"nerve-radial", name:"Radial Nerve", latin:"nervus radialis", region:"cervical", system:"nervous", layer:2,
+ action:"Wraps behind the upper arm and supplies the extensors and the back of the hand.",
+ clinical:"Can mimic tennis elbow closely. If elbow loading is not progressing as expected, test the nerve before adding more load.",
+ ex:["Radial Nerve Slider","Radial Nerve Tensioner","Cervical Lateral Glide","Wrist Extensor Stretch"]},
+
+{id:"nerve-lumbosacral-plexus", name:"Lumbosacral Plexus", latin:"plexus lumbosacralis", region:"lumbar", system:"nervous", layer:3,
+ action:"The nerve network in the low back and pelvis supplying the whole leg.",
+ clinical:"Leg symptoms that do not follow one nerve's territory usually originate here rather than peripherally.",
+ ex:["Sciatic Nerve Slider (seated)","Femoral Nerve Slider","Prone Press-Up","Slump Slider"]},
+
+{id:"nerve-sciatic", name:"Sciatic Nerve", latin:"nervus ischiadicus", region:"lumbar", system:"nervous", layer:2,
+ action:"The largest nerve in the body, running from the low back through the buttock and down the back of the leg.",
+ clinical:"Passes beneath piriformis, and through it in a minority. Sliders before tensioners always — and symptoms travelling further down the leg means stop, not push.",
+ ex:["Sciatic Nerve Slider (seated)","Slump Slider","Sciatic Nerve Tensioner (supine)","Supine Figure-4 to Active Pigeon"]},
+
+{id:"nerve-femoral", name:"Femoral Nerve", latin:"nervus femoralis", region:"hip", system:"nervous", layer:2,
+ action:"Runs down the front of the thigh, supplying the quadriceps and the front of the leg.",
+ clinical:"Front-of-thigh symptoms are much less commonly recognised than sciatic ones and are frequently misread as a quadriceps or hip flexor strain.",
+ ex:["Femoral Nerve Slider","Half-Kneeling Hip Flexor Series","Quadriceps Stretch","Prone Press-Up"]},
+
+{id:"nerve-common-fibular", name:"Common Fibular Nerve", latin:"nervus fibularis communis", region:"knee", system:"nervous", layer:2,
+ action:"Wraps around the outside of the knee just below the joint, supplying the outer shin and top of the foot.",
+ clinical:"The most superficial nerve in the leg and the easiest to compress — crossed legs, a tight cast, a fall onto the outer knee. Foot drop is the red flag.",
+ ex:["Common Fibular Nerve Glide","Sciatic Nerve Slider (seated)","Band Dorsiflexion","Lateral Thigh Roll"]},
+
+{id:"nerve-tibial", name:"Tibial Nerve", latin:"nervus tibialis", region:"ankle-foot", system:"nervous", layer:2,
+ action:"Runs down the back of the calf and behind the inner ankle into the sole.",
+ clinical:"Compression behind the inner ankle produces burning in the sole, often mistaken for plantar fasciitis. The distinguishing feature is night symptoms.",
+ ex:["Tibial Nerve Glide","Sciatic Nerve Slider (seated)","Calf Stretch, Knee Bent","Plantar Ball Roll"]}
+
+];
+
 /* ============================ STATE ============================ */
 const LEVELS = {1:"Foundational", 2:"Intermediate", 3:"Advanced"};
 
@@ -2301,6 +3007,65 @@ function rebuildLibrary(){
   ALL = EX.concat(CUSTOM);
   Object.keys(byId).forEach(k=>delete byId[k]);
   ALL.forEach(e=>byId[e.id]=e);
+  /* The anatomy map points at exercises by name, so what those names resolve to
+     changes whenever the library does — a custom entry can satisfy a name, and
+     deleting one can take a name away again. Re-resolved here rather than once
+     at boot so the two can never drift apart. */
+  resolveAnatomy();
+}
+
+/* ---- anatomy: names to ids ----
+   The map references exercises by name because the names are stable and
+   readable where the slugs are not. There is no build step to resolve them in,
+   so it happens here, once per library change — roughly 460 lookups against a
+   prepared index rather than a scan per render.
+
+   A name that does not resolve is a hard error, not a silent drop: a structure
+   quietly losing a drill is invisible, and a clinician seeing a short list has
+   no reason to distrust it. Failures go to the console in full and to a banner
+   at the top of the Anatomy view. A name that matches only once case and
+   spacing are ignored is accepted — losing a real drill to a stray capital
+   would be worse — but it is still reported, because the source needs fixing. */
+let anatEx = {};        /* structure id -> resolved exercise ids */
+let anatMissing = [];   /* {id, structure, name} — did not resolve at all */
+let anatLoose = [];     /* {structure, name, matched} — needed the fallback */
+
+function resolveAnatomy(){
+  anatEx = {}; anatMissing = []; anatLoose = [];
+  /* EX comes first in ALL, so a custom entry sharing a built-in's name can
+     never shadow the library entry the map meant. */
+  const exact = Object.create(null), loose = Object.create(null);
+  ALL.forEach(x=>{
+    if(!(x.name in exact)) exact[x.name] = x.id;
+    const k = String(x.name).trim().toLowerCase();
+    if(!(k in loose)) loose[k] = x.id;
+  });
+
+  ANATOMY.forEach(s=>{
+    const ids = [];
+    s.ex.forEach(n=>{
+      if(n in exact){ ids.push(exact[n]); return; }
+      const k = String(n).trim().toLowerCase();
+      if(k in loose){
+        anatLoose.push({structure:s.name, name:n, matched:byId[loose[k]].name});
+        ids.push(loose[k]);
+        return;
+      }
+      anatMissing.push({id:s.id, structure:s.name, name:n});
+    });
+    anatEx[s.id] = ids;
+  });
+
+  if(anatLoose.length){
+    console.warn("Anatomy index: " + anatLoose.length + " exercise name(s) matched only after "
+      + "ignoring case and spacing. The map's wording has drifted from the library's — fix the source.",
+      anatLoose.map(m=>m.structure + " → " + JSON.stringify(m.name) + " matched " + JSON.stringify(m.matched)));
+  }
+  if(anatMissing.length){
+    console.error("Anatomy index: " + anatMissing.length + " exercise name(s) did not resolve against "
+      + "the library. The structures below are showing an incomplete drill list.",
+      anatMissing.map(m=>m.structure + " (" + m.id + ") → " + JSON.stringify(m.name)));
+  }
 }
 
 /* desc is stored assembled so nothing downstream needs to know a custom entry
@@ -3342,36 +4107,251 @@ function renderPatient(){
 }
 
 /* ============================ VIEW SWITCH / RENDER ALL ============================ */
+/* ============================ RENDER: ANATOMY ============================ */
+const SYSTEMS = [
+  {k:"muscular",  name:"Muscular"},
+  {k:"skeletal",  name:"Skeletal"},
+  {k:"articular", name:"Articular"},
+  {k:"nervous",   name:"Nervous"},
+  {k:"fascial",   name:"Fascial"},
+];
+const systemName = k=>(SYSTEMS.find(y=>y.k===k)||{}).name || k;
+
+let AF = {region:"all", system:"all", q:""};
+let anatSel = null;
+/* Deliberately module state and never written to storage. The safe state is
+   practitioner, so it has to be the state a reload lands in — a toggle that
+   remembered itself could put clinical copy on a screen turned toward a
+   patient without anyone having chosen that this session. */
+let anatPatient = false;
+
+/* Same rule as the exercise filters: only offer a facet that has something
+   behind it, so a region or system waiting on content shows up as nothing
+   rather than as an empty filter. */
+const anatRegionOpts = ()=>[{v:"all",l:"All"}].concat(
+  REGIONS.filter(r=>ANATOMY.some(s=>s.region===r.k)).map(r=>({v:r.k, l:r.name})));
+const anatSystemOpts = ()=>[{v:"all",l:"All"}].concat(
+  SYSTEMS.filter(y=>ANATOMY.some(s=>s.system===y.k)).map(y=>({v:y.k, l:y.name})));
+
+function anatChips(el, opts, key){
+  el.innerHTML = opts.map(o=>
+    `<button class="chip" data-v="${esc(o.v)}" aria-pressed="${AF[key]===o.v}">${esc(o.l)}</button>`).join("");
+  el.onclick = e=>{
+    const b = e.target.closest(".chip"); if(!b) return;
+    AF[key] = b.dataset.v;
+    renderAnat();
+  };
+}
+
+/* Latin is searched alongside the common name, and as a plain substring, so
+   "supraspinatus" and "m. supraspinatus" both find the same structure. */
+function anatPasses(s){
+  if(AF.region !== "all" && s.region !== AF.region) return false;
+  if(AF.system !== "all" && s.system !== AF.system) return false;
+  if(AF.q && !(s.name + " " + s.latin).toLowerCase().includes(AF.q)) return false;
+  return true;
+}
+
+function renderAnatWarn(){
+  const el = $("#anatWarn");
+  if(!anatMissing.length && !anatLoose.length){ el.innerHTML = ""; return; }
+  let h = "";
+  if(anatMissing.length){
+    const by = {};
+    anatMissing.forEach(m=>{ (by[m.structure] = by[m.structure] || []).push(m.name); });
+    h += `<div class="anat-warn">
+      <span class="lbl">${anatMissing.length} exercise name${anatMissing.length===1?"":"s"} did not resolve</span>
+      The structures below are showing an incomplete drill list. Correct the name in
+      <code>ANATOMY</code>, or add the exercise to the library.
+      <ul>${Object.keys(by).map(k=>
+        `<li>${esc(k)} — ${by[k].map(n=>`<code>${esc(n)}</code>`).join(", ")}</li>`).join("")}</ul>
+    </div>`;
+  }
+  if(anatLoose.length){
+    h += `<div class="anat-warn">
+      <span class="lbl">${anatLoose.length} name${anatLoose.length===1?"":"s"} matched only loosely</span>
+      Matched after ignoring case and spacing, so the drill is showing — but the map's wording
+      has drifted from the library's and should be brought back into line.
+      <ul>${anatLoose.map(m=>
+        `<li>${esc(m.structure)} — <code>${esc(m.name)}</code> matched <code>${esc(m.matched)}</code></li>`).join("")}</ul>
+    </div>`;
+  }
+  el.innerHTML = h;
+}
+
+function renderAnat(){
+  renderAnatWarn();
+  anatChips($("#aRegion"), anatRegionOpts(), "region");
+  anatChips($("#aSystem"), anatSystemOpts(), "system");
+  $("#bAnatMode").textContent = "Patient view: " + (anatPatient ? "on" : "off");
+  $("#bAnatMode").setAttribute("aria-pressed", anatPatient);
+
+  const list = ANATOMY.filter(anatPasses);
+  $("#anatCount").textContent = list.length + " shown of " + ANATOMY.length;
+
+  let html = "";
+  REGIONS.forEach(r=>{
+    const g = list.filter(s=>s.region === r.k);
+    if(!g.length) return;
+    html += `<div class="grp"><span class="lbl">${esc(r.name)} · ${g.length}</span></div>`;
+    html += g.map(s=>`
+      <button type="button" class="acard srow ${esc(s.region)}" data-id="${esc(s.id)}" aria-pressed="${anatSel===s.id}">
+        <span class="srow-hd">
+          <span class="srow-nm">${esc(s.name)}</span>
+          <span class="tag">${esc(systemName(s.system))}</span>
+        </span>
+        <span class="srow-lat">${esc(s.latin)}</span>
+      </button>`).join("");
+  });
+  if(!html) html = `<div class="empty"><b>Nothing matches</b>Widen a filter or clear the search box.</div>`;
+  $("#anatList").innerHTML = html;
+  $("#anatList").onclick = e=>{
+    const b = e.target.closest(".srow"); if(!b) return;
+    anatSel = b.dataset.id;
+    renderAnat();
+  };
+
+  renderAnatDetail();
+}
+
+function renderAnatDetail(){
+  const el = $("#anatDetail");
+  const s = anatSel ? ANATOMY.find(x=>x.id === anatSel) : null;
+  if(!s){
+    el.innerHTML = `<div class="empty"><b>Nothing selected</b>Pick a structure to see what it does and which drills load it.</div>`;
+    el.onclick = null;
+    return;
+  }
+
+  /* byId is rebuilt in place on every library change and anatEx with it, so a
+     resolved id is always live — the guard is for the ordering, not the data. */
+  const drills = (anatEx[s.id] || []).map(id=>byId[id]).filter(Boolean);
+  const inPhase = S ? new Set(phase().items.map(i=>i.exerciseId)) : null;
+  const missing = anatMissing.filter(m=>m.id === s.id);
+  const where = S ? (isSingle() ? "this handout" : phase().name) : "";
+
+  el.innerHTML = `
+    <h3>${esc(s.name)}</h3>
+    <div class="lat">${esc(s.latin)}</div>
+    <div class="tags">
+      <span class="tag">${esc(regionLabel(s.region))}</span>
+      <span class="tag">${esc(systemName(s.system))}</span>
+    </div>
+
+    <div class="anat-sec">
+      <span class="lbl">What it does</span>
+      <p>${esc(s.action)}</p>
+    </div>
+
+    ${anatPatient ? "" : `
+    <div class="anat-sec clin">
+      <span class="lbl">Why it matters clinically</span>
+      <p>${esc(s.clinical)}</p>
+    </div>`}
+
+    <div class="anat-sec">
+      <span class="lbl">Drills that load this${S ? " — adding to " + esc(where) : ""}</span>
+      ${drills.map(x=>{
+        const added = inPhase && inPhase.has(x.id);
+        return `<div class="anat-drill">
+          <span class="dn">${esc(x.name)}
+            <span class="dm">${esc(LEVELS[x.level])} · ${esc(typeName(x.type))} · ${esc(x.rx)}</span>
+          </span>
+          <button type="button" class="pbtn" data-add="${esc(x.id)}"${added?" disabled":""}>${added?"Added":"Add"}</button>
+        </div>`;
+      }).join("")}
+    </div>
+
+    ${missing.length ? `<div class="anat-warn">
+      <span class="lbl">Incomplete</span>
+      ${missing.length} drill${missing.length===1?"":"s"} named for this structure
+      ${missing.length===1?"does":"do"} not exist in the library:
+      <ul>${missing.map(m=>`<li><code>${esc(m.name)}</code></li>`).join("")}</ul>
+    </div>` : ""}
+  `;
+
+  el.onclick = e=>{
+    const b = e.target.closest("[data-add]"); if(!b) return;
+    anatAddToPhase(b.dataset.add);
+  };
+}
+
+/* Adds exactly what the library's own checkbox adds — an item pointing at an
+   exercise id. No anatomy copy travels with it, so clinical cannot reach a
+   program, an export or a handout by this route. */
+function anatAddToPhase(id){
+  const x = byId[id];
+  if(!x) return;
+
+  if(!S){
+    const saved = readPrograms().length;
+    openModal("No program open", `
+      <p>“${esc(x.name)}” needs somewhere to go. ${saved
+        ? "Open one of your saved programs, or start a new one, then add it from here."
+        : "Start a program first, then add it from here."}</p>
+      ${saved ? `<button type="button" class="pbtn" id="anatToList">Open a saved program</button>` : ""}
+    `, ()=>{ newProgramFlow(); return false; }, "Start a new program");
+    if(saved) $("#anatToList").onclick = ()=>{ closeModal(); setView("list"); };
+    return;
+  }
+
+  const ph = phase();
+  const where = isSingle() ? "this handout" : "“" + ph.name + "”";
+  if(ph.items.some(i=>i.exerciseId === id)){
+    toast("“" + x.name + "” is already in " + where + ".");
+    return;
+  }
+  ph.items.push({exerciseId:id, rx:x.rx, freq:"", note:""});
+  touch();
+  toast("“" + x.name + "” added to " + where + ".");
+  renderAll();
+}
+
+$("#aSearch").oninput = e=>{ AF.q = e.target.value.trim().toLowerCase(); renderAnat(); };
+$("#bAnatMode").onclick = ()=>{ anatPatient = !anatPatient; renderAnat(); };
+
 function setView(v){
-  /* Build and Patient copy need a program; without one there is only the list. */
-  if(v !== "list" && !S) v = "list";
+  /* Build and Patient copy need a program; without one there is only the list.
+     Anatomy is reference material and stands on its own, so it is exempt. */
+  if(v !== "list" && v !== "anat" && !S) v = "list";
   U.view = v;
   $("#vList").setAttribute("aria-pressed", v==="list");
   $("#vPrac").setAttribute("aria-pressed", v==="prac");
   $("#vPat").setAttribute("aria-pressed", v==="pat");
+  $("#vAnat").setAttribute("aria-pressed", v==="anat");
   $("#listView").style.display    = v==="list" ? "" : "none";
   $("#buildView").style.display   = v==="prac" ? "" : "none";
   $("#patientView").style.display = v==="pat"  ? "" : "none";
+  $("#anatView").style.display    = v==="anat" ? "" : "none";
 
   /* Header and phase chrome only make sense with a program open, and the phase
-     bar only when there is more than one phase to move between. */
+     bar only when there is more than one phase to move between. Anatomy keeps
+     the phase bar: adding a drill from there targets the active phase, so the
+     tabs are how you choose where it lands. The colour legend is shared — the
+     structure rows are region-coloured on the same tokens. */
   $("#who").style.display    = (v!=="list" && S) ? "" : "none";
-  $("#legend").style.display = v==="prac" ? "" : "none";
+  $("#legend").style.display = (v==="prac" || v==="anat") ? "" : "none";
   $("#courtWrap").style.display = (v!=="list" && S && !isSingle()) ? "" : "none";
   ["bSave","bBackup","bPrint"].forEach(id=>{
     $("#"+id).style.display = S ? "" : "none";
   });
+  /* Nothing on the Anatomy screen belongs on paper — it is reference material,
+     and it is the one view that carries no-print. Offering Print here would
+     hand back a blank page. */
+  if(v==="anat") $("#bPrint").style.display = "none";
   $("#vPrac").disabled = !S;
   $("#vPat").disabled = !S;
 
   renderSaved();
   if(v === "list") renderList();
+  else if(v === "anat"){ if(S) renderAll(); else renderAnat(); }
   else renderAll();
 }
 
 $("#vList").onclick = ()=>setView("list");
 $("#vPrac").onclick = ()=>setView("prac");
 $("#vPat").onclick  = ()=>setView("pat");
+$("#vAnat").onclick = ()=>setView("anat");
 
 function renderAll(){
   if(!S) return;
@@ -3382,6 +4362,9 @@ function renderAll(){
   $("#nDaily").value = ph.dailyMods;
   $("#nPrac").value = ph.practitionerNote;
   if(U.view==="pat") renderPatient();
+  /* Switching phase changes which drills count as already added, so the
+     anatomy detail has to follow the phase bar like everything else. */
+  if(U.view==="anat") renderAnat();
 }
 
 function syncHeader(){
