@@ -61,11 +61,21 @@
   --danger:      #9E2B2B;
   --warn:        #9A6B12;
 
-  /* Region accents — a full hue spread, muted to sit on warm paper. All eight
-     are deliberately less saturated than --accent so the accent stays the only
-     bright warm element and never reads as a ninth region. Colour-coding is a
-     scanning aid across 281 entries: these have to stay distinct from each
-     other, so check them side by side in the legend before changing any. */
+  /* Region accents. The eight chromatic ones are a full hue spread, muted to
+     sit on warm paper, and deliberately less saturated than --accent so the
+     accent stays the only bright warm element and never reads as a region.
+     Colour-coding is a scanning aid across 303 entries: these have to stay
+     distinct from each other, so check them side by side in the legend before
+     changing any.
+
+     --r-head-jaw is the ninth, and is deliberately not a hue. The eight above
+     already cover the usable wheel, so a ninth chromatic value would have had
+     to sit close to one of them, and the nearest gap was beside cervical rose
+     — the worst available neighbour, since head-jaw and cervical are
+     anatomically adjacent and get scanned side by side constantly. A warm
+     near-black puts the head outside the spine-and-limb colour system instead
+     of competing inside it. This is a one-off: there is exactly one "outside
+     the system" slot, and a tenth region does not get to reuse it. */
   --r-cervical:    #9C4A63;
   --r-shoulder:    #A66A2E;
   --r-thoracic:    #7D7A38;
@@ -74,6 +84,7 @@
   --r-knee:        #3A5E90;
   --r-elbow-wrist: #6A5A94;
   --r-ankle-foot:  #7A5240;
+  --r-head-jaw:    #3E3630;
 
   /* Phase level, on the phase tabs. These were aliased onto three region
      tokens, which in this palette lands on teal / green / olive — three
@@ -265,6 +276,7 @@ button{cursor:pointer}
 .ex.hip{border-left-color:var(--r-hip)}
 .ex.knee{border-left-color:var(--r-knee)}
 .ex.ankle-foot{border-left-color:var(--r-ankle-foot)}
+.ex.head-jaw{border-left-color:var(--r-head-jaw)}
 .ex.on{background:var(--accent-wash)}
 .ex input[type=checkbox]{
   margin-top:4px;width:16px;height:16px;accent-color:var(--accent);
@@ -302,6 +314,7 @@ button{cursor:pointer}
 .acard.hip{border-left-color:var(--r-hip)}
 .acard.knee{border-left-color:var(--r-knee)}
 .acard.ankle-foot{border-left-color:var(--r-ankle-foot)}
+.acard.head-jaw{border-left-color:var(--r-head-jaw)}
 .acard-hd{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
 .acard-hd .num{
   font-family:var(--font-display);font-weight:700;color:var(--ink-3);font-size:13px;
@@ -406,8 +419,8 @@ button{cursor:pointer}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* ---------- anatomy index ---------- */
-/* The result rows reuse .acard's padding and its eight region border rules
-   rather than restating them — a ninth region then needs no edit here. */
+/* The result rows reuse .acard's padding and its nine region border rules
+   rather than restating them — a tenth region then needs no edit here. */
 .srow{
   display:block;width:100%;text-align:left;border-top:0;border-right:0;border-bottom:1px solid var(--line-2);
   background:transparent;font:inherit;color:inherit;cursor:pointer;
@@ -434,6 +447,7 @@ button{cursor:pointer}
   padding:12px 14px;border-radius:var(--radius);
 }
 
+.anat-note{margin:0 0 4px;font-size:12.5px;color:var(--ink-3);font-style:italic}
 .anat-drill{
   display:flex;gap:10px;align-items:baseline;
   padding:10px 0;border-bottom:1px solid var(--line-2);
@@ -729,11 +743,15 @@ button{cursor:pointer}
 
 <script>
 /* ============================ EXERCISE LIBRARY ============================ */
-/* Regions are the full clinical set. Only hip, lumbar and thoracic carry
-   content today — the rest are declared now so the schema, the filters and the
-   colour tokens are ready for material still to be written. A region with no
-   exercises simply doesn't appear as a filter chip. */
+/* Regions are the full clinical set, in display order — the filter chips, the
+   library groupings, the legend and the anatomy list all read this array.
+   A region with no content simply doesn't appear as a filter chip.
+
+   head-jaw leads because it is the top of the body and because it wants to sit
+   next to cervical: the two are anatomically adjacent and get compared
+   constantly. See --r-head-jaw for why it is the one region without a hue. */
 const REGIONS = [
+  {k:"head-jaw",    name:"Head & jaw"},
   {k:"cervical",    name:"Cervical"},
   {k:"shoulder",    name:"Shoulder"},
   {k:"elbow-wrist", name:"Elbow & wrist"},
@@ -1954,6 +1972,98 @@ const EX = [
  desc:"Forefoot on a step, lower the heel below the step then rise as high as possible. Full range each rep. Build it up: bodyweight → holding a weight → 3 second lowering.",
  targets:"Calf strength through the full range — the standard to return to running is around 25 clean repetitions"},
 
+/* ---------- HEAD & JAW MOBILITY ---------- */
+{id:"head-jaw-mob-tongue-up-opening", region:"head-jaw", type:"mobility", level:1,
+ name:"Tongue-Up Jaw Opening", rx:"2 x 10, slow",
+ desc:"Rest the tip of your tongue on the roof of your mouth just behind your top teeth, and keep it there while you open and close. You will only open about halfway — that is the point. Build it up: 5 slow reps → 10 → hold open 3 seconds at the end.",
+ targets:"The hinge part of jaw opening only, keeping the joint from sliding forward too early"},
+{id:"head-jaw-mob-controlled-opening", region:"head-jaw", type:"mobility", level:1,
+ name:"Controlled Opening in a Mirror", rx:"2 x 10",
+ desc:"Face a mirror and open and close slowly, watching the midline of your chin. It should track straight down. Build it up: watch only → place a fingertip lightly on each joint and feel them move together → close your eyes and check yourself afterward.",
+ targets:"Even, straight jaw movement — a jaw that swings to one side is the first thing to correct"},
+{id:"head-jaw-mob-lateral-glide", region:"head-jaw", type:"mobility", level:1,
+ name:"Lateral Jaw Glide", rx:"2 x 8 each side",
+ desc:"With teeth slightly apart, slide the lower jaw sideways, keeping it level. Return to the middle before going the other way. Build it up: small range → full comfortable range → hold 3 seconds at the end.",
+ targets:"Side-to-side jaw movement, usually restricted on one side"},
+{id:"head-jaw-mob-protrusion-retrusion", region:"head-jaw", type:"mobility", level:1,
+ name:"Jaw Protrusion and Retrusion", rx:"2 x 10",
+ desc:"With teeth slightly apart, slide the lower jaw forward so the bottom teeth move ahead of the top, then draw it back. Build it up: small range → full range → pause 3 seconds forward and back.",
+ targets:"The sliding component of jaw movement, separate from opening"},
+{id:"head-jaw-mob-masseter-release", region:"head-jaw", type:"mobility", level:1,
+ name:"Masseter Self-Release", rx:"60-90s each side",
+ desc:"Find the thick muscle at the angle of the jaw — clench once to locate it, then relax. Press gently with two fingers and hold on the tender spots while breathing. Build it up: still pressure → small circles → hold while slowly opening the jaw.",
+ targets:"The main clenching muscle, and the most reliably tender one"},
+{id:"head-jaw-mob-temporalis-release", region:"head-jaw", type:"mobility", level:1,
+ name:"Temporalis Self-Release", rx:"60-90s each side",
+ desc:"Place your fingers flat on your temple above and in front of the ear. Clench to feel it engage, then relax and press gently, working in small circles from front to back. Build it up: fingers → knuckles → hold while slowly opening.",
+ targets:"The fan-shaped muscle over the temple — a frequent headache source"},
+{id:"head-jaw-mob-passive-opening", region:"head-jaw", type:"mobility", level:2,
+ name:"Passive Opening Stretch", rx:"3 x 30s",
+ desc:"Stack clean fingers between your front teeth to hold a comfortable open position, and let the jaw relax into it. Build it up: one finger → two → three, adding width only when the current one is comfortable. Stop well short of pain.",
+ targets:"Opening range. Three fingers stacked is roughly normal — use it to track progress"},
+{id:"head-jaw-mob-suprahyoid-stretch", region:"head-jaw", type:"mobility", level:1,
+ name:"Under-Chin Stretch", rx:"3 x 20s",
+ desc:"Tuck the chin gently, then tip the head back a little while keeping the tuck, so you feel a stretch under the chin and down the front of the throat. Build it up: small range → add a swallow at the end → hold longer.",
+ targets:"The muscles under the chin, which shorten with a forward head position"},
+{id:"head-jaw-mob-neck-jaw-sequence", region:"head-jaw", type:"mobility", level:1,
+ name:"Neck and Jaw Sequencing", rx:"2 x 8",
+ desc:"Set a gentle chin tuck first, hold it, then open and close the jaw without losing the tuck. Build it up: sitting → standing → against a wall.",
+ targets:"Separating jaw movement from neck movement — they usually get done together"},
+{id:"head-jaw-mob-tongue-posture", region:"head-jaw", type:"mobility", level:1,
+ name:"Resting Tongue Position", rx:"5 minutes, several times daily",
+ desc:"Rest the whole tongue lightly against the roof of your mouth, teeth slightly apart, lips closed, breathing through your nose. This is where the jaw should sit at rest. Build it up: 1 minute → 5 minutes → notice it through the day.",
+ targets:"The resting position of the jaw. Teeth touching all day is clenching, whether or not you notice it"},
+{id:"head-jaw-mob-occipitofrontalis-release", region:"head-jaw", type:"mobility", level:1,
+ name:"Scalp and Forehead Release", rx:"60s",
+ desc:"Place your fingertips on your forehead and on the back of the skull and move the scalp gently over the bone in small circles. It should slide, not just rub the skin.",
+ targets:"The sheet of muscle over the scalp, involved in tension headache"},
+{id:"head-jaw-mob-jaw-cars", region:"head-jaw", type:"mobility", level:2,
+ name:"Jaw CARs", rx:"2 slow circles each direction",
+ desc:"With teeth slightly apart, trace the largest slow circle you can with the lower jaw — forward, to one side, back, to the other. Keep it smooth and keep the head still. Build it up: small circle → full range → 20 seconds per circle.",
+ targets:"Full jaw range in every direction, and a good weekly self-check"},
+
+/* ---------- HEAD & JAW STABILITY ---------- */
+{id:"head-jaw-stab-iso-opening", region:"head-jaw", type:"stability", level:1,
+ name:"Isometric Opening", rx:"5 x 6s, 30-50% effort",
+ desc:"Place a fist or thumb under the chin and press the jaw down into it while resisting. Nothing moves. Build it up: 6 seconds → 10 seconds. Never go to full effort.",
+ targets:"The opening muscles, without moving an irritable joint"},
+{id:"head-jaw-stab-iso-closing", region:"head-jaw", type:"stability", level:1,
+ name:"Isometric Closing", rx:"5 x 6s, 30-50% effort",
+ desc:"With the jaw slightly open, place two fingers between your teeth and gently try to close against them. Nothing moves. Very light effort — this is the direction that is already overworked.",
+ targets:"The closing muscles. Low effort deliberately, since clenching is usually the problem"},
+{id:"head-jaw-stab-iso-lateral", region:"head-jaw", type:"stability", level:1,
+ name:"Isometric Lateral", rx:"5 x 6s each side",
+ desc:"Place a hand against the side of the jaw and press sideways into it. Nothing moves. Do both sides and notice whether one is weaker.",
+ targets:"Sideways jaw control, and a quick side-to-side comparison"},
+{id:"head-jaw-stab-iso-protrusion", region:"head-jaw", type:"stability", level:1,
+ name:"Isometric Protrusion", rx:"5 x 6s",
+ desc:"Place a hand in front of the chin and press the jaw forward into it without moving.",
+ targets:"The forward-sliding control, often weak where the jaw deviates"},
+{id:"head-jaw-stab-rhythmic-stabilization", region:"head-jaw", type:"stability", level:2,
+ name:"Jaw Rhythmic Stabilization", rx:"3 x 20s",
+ desc:"Hold the jaw slightly open and still, then apply light unpredictable taps to the chin from different directions with your own hand while holding the position.",
+ targets:"Reactive jaw control — holding position against load you did not plan for"},
+{id:"head-jaw-stab-opening-hold", region:"head-jaw", type:"stability", level:2,
+ name:"Tongue-Up Opening with Hold", rx:"3 x 6, 5s hold",
+ desc:"Tongue on the roof of the mouth, open to the limit of tongue contact, and hold there. Build it up: 3 seconds → 5 → 10.",
+ targets:"Endurance in the controlled opening position"},
+{id:"head-jaw-stab-goldfish", region:"head-jaw", type:"stability", level:2,
+ name:"Partial Opening with Joint Contact", rx:"3 x 6",
+ desc:"Tongue on the roof of the mouth. Place one finger on a jaw joint and one on the chin, then open halfway and close, keeping the movement even under both fingers. Build it up: one joint at a time → both joints together.",
+ targets:"Even movement between the two joints, felt rather than watched"},
+{id:"head-jaw-stab-nasal-breathing", region:"head-jaw", type:"stability", level:1,
+ name:"Nasal Breathing with Jaw at Rest", rx:"5 minutes",
+ desc:"Lips closed, teeth apart, tongue on the roof of the mouth, breathing in and out through the nose only. Build it up: 2 minutes sitting → 5 minutes → while walking.",
+ targets:"The breathing pattern that lets the jaw rest. Mouth breathing keeps the jaw muscles working all day"},
+{id:"head-jaw-stab-posture-integration", region:"head-jaw", type:"stability", level:2,
+ name:"Chin Tuck with Jaw Rest", rx:"3 x 30s",
+ desc:"Hold a gentle chin tuck with the tongue on the roof of the mouth and teeth apart, breathing through the nose. Build it up: sitting → standing → against a wall → while walking.",
+ targets:"Neck and jaw position together — the two are mechanically linked and treating one alone rarely holds"},
+{id:"head-jaw-stab-hyoid-hold", region:"head-jaw", type:"stability", level:2,
+ name:"Tongue Press Hold", rx:"3 x 10, 5s hold",
+ desc:"Press the whole tongue firmly up against the roof of the mouth and hold, keeping the teeth apart and breathing through the nose. Build it up: 5 seconds → 10 → 20.",
+ targets:"Tongue and under-chin strength, which supports both jaw and neck posture"},
+
 /* ---------- CERVICAL NERVE ---------- */
 {id:"cervical-nrv-median-slider", region:"cervical", type:"nerve", level:1,
  name:"Median Nerve Slider", rx:"1 x 8 each side, slow",
@@ -2032,7 +2142,7 @@ const EX = [
    self-contained: plain data, with no reference to anything that renders it,
    so it can be lifted out whole.
 
-     region  one of the eight MVMT regions, NOT the anatomical one, so a
+     region  one of the nine MVMT regions, NOT the anatomical one, so a
              structure's drills and the region filter agree. Psoas is filed
              under lumbar rather than hip because it attaches to every lumbar
              vertebra; the nerves are filed where you would look for them
@@ -2044,6 +2154,23 @@ const EX = [
              the slugs are not. resolveAnatomy() turns them into ids at load
              and fails loudly if one does not match — see the note there.
 
+   Two optional fields, both resolved in resolveAnatomy() and both there for
+   material still to be written rather than for anything shipped today:
+
+     inherits      a parent structure id. The child shows the parent's drills
+                   followed by its own, deduplicated. Splitting a group into
+                   its parts (hamstrings into three, erector spinae into nine)
+                   otherwise means restating the same shared drill list on
+                   every part and verifying it every time.
+     noExercises   the reason a structure legitimately has no drills, in
+                   patient-safe prose. Landmarks, most bones and several nerves
+                   are not things a home exercise loads. An empty ex list is
+                   only legal WITH this field — without it, an empty list is
+                   indistinguishable from every name having failed to resolve,
+                   which is exactly the silent failure the index refuses to
+                   have. Missing it is reported like any other resolution
+                   error.
+
    action is plain enough to read aloud to a patient. clinical is not: it names
    compensation patterns and things people get wrong. They are separate fields
    so hiding one is a toggle rather than a rewrite. clinical is reference-only
@@ -2051,6 +2178,97 @@ const EX = [
    exactly that reason, and nothing copies these strings into a program. */
 
 const ANATOMY = [
+
+/* ---- Head & Jaw — 18 ---- */
+{id:"head-jaw-tmj", name:"Temporomandibular Joint", latin:"articulatio temporomandibularis", region:"head-jaw", system:"articular", layer:3,
+ action:"The jaw joint. It hinges for the first part of opening, then slides forward for the rest.",
+ clinical:"Two joints that must work as a pair. Watch the chin midline on opening — a swing to one side that corrects is a disc catching; a swing that stays is a joint not sliding.",
+ ex:["Controlled Opening in a Mirror","Tongue-Up Jaw Opening","Partial Opening with Joint Contact","Jaw CARs"]},
+
+{id:"head-jaw-tmj-disc", name:"TMJ Articular Disc", latin:"discus articularis", region:"head-jaw", system:"articular", layer:3,
+ action:"A cartilage pad between the two bones that moves with the jaw as it opens.",
+ clinical:"The click is usually the disc slipping and relocating. Painless clicking is common and not by itself a problem. A jaw that will not open past about 25 mm and has stopped clicking may be a disc stuck in front of the joint.",
+ ex:["Tongue-Up Jaw Opening","Controlled Opening in a Mirror","Isometric Opening","Partial Opening with Joint Contact"]},
+
+{id:"head-jaw-masseter", name:"Masseter", latin:"m. masseter", region:"head-jaw", system:"muscular", layer:1,
+ action:"The thick muscle at the angle of the jaw. Closes the jaw powerfully.",
+ clinical:"The most commonly treated jaw muscle and the most reliably tender. Visible hypertrophy at the jaw angle is a strong clue to night clenching.",
+ ex:["Masseter Self-Release","Isometric Closing","Resting Tongue Position","Nasal Breathing with Jaw at Rest"]},
+
+{id:"head-jaw-temporalis", name:"Temporalis", latin:"m. temporalis", region:"head-jaw", system:"muscular", layer:1,
+ action:"Fan-shaped muscle over the temple. Closes the jaw and draws it backward.",
+ clinical:"Refers pain into the temple, the eyebrow and the upper teeth convincingly enough to be mistaken for a headache or a dental problem.",
+ ex:["Temporalis Self-Release","Isometric Closing","Scalp and Forehead Release","Resting Tongue Position"]},
+
+{id:"head-jaw-medial-pterygoid", name:"Medial Pterygoid", latin:"m. pterygoideus medialis", region:"head-jaw", system:"muscular", layer:2,
+ action:"Runs on the inner side of the jaw angle, mirroring masseter. Closes the jaw and moves it to the opposite side.",
+ clinical:"Not reachable from outside. Suspect it where opening is limited and masseter work keeps helping only briefly — it refers into the ear and the back of the mouth.",
+ ex:["Isometric Lateral","Lateral Jaw Glide","Passive Opening Stretch","Isometric Closing"]},
+
+{id:"head-jaw-lateral-pterygoid", name:"Lateral Pterygoid", latin:"m. pterygoideus lateralis", region:"head-jaw", system:"muscular", layer:2,
+ action:"Pulls the jaw forward and to the opposite side. Its upper part attaches directly to the joint disc.",
+ clinical:"The only jaw muscle attaching to the disc, which makes it central to clicking and deviation. Provoked by resisted forward movement rather than by clenching.",
+ ex:["Jaw Protrusion and Retrusion","Isometric Protrusion","Lateral Jaw Glide","Jaw CARs"]},
+
+{id:"head-jaw-digastric", name:"Digastric", latin:"m. digastricus", region:"head-jaw", system:"muscular", layer:2,
+ action:"Two bellies joined by a tendon at the hyoid bone. Opens the jaw and lifts the hyoid.",
+ clinical:"Palpable under the jaw and along the front of the throat. Often tender in clenchers and in anyone with a long-standing forward head position.",
+ ex:["Under-Chin Stretch","Isometric Opening","Tongue Press Hold","Chin Tuck with Jaw Rest"]},
+
+{id:"head-jaw-mylohyoid", name:"Mylohyoid", latin:"m. mylohyoideus", region:"head-jaw", system:"muscular", layer:2,
+ action:"Forms the floor of the mouth. Lifts the hyoid and helps open the jaw.",
+ clinical:"Works with the tongue during swallowing. Tongue-press work reaches it better than any stretch.",
+ ex:["Tongue Press Hold","Under-Chin Stretch","Resting Tongue Position","Isometric Opening"]},
+
+{id:"head-jaw-geniohyoid", name:"Geniohyoid", latin:"m. geniohyoideus", region:"head-jaw", system:"muscular", layer:2,
+ action:"Runs from the chin to the hyoid bone, drawing the hyoid forward and up.",
+ clinical:"Too deep to treat directly. Trained rather than released, through tongue and swallowing work.",
+ ex:["Tongue Press Hold","Under-Chin Stretch","Resting Tongue Position"]},
+
+{id:"head-jaw-stylohyoid", name:"Stylohyoid", latin:"m. stylohyoideus", region:"head-jaw", system:"muscular", layer:2,
+ action:"Runs from just behind the ear down to the hyoid, lifting and drawing it backward.",
+ clinical:"Deep and hard to isolate. Relevant in persistent throat or ear discomfort with no ear cause found.",
+ ex:["Under-Chin Stretch","Tongue Press Hold","Chin Tuck with Jaw Rest"]},
+
+{id:"head-jaw-sternohyoid", name:"Sternohyoid", latin:"m. sternohyoideus", region:"head-jaw", system:"muscular", layer:1,
+ action:"Runs from the breastbone up to the hyoid, pulling it downward.",
+ clinical:"The most accessible of the under-hyoid group. Often tight alongside a short SCM in forward head posture.",
+ ex:["Under-Chin Stretch","Chin Tuck with Jaw Rest","Axial Elongation","Nasal Breathing with Jaw at Rest"]},
+
+{id:"head-jaw-omohyoid", name:"Omohyoid", latin:"m. omohyoideus", region:"head-jaw", system:"muscular", layer:2,
+ action:"Runs from the shoulder blade to the hyoid in two bellies with a tendon between them.",
+ clinical:"The only hyoid muscle attaching to the shoulder blade, which makes it a genuine mechanical link between shoulder position and jaw position.",
+ ex:["Under-Chin Stretch","Scapular Circles","Chin Tuck with Jaw Rest","Axial Elongation"]},
+
+{id:"head-jaw-sternothyroid", name:"Sternothyroid", latin:"m. sternothyroideus", region:"head-jaw", system:"muscular", layer:2,
+ action:"Runs from the breastbone to the voice box, drawing it downward.",
+ clinical:"Rarely treated directly. Relevant in voice complaints and in a sensation of throat tightness.",
+ ex:["Under-Chin Stretch","Nasal Breathing with Jaw at Rest","Axial Elongation"]},
+
+{id:"head-jaw-thyrohyoid", name:"Thyrohyoid", latin:"m. thyrohyoideus", region:"head-jaw", system:"muscular", layer:2,
+ action:"Short muscle between the voice box and the hyoid bone.",
+ clinical:"Completes the chain from breastbone to hyoid. Worth knowing rather than treating.",
+ ex:["Under-Chin Stretch","Tongue Press Hold","Nasal Breathing with Jaw at Rest"]},
+
+{id:"head-jaw-hyoid", name:"Hyoid Bone", latin:"os hyoideum", region:"head-jaw", system:"skeletal", layer:3,
+ action:"A horseshoe-shaped bone in the front of the throat. The only bone in the body that articulates with no other bone.",
+ clinical:"Held in position entirely by muscle, above and below. Its resting height is a direct readout of the balance between those two groups, and it shifts with head posture.",
+ ex:["Under-Chin Stretch","Tongue Press Hold","Chin Tuck with Jaw Rest","Axial Elongation"]},
+
+{id:"head-jaw-mandible", name:"Mandible", latin:"mandibula", region:"head-jaw", system:"skeletal", layer:3,
+ action:"The lower jaw. The only moving bone of the skull.",
+ clinical:"One bone, two joints — it cannot move on one side without the other side responding. That is why single-sided jaw problems produce symptoms on both.",
+ ex:["Controlled Opening in a Mirror","Jaw CARs","Lateral Jaw Glide","Jaw Protrusion and Retrusion"]},
+
+{id:"head-jaw-occipitofrontalis", name:"Occipitofrontalis", latin:"m. occipitofrontalis", region:"head-jaw", system:"muscular", layer:1,
+ action:"Two muscle bellies, one at the forehead and one at the back of the skull, joined by a broad sheet across the top.",
+ clinical:"The band across the scalp transmits tension front to back, which is why a tight suboccipital region shows up as forehead pressure.",
+ ex:["Scalp and Forehead Release","Sub-occipital Release","Temporalis Self-Release","Sub-occipital Stretch"]},
+
+{id:"head-jaw-platysma", name:"Platysma", latin:"m. platysma", region:"head-jaw", system:"muscular", layer:1,
+ action:"A thin sheet just under the skin from the chest and shoulder up to the jaw.",
+ clinical:"Superficial enough to be missed on palpation because you press straight through it. Relevant after neck surgery, burns, or long-standing guarding.",
+ ex:["Under-Chin Stretch","Neck Side Bend","Scalp and Forehead Release","Chin Tuck with Jaw Rest"]},
 
 /* ---- Cervical — 12 ---- */
 {id:"cervical-scm", name:"Sternocleidomastoid", latin:"m. sternocleidomastoideus", region:"cervical", system:"muscular", layer:1,
@@ -3026,12 +3244,19 @@ function rebuildLibrary(){
    at the top of the Anatomy view. A name that matches only once case and
    spacing are ignored is accepted — losing a real drill to a stray capital
    would be worse — but it is still reported, because the source needs fixing. */
-let anatEx = {};        /* structure id -> resolved exercise ids */
+let anatEx = {};        /* structure id -> resolved ids, inherited ones first */
+let anatOwn = {};       /* structure id -> only the ids it named itself */
 let anatMissing = [];   /* {id, structure, name} — did not resolve at all */
 let anatLoose = [];     /* {structure, name, matched} — needed the fallback */
+/* Defects in the map's own wiring rather than in a name: a dangling or looping
+   inherits, an unexplained empty drill list, a stated reason contradicted by a
+   list that is not empty. Reported exactly like a failed name, because the
+   consequence is the same one — a structure showing fewer drills than it should
+   with nothing on screen to say so. */
+let anatDefects = [];   /* {id, structure, problem} */
 
 function resolveAnatomy(){
-  anatEx = {}; anatMissing = []; anatLoose = [];
+  anatEx = {}; anatOwn = {}; anatMissing = []; anatLoose = []; anatDefects = [];
   /* EX comes first in ALL, so a custom entry sharing a built-in's name can
      never shadow the library entry the map meant. */
   const exact = Object.create(null), loose = Object.create(null);
@@ -3041,9 +3266,13 @@ function resolveAnatomy(){
     if(!(k in loose)) loose[k] = x.id;
   });
 
+  /* Pass one: the names each structure lists for itself. */
+  const structById = Object.create(null);
+  ANATOMY.forEach(s=>{ structById[s.id] = s; });
+
   ANATOMY.forEach(s=>{
     const ids = [];
-    s.ex.forEach(n=>{
+    (s.ex || []).forEach(n=>{
       if(n in exact){ ids.push(exact[n]); return; }
       const k = String(n).trim().toLowerCase();
       if(k in loose){
@@ -3053,7 +3282,61 @@ function resolveAnatomy(){
       }
       anatMissing.push({id:s.id, structure:s.name, name:n});
     });
+    anatOwn[s.id] = ids;
+  });
+
+  /* Pass two folds in inheritance. A split structure — biceps femoris out of
+     hamstrings, iliocostalis out of erector spinae — shares most of the group's
+     drills, and restating them on every part means verifying the same list
+     several times over. inherits names the parent instead; the child shows the
+     parent's drills followed by whatever it adds.
+
+     Walked recursively rather than in array order, because a child may be
+     declared above its parent, and memoised so a chain costs one walk. A parent
+     that does not exist, or a loop, is a defect: it is reported, and the child
+     falls back to its own drills rather than to none. */
+  const walking = Object.create(null);
+  function resolveOne(s){
+    if(anatEx[s.id]) return anatEx[s.id];
+    let ids = anatOwn[s.id];
+    if(s.inherits){
+      const parent = structById[s.inherits];
+      if(walking[s.id]){
+        anatDefects.push({id:s.id, structure:s.name,
+          problem:"inherits " + JSON.stringify(s.inherits) + ", which loops back to this structure"});
+      }else if(!parent){
+        anatDefects.push({id:s.id, structure:s.name,
+          problem:"inherits " + JSON.stringify(s.inherits) + ", which is not a structure in the map"});
+      }else{
+        walking[s.id] = true;
+        const from = resolveOne(parent);
+        delete walking[s.id];
+        /* Parent first, then only what the child genuinely adds. The shared
+           drills are the bulk of the list; the tail is the difference. */
+        ids = from.concat(ids.filter(i=>from.indexOf(i) < 0));
+      }
+    }
     anatEx[s.id] = ids;
+    return ids;
+  }
+  ANATOMY.forEach(resolveOne);
+
+  /* An empty drill list is legal — landmarks, most bones and several nerves are
+     not things a home exercise loads — but only when the map says why. Without
+     a reason there is no telling a structure that legitimately has no homecare
+     from one whose every name failed to resolve, and that ambiguity is the
+     silent failure this index exists to refuse. */
+  ANATOMY.forEach(s=>{
+    const reason = typeof s.noExercises === "string" && !!s.noExercises.trim();
+    const n = anatEx[s.id].length;
+    if(!n && !reason){
+      anatDefects.push({id:s.id, structure:s.name,
+        problem:"has no drills and no noExercises reason — state why it has none, or fix the names"});
+    }
+    if(n && reason){
+      anatDefects.push({id:s.id, structure:s.name,
+        problem:"states a noExercises reason but resolves " + n + " drill" + (n===1?"":"s") + " — drop one or the other"});
+    }
   });
 
   if(anatLoose.length){
@@ -3065,6 +3348,10 @@ function resolveAnatomy(){
     console.error("Anatomy index: " + anatMissing.length + " exercise name(s) did not resolve against "
       + "the library. The structures below are showing an incomplete drill list.",
       anatMissing.map(m=>m.structure + " (" + m.id + ") → " + JSON.stringify(m.name)));
+  }
+  if(anatDefects.length){
+    console.error("Anatomy index: " + anatDefects.length + " structure(s) are wired wrongly.",
+      anatDefects.map(d=>d.structure + " (" + d.id + ") — " + d.problem));
   }
 }
 
@@ -3732,7 +4019,7 @@ function renderFilterChips(){
   chips($("#fRegion"), regionOptsNow(), "region");
   chips($("#fType"),   typeOptsNow(), "type");
   chips($("#fLevel"),  levelOpts, "level");
-  /* A few custom entries are unfindable among 281 built-ins without this — but
+  /* A few custom entries are unfindable among 303 built-ins without this — but
      the filter is noise until there is something to filter down to. */
   $("#fSourceGroup").style.display = CUSTOM.length ? "" : "none";
   chips($("#fSource"), [{v:"all",l:"All"},{v:"custom",l:"Custom only"}], "source");
@@ -4046,9 +4333,15 @@ function renderPatient(){
         ${guidance.join("\n        ")}
       </div>` : "";
 
-  /* Region and type safety callouts. Neither is optional or dismissible: if the
-     phase contains the work, the handout carries its rules. Where a phase has
-     both, cervical prints first and nerve second — see the render order below. */
+  /* Region and type safety callouts. None is optional or dismissible: if the
+     phase contains the work, the handout carries its rules. Where a phase
+     raises more than one they print neck, then jaw, then nerve — the order
+     comes from the render sequence below, so keep them in that order there.
+
+     The bar for a forced callout is deliberately high: callouts on everything
+     train people to read none of them. Jaw clears it because the failure it
+     warns about is a locked jaw, which is an emergency department visit rather
+     than a bad week. */
   const hasCervical = known.some(i=>regionsOf(byId[i.exerciseId]).indexOf("cervical") >= 0);
   const cervicalCallout = hasCervical ? `
       <div class="callout safety">
@@ -4057,6 +4350,23 @@ function renderPatient(){
           <li>Stay within a range that feels comfortable. Neck work is deliberately low effort — pushing harder does not speed it up.</li>
           <li>Mild muscle fatigue or a stretching feeling is fine. Sharp pain, or symptoms spreading into both arms, is not.</li>
           <li>Stop and contact me if any of these happen during or after: dizziness, light-headedness, changes in your vision, nausea, or trouble speaking or swallowing.</li>
+        </ul>
+      </div>` : "";
+
+  /* Reads regionsOf() rather than region, exactly as the neck callout does, so
+     an exercise cross-tagged into head-jaw raises it too. Widening is the right
+     failure direction for a safety warning — and it means the alsoRegion rule
+     is the same for both: cross-tagging into "cervical" or "head-jaw" is a
+     clinical decision, not a filing one. */
+  const hasJaw = known.some(i=>regionsOf(byId[i.exerciseId]).indexOf("head-jaw") >= 0);
+  const jawCallout = hasJaw ? `
+      <div class="callout safety">
+        <span class="lbl">About the jaw exercises</span>
+        <ul>
+          <li>Keep the effort light. The jaw muscles are strong and easily overworked — pushing harder makes jaw pain worse, not better.</li>
+          <li>Teeth should rest slightly apart, not touching. Touching all day is clenching, whether you notice it or not.</li>
+          <li>Stop and contact me if your jaw locks open or closed, if your bite suddenly feels different, or if opening becomes sharply painful.</li>
+          <li>Clicking without pain is common and not by itself a reason to stop. Clicking that starts to hurt is.</li>
         </ul>
       </div>` : "";
 
@@ -4097,7 +4407,7 @@ function renderPatient(){
       </div>
       ${empty}
       ${secMob}${secNerve}${secStab}${secDaily}
-      ${cervicalCallout}${nerveCallout}
+      ${cervicalCallout}${jawCallout}${nerveCallout}
       ${ph.patientNote?`<div class="callout"><span class="lbl">Notes from your therapist</span><p>${esc(ph.patientNote).replace(/\n/g,"</p><p>")}</p></div>`:""}
       ${howToRun}
       <div class="sheet-foot">
@@ -4154,8 +4464,17 @@ function anatPasses(s){
 
 function renderAnatWarn(){
   const el = $("#anatWarn");
-  if(!anatMissing.length && !anatLoose.length){ el.innerHTML = ""; return; }
+  if(!anatMissing.length && !anatLoose.length && !anatDefects.length){ el.innerHTML = ""; return; }
   let h = "";
+  if(anatDefects.length){
+    h += `<div class="anat-warn">
+      <span class="lbl">${anatDefects.length} structure${anatDefects.length===1?"":"s"} wired wrongly</span>
+      A structure inherits from something that is not there, or has an empty drill list with no
+      <code>noExercises</code> reason given. Fix it in <code>ANATOMY</code>.
+      <ul>${anatDefects.map(d=>
+        `<li>${esc(d.structure)} — ${esc(d.problem)}</li>`).join("")}</ul>
+    </div>`;
+  }
   if(anatMissing.length){
     const by = {};
     anatMissing.forEach(m=>{ (by[m.structure] = by[m.structure] || []).push(m.name); });
@@ -4228,6 +4547,8 @@ function renderAnatDetail(){
   const drills = (anatEx[s.id] || []).map(id=>byId[id]).filter(Boolean);
   const inPhase = S ? new Set(phase().items.map(i=>i.exerciseId)) : null;
   const missing = anatMissing.filter(m=>m.id === s.id);
+  const defects = anatDefects.filter(d=>d.id === s.id);
+  const parent = s.inherits ? ANATOMY.find(x=>x.id === s.inherits) : null;
   const where = S ? (isSingle() ? "this handout" : phase().name) : "";
 
   el.innerHTML = `
@@ -4249,8 +4570,10 @@ function renderAnatDetail(){
       <p>${esc(s.clinical)}</p>
     </div>`}
 
+    ${drills.length ? `
     <div class="anat-sec">
       <span class="lbl">Drills that load this${S ? " — adding to " + esc(where) : ""}</span>
+      ${parent ? `<p class="anat-note">Shares ${esc(parent.name)}'s drills; anything below those is specific to this structure.</p>` : ""}
       ${drills.map(x=>{
         const added = inPhase && inPhase.has(x.id);
         return `<div class="anat-drill">
@@ -4260,13 +4583,22 @@ function renderAnatDetail(){
           <button type="button" class="pbtn" data-add="${esc(x.id)}"${added?" disabled":""}>${added?"Added":"Add"}</button>
         </div>`;
       }).join("")}
-    </div>
+    </div>` : (s.noExercises ? `
+    <div class="anat-sec">
+      <span class="lbl">No drills load this</span>
+      <p>${esc(s.noExercises)}</p>
+    </div>` : "")}
 
     ${missing.length ? `<div class="anat-warn">
       <span class="lbl">Incomplete</span>
       ${missing.length} drill${missing.length===1?"":"s"} named for this structure
       ${missing.length===1?"does":"do"} not exist in the library:
       <ul>${missing.map(m=>`<li><code>${esc(m.name)}</code></li>`).join("")}</ul>
+    </div>` : ""}
+
+    ${defects.length ? `<div class="anat-warn">
+      <span class="lbl">Wired wrongly</span>
+      <ul>${defects.map(d=>`<li>${esc(d.problem)}</li>`).join("")}</ul>
     </div>` : ""}
   `;
 
