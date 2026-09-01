@@ -118,29 +118,40 @@ downstream has to know the difference. See the custom-exercise section below.
 
 The tool was rebranded away from its origin as a return-to-tennis builder, and
 one acceptance check was written as *"no occurrence of 'tennis' in any UI-facing
-string"*. Six occurrences survive on purpose. Three are in elbow-wrist `targets`:
+string"*. Every surviving occurrence is deliberate. Three are in elbow-wrist
+`targets`:
 
 - "the group involved in tennis elbow"
 - "the reliable starting point for a painful tennis elbow"
 - "Tendon loading for tennis elbow"
 
-and three more arrived with the anatomy index, in `ANATOMY` `action` / `clinical`:
+three arrived with the anatomy index, in `ANATOMY` `action` / `clinical`:
 
 - `elbow-common-extensor` — "Tennis elbow. Isometrics first, eccentrics second…"
 - `elbow-ecrb` — "the primary tendon involved in tennis elbow"
 - `nerve-radial` — "Can mimic tennis elbow closely"
+
+and three more with Batch C, all in `clinical` and all diagnostic — two of them
+exist precisely to say *this is not tennis elbow*:
+
+- `elbow-wrist-ecrl` — "why some people with tennis elbow hurt more carrying a bag"
+- `elbow-wrist-anconeus` — "frequently tender in tennis elbow and mistaken for the extensor origin"
+- `elbow-wrist-supinator` — "outer-elbow pain that mimics tennis elbow but sits a few centimetres further down"
 
 **Do not "fix" any of these.** Tennis elbow is lateral epicondylitis — the
 condition name patients actually use. It is clinical vocabulary, not sport
 framing. The acceptance check was written too literally; the rule it was
 protecting is that nothing frames the tool around a sport.
 
-The check as originally phrased — *exactly three hits, all in `targets`* — is
-now stale, and its literal form was already the thing that made it wrong. State
-it against the rule instead: **every hit must be the condition name, and none
-may frame the tool around the sport.** Six hits across `targets`, `action` and
-`clinical` is the correct state today. A hit anywhere else, or one that reads as
-sport rather than diagnosis, is not.
+The check as originally phrased — *exactly three hits, all in `targets`* — was
+stale within one batch, and its literal form was already the thing that made it
+wrong. **Do not restate it as a count.** It has now been "exactly three", "six"
+and "nine", and it will keep moving: the differential around lateral elbow pain
+is most of what this region is for, so every forearm batch adds hits.
+
+State it against the rule instead: **every hit must be the condition name, and
+none may frame the tool around the sport.** A hit that reads as diagnosis passes
+wherever it sits. A hit that reads as sport fails wherever it sits.
 
 Every `id` must start with its own `region` key. Ids are referenced by saved
 programs, so changing one costs a `LEGACY_ID_MAP` entry — get them right before
@@ -155,7 +166,7 @@ plus two small declarations. There is **no schema change and no migration** — 
 
 1. Add `{k, name}` to `REGIONS` (order in that array is the display order).
 2. Add a `--r-<key>` colour token, plus `.ex.<key>` and `.acard.<key>` rules.
-   The region colours are a scanning aid across a 303-entry list, so a tenth one
+   The region colours are a scanning aid across a 311-entry list, so a tenth one
    has to stay distinguishable from the other nine **and** from `--accent` —
    see the theme section. Note that the eight chromatic values already cover the
    usable hue wheel and `--r-head-jaw` has spent the one "outside the system"
@@ -325,9 +336,10 @@ drops its qualifier when there is no second part to be before.
 ### The "Progressing" gate is a substring match — know its failure mode
 
 It tests `desc.includes("Build it up")`, which is how the library writes
-progressions. Currently accurate at 233 of 303 entries (and only 2 of the 14 nerve
-glides, which is why the failure surfaced there first; 17 of the 22 head & jaw
-drills carry one).
+progressions. Currently accurate at 241 of 311 entries. The nerve glides remain
+the thin spot at 5 of 17 — which is why the failure surfaced there first — though
+all three glides added in Batch B carry one, so the ratio is improving rather
+than drifting.
 
 If a future content batch writes progressions as "Progress by…" or "Work up to…",
 those entries silently stop counting and the line disappears from sheets that
@@ -368,7 +380,7 @@ and skipped, so re-importing your own export does not breed duplicates.
 
 ## The anatomy index
 
-`ANATOMY` is a flat array of 134 structures — muscles, joints, ligaments, fascia
+`ANATOMY` is a flat array of 182 structures — muscles, joints, ligaments, fascia
 and nerves — each resolving to the library drills that load it. It backs the
 Anatomy view, and a separate 3D viewer project consumes the same dataset and
 treats this file as its source. **Keep it liftable:** plain data, one top-level
@@ -420,9 +432,14 @@ shows up as a plausible wrong drill.
 
 ### `inherits` and `noExercises`
 
-Both are optional, both exist for material still to be written, and neither is
-used by anything shipped today. They were added ahead of the batches that need
-them because retrofitting either would mean rewriting entries already verified.
+Both are optional, and both are now in use.
+
+- `inherits` — the six anterior forearm flexors (FCR, FCU, palmaris longus, FDS,
+  FDP, FPL) inherit from `elbow-wrist-flexors` ("Wrist Flexors"). Each child
+  states only what is specific to it; the four shared flexor drills are written
+  once, on the parent.
+- `noExercises` — one entry, `nerve-facial`. Facial retraining is specialist
+  work, so the map says so rather than inventing a drill for it.
 
 `inherits: "<parent-id>"` makes a split structure show **the parent's drills
 first, then only what it adds**, deduplicated. Splitting hamstrings into three or
@@ -433,6 +450,14 @@ child may be declared above its parent and a chain costs one walk.
 `noExercises: "<reason>"` is the reason a structure legitimately has none —
 landmarks, most bones, several nerves. The Anatomy detail panel prints the reason
 under **No drills load this** instead of an empty section.
+
+Pair it with an explicit `ex: []`. The loader tolerates the key being absent, but
+the 3D viewer consumes this array as data and should not have to guard for it.
+
+A structure carrying `noExercises` is making a clinical statement, not filling a
+hole — `nerve-facial` says *refer rather than prescribe*. **The map should be
+willing to tell you not to treat something**; that is a better answer than four
+loosely related drills.
 
 **An empty `ex: []` is legal only with a reason.** Without one there is no way to
 tell a structure that has no homecare from one whose every name failed, and that
