@@ -425,6 +425,9 @@ button{cursor:pointer}
   display:block;width:100%;text-align:left;border-top:0;border-right:0;border-bottom:1px solid var(--line-2);
   background:transparent;font:inherit;color:inherit;cursor:pointer;
 }
+/* Parts are indented under the parent they inherit from. --d is the depth the
+   renderer works out; it is set per row, so nesting needs no extra classes. */
+.srow{padding-left:calc(var(--pad) + var(--d,0) * 15px)}
 .srow:hover{background:var(--hover)}
 .srow[aria-pressed="true"]{background:var(--accent-wash)}
 .srow-hd{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
@@ -448,6 +451,19 @@ button{cursor:pointer}
 }
 
 .anat-note{margin:0 0 4px;font-size:12.5px;color:var(--ink-3);font-style:italic}
+/* Navigation between a group and its parts, both directions. */
+.anat-parent{font-size:13px;color:var(--ink-2);margin:-8px 0 16px}
+.alink{
+  border:0;background:transparent;padding:0;font:inherit;color:var(--ink);
+  font-weight:600;text-decoration:underline;text-underline-offset:2px;
+}
+.alink:hover{color:var(--accent-dk)}
+.anat-kids{display:flex;gap:6px;flex-wrap:wrap}
+.anat-kids button{
+  border:1px solid var(--line);background:var(--panel-2);color:var(--ink);
+  padding:5px 10px;border-radius:var(--radius-sm);font:inherit;font-size:13px;text-align:left;
+}
+.anat-kids button:hover{background:var(--hover);border-color:var(--ink-3)}
 .anat-drill{
   display:flex;gap:10px;align-items:baseline;
   padding:10px 0;border-bottom:1px solid var(--line-2);
@@ -711,6 +727,10 @@ button{cursor:pointer}
           <div class="fgroup">
             <span class="lbl">System</span>
             <div class="chips" id="aSystem"></div>
+          </div>
+          <div class="fgroup">
+            <span class="lbl">Detail</span>
+            <button class="pbtn" id="bAnatParts" title="Groups collapse to one entry by default. Turn this on to list the named parts beneath each. Searching finds a part either way.">Show named parts: off</button>
           </div>
           <input class="search" id="aSearch" placeholder="Search muscle, joint or nerve…">
         </div>
@@ -2209,9 +2229,13 @@ const EX = [
    and must never reach a printed handout — #anatView carries no-print for
    exactly that reason, and nothing copies these strings into a program. */
 
+/* The ---- headings below are file organisation, deliberately without counts:
+   they group by where a structure was authored, not by what region it filters
+   under. The Spine block holds cervical, thoracic and lumbar structures at once,
+   and the view prints a live per-region count anyway. */
 const ANATOMY = [
 
-/* ---- Head & Jaw — 18 ---- */
+/* ---- Head & jaw ---- */
 {id:"head-jaw-tmj", name:"Temporomandibular Joint", latin:"articulatio temporomandibularis", region:"head-jaw", system:"articular", layer:3,
  action:"The jaw joint. It hinges for the first part of opening, then slides forward for the rest.",
  clinical:"Two joints that must work as a pair. Watch the chin midline on opening — a swing to one side that corrects is a disc catching; a swing that stays is a joint not sliding.",
@@ -2302,7 +2326,7 @@ const ANATOMY = [
  clinical:"Superficial enough to be missed on palpation because you press straight through it. Relevant after neck surgery, burns, or long-standing guarding.",
  ex:["Under-Chin Stretch","Neck Side Bend","Scalp and Forehead Release","Chin Tuck with Jaw Rest"]},
 
-/* ---- Cervical — 12 ---- */
+/* ---- Cervical ---- */
 {id:"cervical-scm", name:"Sternocleidomastoid", latin:"m. sternocleidomastoideus", region:"cervical", system:"muscular", layer:1,
  action:"Turns the head to the opposite side and tips it toward the same shoulder.",
  clinical:"Prominent, easily provoked, and commonly guarded after whiplash. Reaches end range fast — never force it.",
@@ -2333,12 +2357,12 @@ const ANATOMY = [
  clinical:"The single most under-trained group in the neck. Fails early, and the superficial muscles take over — which is why the neck feels tight rather than weak.",
  ex:["Cranio-cervical Flexion","Chin Tuck Head Lift","Head Hover Hold","Sub-maximal Mid-range Holds"]},
 
-{id:"cervical-splenius", name:"Splenius Capitis & Cervicis", latin:"mm. splenius capitis et cervicis", region:"cervical", system:"muscular", layer:2,
+{id:"cervical-splenius", name:"Splenius", latin:"mm. splenii", region:"cervical", system:"muscular", layer:2,
  action:"Extend the head and turn it to the same side.",
  clinical:"Works with the opposite sternocleidomastoid to rotate. Guarded together with it after neck injury.",
  ex:["Neck Rotation","Rotation in Flexion","Prone Neck Extension","Isometric Rotation"]},
 
-{id:"cervical-semispinalis", name:"Semispinalis Capitis", latin:"m. semispinalis capitis", region:"cervical", system:"muscular", layer:2,
+{id:"cervical-semispinalis", name:"Semispinalis Capitis", latin:"m. semispinalis capitis", region:"cervical", system:"muscular", layer:2, inherits:"spine-semispinalis",
  action:"Extends the head and supports the back of the neck.",
  clinical:"The greater occipital nerve pierces it — a frequent contributor to headache at the back of the skull.",
  ex:["Prone Neck Extension","Sub-occipital Stretch","Chin Nod","Isometric Extension"]},
@@ -2363,7 +2387,55 @@ const ANATOMY = [
  clinical:"An elevated first rib narrows that passage. Suspect it where neck tightness comes with arm symptoms and scalene work keeps relapsing.",
  ex:["First Rib Self-Mobilization","Scalene Stretch","Rib Roll Breathing","Cervical Lateral Glide"]},
 
-/* ---- Shoulder — 18 ---- */
+/* the four suboccipitals, under the existing group */
+{id:"cervical-rcp-major", name:"Rectus Capitis Posterior Major", latin:"m. rectus capitis posterior major", region:"cervical", system:"muscular", layer:2, inherits:"cervical-suboccipitals",
+ action:"Runs from the C2 spinous process to the skull. Extends the head and turns it to the same side.",
+ clinical:"The largest of the four and the one you can most reliably find. Connects by a fibrous bridge to the covering of the spinal cord — a direct mechanical link between this muscle and the structures around the brainstem.",
+ ex:["Chin Nod","Sub-occipital Release"]},
+
+{id:"cervical-rcp-minor", name:"Rectus Capitis Posterior Minor", latin:"m. rectus capitis posterior minor", region:"cervical", system:"muscular", layer:2, inherits:"cervical-suboccipitals",
+ action:"Runs from the back arch of C1 to the skull. Extends the head.",
+ clinical:"Attaches directly to the covering of the spinal cord. Implicated in headache after whiplash, where its role appears to be as much sensory as mechanical.",
+ ex:["Chin Nod","Sub-occipital Stretch"]},
+
+{id:"cervical-obliquus-superior", name:"Obliquus Capitis Superior", latin:"m. obliquus capitis superior", region:"cervical", system:"muscular", layer:2, inherits:"cervical-suboccipitals",
+ action:"Runs from the C1 transverse process to the skull. Extends and side-bends the head.",
+ clinical:"Forms the upper border of the small triangle where the vertebral artery runs. Deep work in this area warrants care and light pressure.",
+ ex:["Chin Nod","Head Repositioning"]},
+
+{id:"cervical-obliquus-inferior", name:"Obliquus Capitis Inferior", latin:"m. obliquus capitis inferior", region:"cervical", system:"muscular", layer:2, inherits:"cervical-suboccipitals",
+ action:"Runs from the C2 spinous process to the C1 transverse process. The only suboccipital that doesn't attach to the skull.",
+ clinical:"The primary rotator of C1 on C2, which is where roughly half of all neck rotation happens. Restriction here shows up as lost rotation when tested in full flexion.",
+ ex:["Rotation in Flexion","Head Repositioning","Sub-occipital Release"]},
+
+/* splenius, split */
+{id:"cervical-splenius-capitis", name:"Splenius Capitis", latin:"m. splenius capitis", region:"cervical", system:"muscular", layer:2, inherits:"cervical-splenius",
+ action:"Runs from the upper thoracic spine to the skull behind the ear. Extends the head and turns it to the same side.",
+ clinical:"Pairs with the opposite sternocleidomastoid to produce rotation — the two work as a diagonal. Refers pain to the top of the head.",
+ ex:["Neck Rotation","Prone Neck Extension"]},
+
+{id:"cervical-splenius-cervicis", name:"Splenius Cervicis", latin:"m. splenius cervicis", region:"cervical", system:"muscular", layer:2, inherits:"cervical-splenius",
+ action:"Runs from the upper thoracic spine to the upper neck transverse processes.",
+ clinical:"Deeper and lower than splenius capitis. Refers pain into the back of the head and behind the eye, and can produce a stiff neck that resists rotation.",
+ ex:["Neck Rotation","Rotation in Flexion"]},
+
+/* scalenes, split */
+{id:"cervical-scalenus-anterior", name:"Scalenus Anterior", latin:"m. scalenus anterior", region:"cervical", system:"muscular", layer:2, inherits:"cervical-scalenes",
+ action:"Runs from the mid-neck to the first rib. Bends the neck sideways and lifts the first rib in breathing.",
+ clinical:"The brachial plexus and subclavian artery pass between this and the middle scalene. The narrowest point of the whole thoracic outlet, and the reason scalene tightness produces arm symptoms.",
+ ex:["Scalene Stretch","First Rib Self-Mobilization","Rib Roll Breathing"]},
+
+{id:"cervical-scalenus-medius", name:"Scalenus Medius", latin:"m. scalenus medius", region:"cervical", system:"muscular", layer:2, inherits:"cervical-scalenes",
+ action:"The largest scalene, running to the first rib behind the nerve bundle.",
+ clinical:"The dorsal scapular nerve pierces straight through it, which is why scalene tightness can produce a deep ache along the inner border of the shoulder blade.",
+ ex:["Scalene Stretch","Cervical Lateral Glide"]},
+
+{id:"cervical-scalenus-posterior", name:"Scalenus Posterior", latin:"m. scalenus posterior", region:"cervical", system:"muscular", layer:2, inherits:"cervical-scalenes",
+ action:"The smallest scalene, running to the second rib.",
+ clinical:"Attaches one rib lower than the others, so it's involved in upper rib mechanics rather than in the neurovascular narrowing. Frequently blended with the middle scalene.",
+ ex:["Scalene Stretch","Rib Roll Breathing"]},
+
+/* ---- Shoulder ---- */
 {id:"shoulder-deltoid", name:"Deltoid", latin:"m. deltoideus", region:"shoulder", system:"muscular", layer:1,
  action:"Lifts the arm away from the body, forward and back.",
  clinical:"Takes over when the cuff cannot centre the joint. A shrugging, deltoid-dominant raise is the visible sign.",
@@ -2454,7 +2526,7 @@ const ANATOMY = [
  clinical:"Its resting position and its ability to rotate upward govern nearly everything the shoulder can do.",
  ex:["Scapular Circles","Side-lying Scapular Punch","Scap Push-Up","Prone Trap Raise"]},
 
-/* ---- Elbow & Wrist — 41 ---- */
+/* ---- Elbow & wrist ---- */
 {id:"elbow-common-extensor", name:"Common Extensor Origin", latin:"origo communis extensorum", region:"elbow-wrist", system:"muscular", layer:2,
  action:"Shared attachment of the wrist extensors at the outer elbow.",
  clinical:"Tennis elbow. Isometrics first, eccentrics second — loading it early beats resting it, but the dose has to be right.",
@@ -2470,8 +2542,8 @@ const ANATOMY = [
  clinical:"The specific tendon at fault in most lateral elbow pain. Loads most with the elbow straight — which is why gripping with a straight arm hurts most.",
  ex:["Wrist Extensor Isometric","Eccentric Wrist Extension","Rubber Bar Twist","Wrist Extensor Stretch"]},
 
-{id:"elbow-wrist-flexors", name:"Wrist Flexors", latin:"mm. flexores carpi radialis et ulnaris", region:"elbow-wrist", system:"muscular", layer:1,
- action:"Bend the wrist and contribute to grip.",
+{id:"elbow-wrist-flexors", name:"Wrist Flexors", latin:"mm. flexores antebrachii", region:"elbow-wrist", system:"muscular", layer:1,
+ action:"Bend the wrist and fingers, and contribute to grip.",
  clinical:"Short flexors reduce the wrist extension needed to bear weight through the hand — check before prescribing any floor work.",
  ex:["Wrist Flexor Stretch","Eccentric Wrist Flexion","Quadruped Wrist Rocks","Prayer and Reverse Prayer"]},
 
@@ -2673,13 +2745,8 @@ const ANATOMY = [
  clinical:"Weight-bearing through the hand needs roughly 70 degrees of extension. Most desk-bound people are well short and load the joint at end range instead.",
  ex:["Quadruped Wrist Rocks","Reverse Quadruped Wrist Rocks","Wrist Weight-Bearing Progression","Wrist Circles"]},
 
-/* ---- Thoracic — 10 ---- */
-{id:"thoracic-erector-spinae", name:"Thoracic Erector Spinae", latin:"m. erector spinae pars thoracis", region:"thoracic", system:"muscular", layer:2,
- action:"Runs the length of the back, extending the spine and controlling forward bending.",
- clinical:"Works eccentrically far more than concentrically — it controls the descent rather than driving the lift.",
- ex:["Foam Roller Thoracic Extension","Sphinx to Cobra","Prone Y-T-W-I","Bench Thoracic Extension"]},
-
-{id:"thoracic-multifidus", name:"Thoracic Multifidus", latin:"m. multifidus thoracis", region:"thoracic", system:"muscular", layer:2,
+/* ---- Thoracic ---- */
+{id:"thoracic-multifidus", name:"Thoracic Multifidus", latin:"m. multifidus thoracis", region:"thoracic", system:"muscular", layer:2, inherits:"spine-multifidus",
  action:"Small deep muscles crossing two or three levels, controlling movement segment by segment.",
  clinical:"Provides local control rather than gross movement. Segmental work reaches it; global extension does not.",
  ex:["Cat-Cow","Segmental Bridge","Bird Dog","Quadruped Rotation (hand behind head)"]},
@@ -2724,13 +2791,8 @@ const ANATOMY = [
  clinical:"Often the source of a deep ache under the shoulder blade that resists surface work because it sits beneath the blade.",
  ex:["Rib Roll Breathing","Thread the Needle","Open Book","Prone Swimmers"]},
 
-/* ---- Lumbar — 12 ---- */
-{id:"lumbar-erector-spinae", name:"Lumbar Erector Spinae", latin:"m. erector spinae pars lumborum", region:"lumbar", system:"muscular", layer:2,
- action:"Extends the low back and controls the descent into forward bending.",
- clinical:"Almost always overworking rather than weak. It stays switched on because the deeper system is not doing its job — chasing it with more extension work makes things worse.",
- ex:["Prone Press-Up","Cat-Cow","Bird Dog","Child's Pose Lateral Reach"]},
-
-{id:"lumbar-multifidus", name:"Lumbar Multifidus", latin:"m. multifidus lumborum", region:"lumbar", system:"muscular", layer:2,
+/* ---- Lumbar ---- */
+{id:"lumbar-multifidus", name:"Lumbar Multifidus", latin:"m. multifidus lumborum", region:"lumbar", system:"muscular", layer:2, inherits:"spine-multifidus",
  action:"Small deep muscles controlling one or two segments at a time.",
  clinical:"Measurably shrinks within days of a back injury and does not recover on its own once pain settles. Segmental control work reaches it; deadlifts do not.",
  ex:["Segmental Bridge","Bird Dog","Dead Bug","Cat-Cow"]},
@@ -2785,7 +2847,128 @@ const ANATOMY = [
  clinical:"Part of the same canister as the diaphragm and transversus abdominis. Breath-holding through effort is a sign the system is not coordinating — and it belongs in any low back conversation, including with men.",
  ex:["Dead Bug","Rib Roll Breathing","Pelvic Tilts","Glute Bridge Series"]},
 
-/* ---- Hip — 15 ---- */
+/* ---- Spine — the erector and deep columns, filed by column rather than by region ---- */
+/* Cut by column rather than by region. The two region-cut erector spinae
+   entries this replaces could not coexist with it: a structure cannot be both
+   "the thoracic part of all three columns" and "the whole of one column". */
+{id:"spine-erector-spinae", name:"Erector Spinae", latin:"m. erector spinae", region:"lumbar", alsoRegion:["thoracic","cervical"], system:"muscular", layer:2,
+ action:"Three vertical columns running the length of the back. Extend the spine and control the descent into forward bending.",
+ clinical:"Almost always overworking rather than weak — it stays switched on because the deep segmental system isn't doing its job. Works eccentrically far more than concentrically: it controls the lowering, it doesn't drive the lift.",
+ ex:["Prone Press-Up","Cat-Cow","Bird Dog","Child's Pose Lateral Reach","Foam Roller Thoracic Extension","Sphinx to Cobra"]},
+
+{id:"spine-iliocostalis", name:"Iliocostalis", latin:"m. iliocostalis", region:"lumbar", alsoRegion:["thoracic","cervical"], system:"muscular", layer:2, inherits:"spine-erector-spinae",
+ action:"The outermost column, attaching to the ribs. Extends and side-bends the spine.",
+ clinical:"The column you reach first, running just lateral to the others along the rib angles. Side-bending work loads it more specifically than extension does.",
+ ex:["Standing Lateral Flexion with Reach","Side Plank"]},
+
+{id:"spine-longissimus", name:"Longissimus", latin:"m. longissimus", region:"thoracic", alsoRegion:["lumbar","cervical"], system:"muscular", layer:2, inherits:"spine-erector-spinae",
+ action:"The middle and longest column, running from the pelvis to the skull.",
+ clinical:"The bulk of the erector mass either side of the spine. Its reach to the skull is why low back tension and neck tension so often travel together.",
+ ex:["Axial Elongation","Prone Neck Extension"]},
+
+{id:"spine-spinalis", name:"Spinalis", latin:"m. spinalis", region:"thoracic", alsoRegion:["cervical"], system:"muscular", layer:2, inherits:"spine-erector-spinae",
+ action:"The innermost and smallest column, running close to the spinous processes.",
+ clinical:"Thin, variable, and often poorly defined in the lumbar spine. Palpating it as distinct from longissimus is harder than textbooks suggest.",
+ ex:["Segmental Bridge","Cat-Cow"]},
+
+{id:"spine-iliocostalis-lumborum", name:"Iliocostalis Lumborum", latin:"m. iliocostalis lumborum", region:"lumbar", system:"muscular", layer:2, inherits:"spine-iliocostalis",
+ action:"Runs from the pelvis to the lower ribs.",
+ clinical:"The thickest part of the lumbar erector mass and a frequent site of one-sided low back tightness in people who stand or carry asymmetrically.",
+ ex:["Side Plank","Suitcase Carry"]},
+
+{id:"spine-iliocostalis-thoracis", name:"Iliocostalis Thoracis", latin:"m. iliocostalis thoracis", region:"thoracic", system:"muscular", layer:2, inherits:"spine-iliocostalis",
+ action:"Runs between the lower and upper ribs.",
+ clinical:"Works with breathing as well as posture, since it attaches only to ribs. Tender in people who brace or breathe shallowly.",
+ ex:["Rib Roll Breathing","Child's Pose Lateral Reach"]},
+
+{id:"spine-iliocostalis-cervicis", name:"Iliocostalis Cervicis", latin:"m. iliocostalis cervicis", region:"cervical", system:"muscular", layer:2, inherits:"spine-iliocostalis",
+ action:"Runs from the upper ribs to the lower neck.",
+ clinical:"Sits deep to the upper trapezius at the neck-shoulder junction. Frequently part of what feels like a stubborn trapezius that won't release.",
+ ex:["Neck Side Bend","Cervical Lateral Glide"]},
+
+{id:"spine-longissimus-thoracis", name:"Longissimus Thoracis", latin:"m. longissimus thoracis", region:"thoracic", system:"muscular", layer:2, inherits:"spine-longissimus",
+ action:"The largest part of the erector spinae, running from the pelvis and lumbar spine up through the thorax.",
+ clinical:"The single biggest contributor to the erector mass you palpate either side of the spine. What most people mean when they say their back is tight.",
+ ex:["Prone Press-Up","Bird Dog"]},
+
+{id:"spine-longissimus-cervicis", name:"Longissimus Cervicis", latin:"m. longissimus cervicis", region:"cervical", system:"muscular", layer:2, inherits:"spine-longissimus",
+ action:"Runs from the upper thoracic spine to the neck vertebrae.",
+ clinical:"Extends and side-bends the lower neck. Loaded constantly by a forward head position.",
+ ex:["Chin Retraction","Axial Elongation"]},
+
+{id:"spine-longissimus-capitis", name:"Longissimus Capitis", latin:"m. longissimus capitis", region:"cervical", system:"muscular", layer:2, inherits:"spine-longissimus",
+ action:"Runs all the way to the mastoid process behind the ear.",
+ clinical:"Attaches to the skull alongside the sternocleidomastoid, so the two work as a pair. Involved in headache referral from the neck.",
+ ex:["Prone Neck Extension","Sub-occipital Stretch"]},
+
+{id:"spine-spinalis-thoracis", name:"Spinalis Thoracis", latin:"m. spinalis thoracis", region:"thoracic", system:"muscular", layer:2, inherits:"spine-spinalis",
+ action:"Runs close to the spinous processes in the mid and upper back.",
+ clinical:"The best-defined part of the spinalis column. Sits immediately either side of the bony bumps you can feel down the middle of the back.",
+ ex:["Segmental Bridge","Foam Roller Thoracic Extension"]},
+
+{id:"spine-spinalis-cervicis", name:"Spinalis Cervicis", latin:"m. spinalis cervicis", region:"cervical", system:"muscular", layer:2, inherits:"spine-spinalis",
+ action:"Runs between the upper thoracic and neck spinous processes.",
+ clinical:"Small and variable, and absent in some people. Worth knowing rather than targeting.",
+ ex:["Chin Nod"]},
+
+{id:"spine-spinalis-capitis", name:"Spinalis Capitis", latin:"m. spinalis capitis", region:"cervical", system:"muscular", layer:2, inherits:"spine-spinalis",
+ action:"Blends with semispinalis capitis at the back of the skull.",
+ clinical:"So intimately blended with semispinalis capitis that they are usually treated as one. Listed for completeness rather than as a separate target.",
+ ex:["Sub-occipital Release"]},
+
+/* the deep layer */
+{id:"spine-transversospinalis", name:"Transversospinalis Group", latin:"mm. transversospinales", region:"lumbar", alsoRegion:["thoracic","cervical"], system:"muscular", layer:2,
+ action:"The deep layer beneath erector spinae. Short muscles running diagonally from one vertebra up to another, controlling the spine segment by segment.",
+ clinical:"Control rather than power. The deeper and shorter the muscle, the more it senses position and the less it produces movement — which is why this layer responds to slow segmental work and not to loading.",
+ ex:["Bird Dog","Dead Bug","Segmental Bridge","Cat-Cow"]},
+
+{id:"spine-semispinalis", name:"Semispinalis", latin:"m. semispinalis", region:"thoracic", alsoRegion:["cervical"], system:"muscular", layer:2, inherits:"spine-transversospinalis",
+ action:"The most superficial and longest of the deep layer, crossing four to six segments.",
+ clinical:"Long enough to act as an extensor rather than purely a controller. Its cervical portion is substantial and often mistaken for erector spinae.",
+ ex:["Prone Neck Extension","Chin Nod"]},
+
+{id:"spine-semispinalis-cervicis", name:"Semispinalis Cervicis", latin:"m. semispinalis cervicis", region:"cervical", system:"muscular", layer:2, inherits:"spine-semispinalis",
+ action:"Runs from the upper thoracic transverse processes to the neck spinous processes.",
+ clinical:"A major deep neck extensor, and the main muscular counterweight to a forward head. Wastes measurably in long-standing neck pain.",
+ ex:["Prone Neck Extension","Chin Tuck Head Lift","Quadruped Neutral Hold"]},
+
+{id:"spine-semispinalis-thoracis", name:"Semispinalis Thoracis", latin:"m. semispinalis thoracis", region:"thoracic", system:"muscular", layer:2, inherits:"spine-semispinalis",
+ action:"Crosses the mid and upper thoracic segments diagonally.",
+ clinical:"Thin and variable. Contributes more to segmental control than to overall extension.",
+ ex:["Segmental Bridge","Quadruped Rotation (hand behind head)"]},
+
+{id:"spine-multifidus", name:"Multifidus", latin:"m. multifidus", region:"lumbar", alsoRegion:["thoracic","cervical"], system:"muscular", layer:2, inherits:"spine-transversospinalis",
+ action:"Crosses two to four segments. Thickest and most developed in the lumbar spine.",
+ clinical:"Measurably shrinks within days of a back injury and does not recover on its own once pain settles. That's the single most useful fact about it — the tightness is not the problem, the wasting is.",
+ ex:["Segmental Bridge","Bird Dog"]},
+
+{id:"spine-multifidus-cervicis", name:"Cervical Multifidus", latin:"m. multifidus cervicis", region:"cervical", system:"muscular", layer:2, inherits:"spine-multifidus",
+ action:"The deepest layer at the back of the neck, crossing two to four segments.",
+ clinical:"The deep neck extensors' equivalent of the deep neck flexors, and just as neglected. Both need training in neck pain, not just the flexors everyone remembers.",
+ ex:["Prone Neck Extension","Quadruped Neutral Hold","Chin Nod"]},
+
+{id:"spine-rotatores", name:"Rotatores", latin:"mm. rotatores", region:"thoracic", alsoRegion:["lumbar","cervical"], system:"muscular", layer:2, inherits:"spine-transversospinalis",
+ action:"The deepest and shortest of the group, crossing one or two segments only. Best developed in the thoracic spine.",
+ clinical:"Densely packed with position sensors — several times more than a limb muscle of the same size. Their job is telling the brain where each segment sits, more than producing rotation.",
+ ex:["Quadruped Rotation (hand behind head)","Segmental Bridge","Cat-Cow"]},
+
+/* the segmental muscles, standalone — sensors rather than movers */
+{id:"spine-interspinales", name:"Interspinales", latin:"mm. interspinales", region:"lumbar", alsoRegion:["cervical"], system:"muscular", layer:2,
+ action:"Tiny paired muscles between adjacent spinous processes.",
+ clinical:"Too small to produce meaningful movement. Their density of position sensors suggests they exist to report segmental position rather than to change it.",
+ ex:["Segmental Bridge","Cat-Cow","Pelvic Tilts"]},
+
+{id:"spine-intertransversarii", name:"Intertransversarii", latin:"mm. intertransversarii", region:"lumbar", alsoRegion:["cervical"], system:"muscular", layer:2,
+ action:"Small muscles between adjacent transverse processes, assisting side-bending.",
+ clinical:"Same story — sensors more than movers. Best developed in the neck and lumbar spine, where segmental control matters most.",
+ ex:["Standing Lateral Flexion with Reach","Cat-Cow","Segmental Bridge"]},
+
+{id:"spine-levatores-costarum", name:"Levatores Costarum", latin:"mm. levatores costarum", region:"thoracic", system:"muscular", layer:2,
+ action:"Fan-shaped muscles from the transverse processes down to the rib below. Lift the ribs.",
+ clinical:"Sit right over the costovertebral joints, so they're frequently involved in the sharp, well-localised mid-back pain that catches on a deep breath.",
+ ex:["Rib Roll Breathing","Open Book","Foam Roller Thoracic Extension"]},
+
+/* ---- Hip ---- */
 {id:"hip-glute-max", name:"Gluteus Maximus", latin:"m. gluteus maximus", region:"hip", system:"muscular", layer:1,
  action:"Extends the hip and rotates it outward. The largest muscle in the body.",
  clinical:"Strong in almost everyone, poorly recruited in many. If the hamstrings cramp during bridging, it is not firing.",
@@ -2861,7 +3044,7 @@ const ANATOMY = [
  clinical:"Loads where the two sides of the pelvis move asymmetrically — kicking, lunging, or late pregnancy. Adductor and deep abdominal work together, not either alone.",
  ex:["Copenhagen Plank","Dead Bug","Adductor Rock Back","Side Plank"]},
 
-/* ---- Knee — 14 ---- */
+/* ---- Knee ---- */
 {id:"knee-quadriceps", name:"Quadriceps", latin:"mm. vasti lateralis, medialis, intermedius", region:"knee", system:"muscular", layer:1,
  action:"Straighten the knee and control the descent of every step down.",
  clinical:"Switches off remarkably fast after knee swelling — within days. Reawakening it with quad sets comes before anything else.",
@@ -2932,7 +3115,7 @@ const ANATOMY = [
  clinical:"Pain on stairs, hills and prolonged sitting. The problem is usually above and below — hip control and foot position — rather than at the kneecap itself.",
  ex:["Lateral Step Down","Standing Banded Abduction","Kneecap Mobilization","Spanish Squat"]},
 
-/* ---- Ankle & Foot — 13 ---- */
+/* ---- Ankle & foot ---- */
 {id:"ankle-gastrocnemius", name:"Gastrocnemius", latin:"m. gastrocnemius", region:"ankle-foot", system:"muscular", layer:1,
  action:"The upper calf. Points the foot down and crosses the knee.",
  clinical:"Because it crosses the knee, it must be tested with the knee straight. Restriction here caps ankle bending and pushes the problem up to the knee and hip.",
@@ -2998,7 +3181,7 @@ const ANATOMY = [
  clinical:"The classic sprain. Roughly a third of people develop ongoing instability, almost always because balance and eversion work was stopped once the pain settled.",
  ex:["Band Eversion","Foot Tripod Balance","Lateral Hop and Stick","Single Leg Balance Progression"]},
 
-/* ---- Peripheral nerves — 29 ---- */
+/* ---- Peripheral and cranial nerves ---- */
 {id:"nerve-cervical-roots", name:"Cervical Nerve Roots", latin:"radices nervorum cervicalium", region:"cervical", system:"nervous", layer:3,
  action:"Emerge from the neck between vertebrae and form the nerve supply to the arm.",
  clinical:"Root irritation follows a band down the arm rather than a nerve's own territory. Lateral glide is usually the gentlest and safest place to start.",
@@ -4766,12 +4949,20 @@ let anatSel = null;
    remembered itself could put clinical copy on a screen turned toward a
    patient without anyone having chosen that this session. */
 let anatPatient = false;
+/* Groups read as one entry until this is on, at which point their named parts
+   list beneath them. Derived entirely from inherits — a structure with a parent
+   is a part, anything else is a group or a standalone, so no new field.
+
+   Module state and never written to storage, for the same reason as the patient
+   toggle above: the default has to be what a reload lands in, and the default
+   here is the shorter list. */
+let anatParts = false;
 
 /* Same rule as the exercise filters: only offer a facet that has something
    behind it, so a region or system waiting on content shows up as nothing
    rather than as an empty filter. */
 const anatRegionOpts = ()=>[{v:"all",l:"All"}].concat(
-  REGIONS.filter(r=>ANATOMY.some(s=>s.region===r.k)).map(r=>({v:r.k, l:r.name})));
+  REGIONS.filter(r=>ANATOMY.some(s=>regionsOf(s).indexOf(r.k) >= 0)).map(r=>({v:r.k, l:r.name})));
 const anatSystemOpts = ()=>[{v:"all",l:"All"}].concat(
   SYSTEMS.filter(y=>ANATOMY.some(s=>s.system===y.k)).map(y=>({v:y.k, l:y.name})));
 
@@ -4785,13 +4976,53 @@ function anatChips(el, opts, key){
   };
 }
 
+/* Structures cross-list across regions the same way exercises do — the spinal
+   columns are genuinely lumbar and thoracic and cervical, which is the whole
+   reason the two region-cut erector spinae entries could be retired. regionsOf()
+   is shared with the library; on a structure it carries none of the safety
+   callout coupling it has on an exercise, because the callouts only ever read
+   exercises. */
+const anatDisplayRegion = s =>
+  (AF.region !== "all" && s.region !== AF.region && regionsOf(s).indexOf(AF.region) >= 0)
+    ? AF.region : s.region;
+
 /* Latin is searched alongside the common name, and as a plain substring, so
    "supraspinatus" and "m. supraspinatus" both find the same structure. */
 function anatPasses(s){
-  if(AF.region !== "all" && s.region !== AF.region) return false;
+  if(AF.region !== "all" && regionsOf(s).indexOf(AF.region) < 0) return false;
   if(AF.system !== "all" && s.system !== AF.system) return false;
-  if(AF.q && !(s.name + " " + s.latin).toLowerCase().includes(AF.q)) return false;
-  return true;
+  /* Search returns before the parts toggle is consulted, deliberately. The
+     toggle governs browsing, not finding: a structure you typed the name of and
+     still could not see would be a bug, not a filter working. */
+  if(AF.q) return (s.name + " " + s.latin).toLowerCase().includes(AF.q);
+  return anatParts || !s.inherits;
+}
+
+/* Orders one region's rows so a part follows the parent it inherits from, with
+   the depth the row should be indented by. A part whose parent is filtered out,
+   or files under a different region, renders flat — better a row in a slightly
+   odd place than a row silently missing. */
+function anatNest(group){
+  const present = Object.create(null);
+  group.forEach(s=>{ present[s.id] = true; });
+  const kids = Object.create(null), roots = [];
+  group.forEach(s=>{
+    if(s.inherits && present[s.inherits]) (kids[s.inherits] = kids[s.inherits] || []).push(s);
+    else roots.push(s);
+  });
+  const out = [], seen = Object.create(null);
+  (function walk(list, depth){
+    list.forEach(s=>{
+      if(seen[s.id]) return;   /* an inherits loop must not spin this walk */
+      seen[s.id] = true;
+      out.push({s:s, depth:depth});
+      walk(kids[s.id] || [], depth + 1);
+    });
+  })(roots, 0);
+  /* Anything a loop kept out of the walk is still shown, flat. resolveAnatomy()
+     reports the loop itself; this only makes sure nothing vanishes over it. */
+  group.forEach(s=>{ if(!seen[s.id]) out.push({s:s, depth:0}); });
+  return out;
 }
 
 function renderAnatWarn(){
@@ -4860,23 +5091,36 @@ function renderAnat(){
   anatChips($("#aSystem"), anatSystemOpts(), "system");
   $("#bAnatMode").textContent = "Patient view: " + (anatPatient ? "on" : "off");
   $("#bAnatMode").setAttribute("aria-pressed", anatPatient);
+  $("#bAnatParts").textContent = "Show named parts: " + (anatParts ? "on" : "off");
+  $("#bAnatParts").setAttribute("aria-pressed", anatParts);
 
   const list = ANATOMY.filter(anatPasses);
-  $("#anatCount").textContent = list.length + " shown of " + ANATOMY.length;
+  /* Both numbers, because the total moves when the toggle flips and a bare
+     count would look like structures had appeared from nowhere. */
+  $("#anatCount").textContent = list.length + " of " + ANATOMY.length + " shown";
 
   let html = "";
   REGIONS.forEach(r=>{
-    const g = list.filter(s=>s.region === r.k);
+    const g = list.filter(s=>anatDisplayRegion(s) === r.k);
     if(!g.length) return;
     html += `<div class="grp"><span class="lbl">${esc(r.name)} · ${g.length}</span></div>`;
-    html += g.map(s=>`
-      <button type="button" class="acard srow ${esc(s.region)}" data-id="${esc(s.id)}" aria-pressed="${anatSel===s.id}">
+    html += anatNest(g).map(row=>{
+      const s = row.s;
+      /* The indent says "part" wherever the parent is directly above. Where it
+         is not — filtered out, or filed under another region — the row would
+         otherwise look like a group, so it says so instead. */
+      const orphanPart = !row.depth && s.inherits;
+      return `
+      <button type="button" class="acard srow ${esc(anatDisplayRegion(s))}" style="--d:${row.depth}"
+              data-id="${esc(s.id)}" aria-pressed="${anatSel===s.id}">
         <span class="srow-hd">
           <span class="srow-nm">${esc(s.name)}</span>
           <span class="tag">${esc(systemName(s.system))}</span>
+          ${orphanPart ? `<span class="tag">Part</span>` : ""}
         </span>
         <span class="srow-lat">${esc(s.latin)}</span>
-      </button>`).join("");
+      </button>`;
+    }).join("");
   });
   if(!html) html = `<div class="empty"><b>Nothing matches</b>Widen a filter or clear the search box.</div>`;
   $("#anatList").innerHTML = html;
@@ -4906,6 +5150,9 @@ function renderAnatDetail(){
   const defects = anatDefects.filter(d=>d.id === s.id);
   const ambiguous = anatAmbiguous.filter(m=>m.id === s.id);
   const parent = s.inherits ? ANATOMY.find(x=>x.id === s.inherits) : null;
+  /* Both directions of the hierarchy are navigable, and the children list is
+     the discovery path while the parts toggle is off. */
+  const children = ANATOMY.filter(x=>x.inherits === s.id);
   /* The parent's ids are always the head of the list, so its length is exactly
      where the inherited run ends — no need to re-derive it from the child. */
   const inherited = parent ? (anatEx[parent.id] || []).length : 0;
@@ -4916,9 +5163,11 @@ function renderAnatDetail(){
     <h3>${esc(s.name)}</h3>
     <div class="lat">${esc(s.latin)}</div>
     <div class="tags">
-      <span class="tag">${esc(regionLabel(s.region))}</span>
+      ${regionsOf(s).map(k=>`<span class="tag">${esc(regionLabel(k))}</span>`).join("")}
       <span class="tag">${esc(systemName(s.system))}</span>
     </div>
+    ${parent ? `<div class="anat-parent">Part of
+      <button type="button" class="alink" data-goto="${esc(parent.id)}">${esc(parent.name)}</button></div>` : ""}
 
     <div class="anat-sec">
       <span class="lbl">What it does</span>
@@ -4953,6 +5202,14 @@ function renderAnatDetail(){
       <p>${esc(s.noExercises)}</p>
     </div>` : "")}
 
+    ${children.length ? `
+    <div class="anat-sec">
+      <span class="lbl">Breaks down into</span>
+      <div class="anat-kids">
+        ${children.map(c=>`<button type="button" data-goto="${esc(c.id)}">${esc(c.name)}</button>`).join("")}
+      </div>
+    </div>` : ""}
+
     ${missing.length ? `<div class="anat-warn">
       <span class="lbl">Incomplete</span>
       ${missing.length} drill${missing.length===1?"":"s"} named for this structure
@@ -4975,6 +5232,14 @@ function renderAnatDetail(){
   `;
 
   el.onclick = e=>{
+    const go = e.target.closest("[data-goto]");
+    if(go){
+      /* Selecting a part from here works whether or not it is in the browse
+         list — that is what makes the toggle safe to default off. */
+      anatSel = go.dataset.goto;
+      renderAnat();
+      return;
+    }
     const b = e.target.closest("[data-add]"); if(!b) return;
     anatAddToPhase(b.dataset.add);
   };
@@ -5013,6 +5278,7 @@ function anatAddToPhase(id){
 
 $("#aSearch").oninput = e=>{ AF.q = e.target.value.trim().toLowerCase(); renderAnat(); };
 $("#bAnatMode").onclick = ()=>{ anatPatient = !anatPatient; renderAnat(); };
+$("#bAnatParts").onclick = ()=>{ anatParts = !anatParts; renderAnat(); };
 
 function setView(v){
   /* Build and Patient copy need a program; without one there is only the list.
