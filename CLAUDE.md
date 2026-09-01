@@ -24,21 +24,24 @@ needed. It takes a string or an array — the ten scapular drills filed under
 
 **But it is not purely cosmetic.** The patient handout renders the neck safety
 callout whenever a phase contains any exercise that reports `"cervical"` from
-`regionsOf()` — which reads `alsoRegion` as well as `region`. So:
+`regionsOf()` — which reads `alsoRegion` as well as `region` — and the jaw
+safety callout on `"head-jaw"` by exactly the same test. So:
 
-> Cross-tagging an exercise into `"cervical"` silently attaches the neck safety
-> callout to every handout that contains it.
+> Cross-tagging an exercise into `"cervical"` or `"head-jaw"` silently attaches
+> that region's safety callout to every handout that contains it.
 
-That widening is deliberate — for a safety callout, firing on any cervical
-involvement is the correct failure direction. The consequence is that
-`alsoRegion: "cervical"` is a **clinical** decision, not a filing one.
+That widening is deliberate — for a safety callout, firing on any involvement is
+the correct failure direction. The consequence is that `alsoRegion: "cervical"`
+and `alsoRegion: "head-jaw"` are **clinical** decisions, not filing ones.
 
-**Never cross-tag into `"cervical"` for filter convenience alone.** If an
-exercise should appear under the Cervical filter but genuinely does not warrant
-the neck warnings, the callout logic needs to change first — do not tag and hope.
+**Never cross-tag into either for filter convenience alone.** If an exercise
+should appear under the Cervical or Head & jaw filter but genuinely does not
+warrant those warnings, the callout logic needs to change first — do not tag and
+hope.
 
-Cross-tagging into any other region carries no such side-effect today. If a
-future region gains its own forced callout, this note needs updating alongside it.
+Cross-tagging into the other seven regions carries no such side-effect today. If
+a further region gains its own forced callout, this note needs updating
+alongside it.
 
 The manual-entry form exposes `alsoRegion` as a dropdown, so this decision is now
 made by whoever is typing rather than by whoever is editing the library. That is
@@ -50,7 +53,8 @@ truthful if the callout rules change.**
 ```js
 {
   id: "hip-mob-9090-switch",   // {region}-{mob|stab|nrv}-{name-slug}, stable
-  region: "hip",               // cervical|shoulder|elbow-wrist|thoracic|lumbar|hip|knee|ankle-foot
+  region: "hip",               // head-jaw|cervical|shoulder|elbow-wrist|thoracic
+                               // |lumbar|hip|knee|ankle-foot
   alsoRegion: "shoulder",      // optional, string or array — see the coupling warning above
   type: "mobility",            // mobility | stability | nerve
   level: 1,                    // 1 Foundational | 2 Intermediate | 3 Advanced
@@ -111,9 +115,11 @@ plus two small declarations. There is **no schema change and no migration** — 
 
 1. Add `{k, name}` to `REGIONS` (order in that array is the display order).
 2. Add a `--r-<key>` colour token, plus `.ex.<key>` and `.acard.<key>` rules.
-   The region colours are a scanning aid across a 281-entry list, so a ninth one
-   has to stay distinguishable from the other eight **and** from `--accent` —
-   see the theme section.
+   The region colours are a scanning aid across a 303-entry list, so a tenth one
+   has to stay distinguishable from the other nine **and** from `--accent` —
+   see the theme section. Note that the eight chromatic values already cover the
+   usable hue wheel and `--r-head-jaw` has spent the one "outside the system"
+   slot, so a tenth region is a genuinely hard colour problem, not a lookup.
 3. Ship the content, with ids prefixed `<key>-`.
 
 The filter chip, the library grouping and the legend entry then appear on their
@@ -158,6 +164,19 @@ they are on explicit `--level-1/2/3`, ordered cool to warm.
 
 The region palette is chosen for mutual distinctness, not for meaning. Nothing
 that carries meaning — danger, warning, success, level — may point at it.
+
+### The ninth region colour is deliberately not a colour
+
+Eight muted hues cover the usable wheel. The ninth region, `head-jaw`, is
+`#3E3630` — a warm near-black — because the only hue-space left was beside
+cervical rose, and head-jaw and cervical are the pair most often compared: they
+are anatomically adjacent and sit next to each other in `REGIONS`. A ninth hue
+would have collided exactly where the scanning aid is needed most.
+
+Reading it as "the head is outside the spine-and-limb colour system" is the point
+rather than a rationalisation after the fact. It also means **the trick does not
+generalise**: there is one non-chromatic slot and it is taken. A tenth region has
+to either find real hue space or force a repaint of the eight.
 
 ### Two more a theme swap is not allowed to forget
 
@@ -215,19 +234,27 @@ legible when the CDN doesn't answer.
 
 ## Forced handout callouts
 
-Both are non-dismissible and render automatically. Where a phase triggers both,
-**neck prints first, nerve second** — the order comes from the render sequence in
-`renderPatient()`, so keep `${cervicalCallout}` above `${nerveCallout}`.
+All three are non-dismissible and render automatically. Where a phase triggers
+more than one, they print **neck, then jaw, then nerve** — the order comes from
+the render sequence in `renderPatient()`, so keep
+`${cervicalCallout}${jawCallout}${nerveCallout}` in that order.
 
 | Trigger | Callout |
 |---|---|
 | any exercise with `"cervical"` in `regionsOf()` | About the neck exercises |
+| any exercise with `"head-jaw"` in `regionsOf()` | About the jaw exercises |
 | any exercise with `type: "nerve"` | About the nerve glides |
 
-A cervical nerve glide raises **both**, which is correct: it is cervical by
-region and a nerve glide by type, so both sets of rules apply.
+A cervical nerve glide raises **both** of the applicable ones, which is correct:
+it is cervical by region and a nerve glide by type, so both sets of rules apply.
 
-Both render as `<div class="callout safety">`. The therapist's note and the
+**The bar for a fourth is high, and it should stay high.** Callouts on everything
+train people to read none of them. Jaw cleared it on one argument: a patient can
+lock their jaw open, which is an emergency-department visit rather than a bad
+week. A callout that only warns against overdoing it does not clear the bar —
+that belongs in the exercise's own `desc`.
+
+All three render as `<div class="callout safety">`. The therapist's note and the
 closing guidance are plain `callout`s. The difference is a heavier left rule and
 the accent wash — **weight, not hue**, so it survives a mono clinic printer,
 where the wash flattens to white and the rule is all that is left. If you add a
@@ -258,8 +285,9 @@ drops its qualifier when there is no second part to be before.
 ### The "Progressing" gate is a substring match — know its failure mode
 
 It tests `desc.includes("Build it up")`, which is how the library writes
-progressions. Currently accurate at 216 of 281 entries (and only 2 of the 14 nerve
-glides, which is why the failure surfaced there first).
+progressions. Currently accurate at 233 of 303 entries (and only 2 of the 14 nerve
+glides, which is why the failure surfaced there first; 17 of the 22 head & jaw
+drills carry one).
 
 If a future content batch writes progressions as "Progress by…" or "Work up to…",
 those entries silently stop counting and the line disappears from sheets that
@@ -300,7 +328,7 @@ and skipped, so re-importing your own export does not breed duplicates.
 
 ## The anatomy index
 
-`ANATOMY` is a flat array of 116 structures — muscles, joints, ligaments, fascia
+`ANATOMY` is a flat array of 134 structures — muscles, joints, ligaments, fascia
 and nerves — each resolving to the library drills that load it. It backs the
 Anatomy view, and a separate 3D viewer project consumes the same dataset and
 treats this file as its source. **Keep it liftable:** plain data, one top-level
@@ -316,6 +344,10 @@ array, no reference to anything that renders it.
   layer: 2,                      // 1 superficial · 2 deep · 3 skeletal
   action: "…", clinical: "…",
   ex: ["Side-lying External Rotation", …]   // NAMES, not ids
+
+  // both optional, both resolved in resolveAnatomy():
+  inherits: "hip-hamstrings",    // show the parent's drills, then this one's own
+  noExercises: "A landmark, …"   // why this structure legitimately has none
 }
 ```
 
@@ -340,6 +372,35 @@ the structure itself.
 > **Never let a name fail quietly.** A structure that silently loses a drill is
 > invisible — a clinician sees a short list and has no reason to distrust it.
 > The structure keeps the drills that did resolve; it is never emptied.
+
+### `inherits` and `noExercises`
+
+Both are optional, both exist for material still to be written, and neither is
+used by anything shipped today. They were added ahead of the batches that need
+them because retrofitting either would mean rewriting entries already verified.
+
+`inherits: "<parent-id>"` makes a split structure show **the parent's drills
+first, then only what it adds**, deduplicated. Splitting hamstrings into three or
+erector spinae into nine otherwise means restating the same shared list on every
+part and re-verifying it each time. Resolution is recursive and memoised, so a
+child may be declared above its parent and a chain costs one walk.
+
+`noExercises: "<reason>"` is the reason a structure legitimately has none —
+landmarks, most bones, several nerves. The Anatomy detail panel prints the reason
+under **No drills load this** instead of an empty section.
+
+**An empty `ex: []` is legal only with a reason.** Without one there is no way to
+tell a structure that has no homecare from one whose every name failed, and that
+ambiguity is precisely the silent failure the index refuses to have. So
+`resolveAnatomy()` reports, to the console and to the Anatomy banner and on the
+structure itself:
+
+- an empty drill list with no `noExercises`
+- a `noExercises` on a structure that does resolve drills
+- an `inherits` naming a structure that isn't in the map, or forming a loop
+
+In each case the structure still shows whatever it legitimately resolved — the
+defect is surfaced, not compensated for by hiding it.
 
 ### `clinical` is practitioner-only and must never print
 
