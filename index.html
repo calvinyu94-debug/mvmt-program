@@ -64,7 +64,7 @@
   /* Region accents. The eight chromatic ones are a full hue spread, muted to
      sit on warm paper, and deliberately less saturated than --accent so the
      accent stays the only bright warm element and never reads as a region.
-     Colour-coding is a scanning aid across 303 entries: these have to stay
+     Colour-coding is a scanning aid across 311 entries: these have to stay
      distinct from each other, so check them side by side in the legend before
      changing any.
 
@@ -1653,6 +1653,10 @@ const EX = [
  name:"Thumb and First Compartment Stretch", rx:"3 x 20s each side",
  desc:"Tuck the thumb into the palm, close the fingers gently over it, then tip the wrist toward the little finger side. Go gently — this position provokes easily if the thumb tendons are irritable.",
  targets:"Thumb-side wrist tendons — relevant in de Quervain's and new-parent wrist pain"},
+{id:"elbow-wrist-mob-palmar-fascia-stretch", region:"elbow-wrist", type:"mobility", level:1,
+ name:"Palmar Fascia Stretch", rx:"3 x 30s each hand",
+ desc:"Place the palm flat on a table and use the other hand to draw the fingers and thumb back and apart, spreading the palm wide. Build it up: fingers only → add the thumb → add pressing the palm flat while the fingers lift.",
+ targets:"The thick tissue across the palm, which thickens and shortens with age and manual work"},
 
 /* ---------- ELBOW & WRIST STABILITY ---------- */
 {id:"elbow-wrist-stab-extensor-iso", region:"elbow-wrist", type:"stability", level:1,
@@ -1707,6 +1711,22 @@ const EX = [
  name:"Finger Extension with Band", rx:"3 x 15",
  desc:"Loop a small band around all five fingertips and open the hand against it. Build it up: light band → firmer band → hold 3 seconds open.",
  targets:"The opening muscles of the hand, which almost every job and hobby under-trains relative to gripping"},
+{id:"elbow-wrist-stab-thumb-opposition", region:"elbow-wrist", type:"stability", level:1,
+ name:"Thumb Opposition", rx:"3 x 5 full circuits",
+ desc:"Touch the tip of the thumb to the tip of each finger in turn, making a round O each time rather than a flat pinch, then reverse the order. Build it up: slowly, watching the shape → faster → eyes closed → holding each contact 3 seconds.",
+ targets:"The thumb muscles at the base of the palm — the movement that separates a human hand from a paw"},
+{id:"elbow-wrist-stab-intrinsic-plus-hold", region:"elbow-wrist", type:"stability", level:1,
+ name:"Intrinsic Plus Hold", rx:"3 x 10, 5s hold",
+ desc:"Bend the knuckles at the base of the fingers while keeping the two finger joints beyond them completely straight, so the fingers make an L shape. Hold. Build it up: 3 seconds → 5 → 10, then add a light band across the fingers.",
+ targets:"The small muscles inside the hand, which stiff hands lose first and which no gripping exercise reaches"},
+{id:"elbow-wrist-stab-finger-abduction", region:"elbow-wrist", type:"stability", level:1,
+ name:"Finger Spread and Squeeze", rx:"3 x 15",
+ desc:"With the palm flat, spread the fingers as wide apart as they go, then draw them tightly together. Build it up: unresisted → a band looped around the fingers to resist spreading → a card held between each pair of fingers to resist squeezing.",
+ targets:"The muscles between the hand bones, and the earliest place ulnar nerve problems show up"},
+{id:"elbow-wrist-stab-thumb-base-isometric", region:"elbow-wrist", type:"stability", level:1,
+ name:"Thumb Base Isometric", rx:"5 x 10s, 30-50% effort",
+ desc:"Make a light O with thumb and index finger and press the two together without letting the shape collapse. Nothing moves. Build it up: 30% effort → 50% → longer holds. Stop well short of pain at the base of the thumb.",
+ targets:"Stability at the base of the thumb, where arthritis and pinch pain most often sit"},
 
 /* ---------- KNEE MOBILITY ---------- */
 {id:"knee-mob-heel-slides", region:"knee", type:"mobility", level:1,
@@ -2119,12 +2139,24 @@ const EX = [
  name:"Femoral Nerve Slider", rx:"1 x 8 each side, slow",
  desc:"Lying on your side with the painful leg on top. Draw the heel toward the buttock and take the thigh back behind you, and as you do, tuck the chin to your chest. As you release the leg, look up. Build it up: knee bend only, then add the thigh going back, then add the head movement.",
  targets:"Femoral nerve mobility down the front of the thigh"},
+{id:"hip-nrv-lat-fem-cutaneous-slider", region:"hip", type:"nerve", level:1,
+ name:"Lateral Femoral Cutaneous Nerve Slider", rx:"1 x 8 each side, slow",
+ desc:"Stand holding support, take the affected leg back and slightly across behind the other. As you tip your head and upper body toward that side, let the leg relax forward; as you tip away, take the leg further back and across. One end loads while the other unloads. Build it up: small range → full range → same movement lying on your side.",
+ targets:"The sensory nerve to the outer thigh, where it passes under the inguinal ligament near the front of the hip bone"},
+{id:"hip-nrv-obturator-slider", region:"hip", type:"nerve", level:1,
+ name:"Obturator Nerve Slider", rx:"1 x 8 each side, slow",
+ desc:"Lie on your side with the affected leg on top. Take the top leg back behind you and let it lower toward the floor behind the bottom leg, and as you do, tuck the chin toward the chest. As you bring the leg back up and forward, look up. Build it up: knee bent → knee straight → add the head movement last.",
+ targets:"The nerve to the inner thigh, running through a canal at the front of the pelvis"},
 
 /* ---------- KNEE NERVE ---------- */
 {id:"knee-nrv-fibular-glide", region:"knee", type:"nerve", level:1,
  name:"Common Fibular Nerve Glide", rx:"1 x 8 each side, slow",
  desc:"Lying on your back, lift the straight leg to a comfortable height. Point the foot down and roll the sole inward, then release. Keep the range small — this nerve sits close to the surface at the outside of the knee and provokes easily.",
  targets:"Common fibular (peroneal) nerve — outside of the shin and top of the foot"},
+{id:"knee-nrv-saphenous-slider", region:"knee", type:"nerve", level:1,
+ name:"Saphenous Nerve Slider", rx:"1 x 8 each side, slow",
+ desc:"Stand holding support with the affected leg back, knee straight, foot turned slightly out. Straighten the knee fully and pull the toes up while letting the trunk come upright; then soften the knee and let the foot relax as you side-bend toward that leg. Build it up: small range → full range → standing on a low step.",
+ targets:"The sensory branch of the femoral nerve down the inside of the knee and shin"},
 
 /* ---------- ANKLE & FOOT NERVE ---------- */
 {id:"ankle-foot-nrv-tibial-glide", region:"ankle-foot", type:"nerve", level:1,
@@ -2422,7 +2454,7 @@ const ANATOMY = [
  clinical:"Its resting position and its ability to rotate upward govern nearly everything the shoulder can do.",
  ex:["Scapular Circles","Side-lying Scapular Punch","Scap Push-Up","Prone Trap Raise"]},
 
-/* ---- Elbow & Wrist — 12 ---- */
+/* ---- Elbow & Wrist — 41 ---- */
 {id:"elbow-common-extensor", name:"Common Extensor Origin", latin:"origo communis extensorum", region:"elbow-wrist", system:"muscular", layer:2,
  action:"Shared attachment of the wrist extensors at the outer elbow.",
  clinical:"Tennis elbow. Isometrics first, eccentrics second — loading it early beats resting it, but the dose has to be right.",
@@ -2477,6 +2509,164 @@ const ANATOMY = [
  action:"Hinge for bending, plus a rotating joint at the radial head for turning the forearm.",
  clinical:"The last few degrees of straightening are the first thing lost and the hardest to get back. Time under a light load beats forcing.",
  ex:["Elbow Extension Hold","Elbow Flexion and Extension","Forearm Rotation","Prone Hang"]},
+
+/* -- anterior forearm: the six that inherit from Wrist Flexors --
+   Each child carries only what is specific to it; the shared flexor work comes
+   from the parent, so it is stated once and verified once. */
+{id:"elbow-wrist-fcr", name:"Flexor Carpi Radialis", latin:"m. flexor carpi radialis", region:"elbow-wrist", system:"muscular", layer:1,
+ inherits:"elbow-wrist-flexors",
+ action:"Bends the wrist and tilts the hand toward the thumb side.",
+ clinical:"One of the main contributors to golfer's elbow through the shared inner-elbow tendon. Its own tendon is a prominent cord at the front of the wrist and a useful landmark.",
+ ex:["Hammer Radial Deviation"]},
+
+{id:"elbow-wrist-fcu", name:"Flexor Carpi Ulnaris", latin:"m. flexor carpi ulnaris", region:"elbow-wrist", system:"muscular", layer:1,
+ inherits:"elbow-wrist-flexors",
+ action:"Bends the wrist and tilts the hand toward the little-finger side.",
+ clinical:"The ulnar nerve runs between its two heads at the elbow, so a tight or overworked FCU is a genuine compression site. Treating the elbow flexor mass matters as much as treating the nerve.",
+ ex:["Ulnar Nerve Slider"]},
+
+{id:"elbow-wrist-palmaris-longus", name:"Palmaris Longus", latin:"m. palmaris longus", region:"elbow-wrist", system:"muscular", layer:1,
+ inherits:"elbow-wrist-flexors",
+ action:"A thin muscle running to the palm, tensioning the palmar fascia.",
+ clinical:"Absent in roughly one person in seven, on one or both sides — so a missing tendon is a normal variant, not a finding. Because it is expendable it is the usual tendon-graft donor.",
+ ex:["Palmar Fascia Stretch"]},
+
+{id:"elbow-wrist-fds", name:"Flexor Digitorum Superficialis", latin:"m. flexor digitorum superficialis", region:"elbow-wrist", system:"muscular", layer:2,
+ inherits:"elbow-wrist-flexors",
+ action:"Bends the middle joint of the fingers.",
+ clinical:"Each finger carries two flexor tendons; this is the superficial one and it splits to let the deep tendon pass through. That crossing point is where trigger finger catches.",
+ ex:["Tendon Glides","Intrinsic Plus Hold"]},
+
+{id:"elbow-wrist-fdp", name:"Flexor Digitorum Profundus", latin:"m. flexor digitorum profundus", region:"elbow-wrist", system:"muscular", layer:2,
+ inherits:"elbow-wrist-flexors",
+ action:"Bends the fingertip joints. The only muscle that can.",
+ clinical:"Split supply — median nerve to the index and middle fingers, ulnar to the ring and little. That split is why an ulnar nerve problem weakens the grip of only the last two fingers.",
+ ex:["Tendon Glides","Grip Squeeze"]},
+
+{id:"elbow-wrist-fpl", name:"Flexor Pollicis Longus", latin:"m. flexor pollicis longus", region:"elbow-wrist", system:"muscular", layer:2,
+ inherits:"elbow-wrist-flexors",
+ action:"Bends the tip of the thumb.",
+ clinical:"The only muscle that bends the thumb tip. Loss of that movement with an intact grip is a specific sign of a median nerve problem above the wrist rather than at the carpal tunnel.",
+ ex:["Tendon Glides","Thumb Opposition"]},
+
+/* -- anterior forearm: the rest -- */
+{id:"elbow-wrist-pronator-quadratus", name:"Pronator Quadratus", latin:"m. pronator quadratus", region:"elbow-wrist", system:"muscular", layer:2,
+ action:"Deep square muscle joining the two forearm bones just above the wrist. The primary muscle that turns the palm down.",
+ clinical:"Does most of the pronation work; pronator teres only assists under load. Sits directly on the interosseous membrane, so it is involved after distal forearm fractures.",
+ ex:["Forearm Rotation","Hammer Rotation","Wrist Circles"]},
+
+{id:"elbow-wrist-brachialis", name:"Brachialis", latin:"m. brachialis", region:"elbow-wrist", system:"muscular", layer:2,
+ action:"Lies under the biceps and bends the elbow. The true workhorse of elbow flexion.",
+ clinical:"Works regardless of forearm position, unlike biceps. Pain blamed on the biceps in front of the elbow is very often brachialis — palpate either side of the biceps tendon, not on it.",
+ ex:["Elbow Flexion and Extension","Elbow Extension Hold","Wrist Flexor Stretch"]},
+
+/* -- posterior forearm -- */
+{id:"elbow-wrist-ecrl", name:"Extensor Carpi Radialis Longus", latin:"m. extensor carpi radialis longus", region:"elbow-wrist", system:"muscular", layer:1,
+ action:"Straightens the wrist and tilts the hand toward the thumb. Attaches above the elbow rather than at the shared tendon.",
+ clinical:"Because it attaches higher, it loads most with the elbow bent — which is why some people with tennis elbow hurt more carrying a bag than gripping with a straight arm.",
+ ex:["Wrist Extensor Isometric","Eccentric Wrist Extension","Hammer Radial Deviation","Wrist Extensor Stretch"]},
+
+{id:"elbow-wrist-ed", name:"Extensor Digitorum", latin:"m. extensor digitorum", region:"elbow-wrist", system:"muscular", layer:1,
+ action:"Straightens the fingers at the knuckles.",
+ clinical:"Its tendons are linked across the back of the hand, which is why lifting the ring finger alone is difficult. Loss of finger extension with intact wrist extension points at the radial nerve below the elbow.",
+ ex:["Finger Extension with Band","Tendon Glides","Wrist Extensor Stretch","Finger Spread and Squeeze"]},
+
+{id:"elbow-wrist-edm", name:"Extensor Digiti Minimi", latin:"m. extensor digiti minimi", region:"elbow-wrist", system:"muscular", layer:1,
+ action:"Independently straightens the little finger.",
+ clinical:"Gives the little finger extension that does not depend on the shared tendon linkage. Minor on its own, useful for distinguishing a tendon problem from a nerve one.",
+ ex:["Finger Extension with Band","Tendon Glides","Finger Spread and Squeeze"]},
+
+{id:"elbow-wrist-ecu", name:"Extensor Carpi Ulnaris", latin:"m. extensor carpi ulnaris", region:"elbow-wrist", system:"muscular", layer:1,
+ action:"Straightens the wrist and tilts the hand toward the little-finger side.",
+ clinical:"Its tendon sits in a groove that can snap in and out as the forearm rotates — a painful click on the little-finger side of the wrist with supination. Common in racquet sports and a frequent cause of ulnar wrist pain.",
+ ex:["Wrist Extensor Isometric","Forearm Rotation","Radial and Ulnar Deviation","Wrist Circles"]},
+
+{id:"elbow-wrist-ei", name:"Extensor Indicis", latin:"m. extensor indicis", region:"elbow-wrist", system:"muscular", layer:2,
+ action:"Independently straightens the index finger.",
+ clinical:"Allows pointing without lifting the other fingers. Frequently harvested as a tendon transfer when the thumb extensor ruptures.",
+ ex:["Finger Extension with Band","Tendon Glides","Intrinsic Plus Hold"]},
+
+{id:"elbow-wrist-epl", name:"Extensor Pollicis Longus", latin:"m. extensor pollicis longus", region:"elbow-wrist", system:"muscular", layer:2,
+ action:"Straightens the tip of the thumb and lifts it back away from the palm.",
+ clinical:"Its tendon hooks around a bony ridge on the back of the wrist, where its blood supply is poor. Rupture weeks to months after a wrist fracture is a known and easily missed complication — inability to lift the thumb off a flat table is the test.",
+ ex:["Thumb and First Compartment Stretch","Finger Extension with Band","Thumb Opposition","Wrist Circles"]},
+
+{id:"elbow-wrist-anconeus", name:"Anconeus", latin:"m. anconeus", region:"elbow-wrist", system:"muscular", layer:1,
+ action:"Small triangular muscle at the back of the elbow that assists extension and steadies the joint.",
+ clinical:"Sits directly over the outer elbow, so it is frequently tender in tennis elbow and mistaken for the extensor origin. Palpate slightly behind and below the epicondyle to tell them apart.",
+ ex:["Elbow Flexion and Extension","Wrist Extensor Isometric","Elbow Extension Hold"]},
+
+{id:"elbow-wrist-supinator", name:"Supinator", latin:"m. supinator", region:"elbow-wrist", system:"muscular", layer:2,
+ action:"Wraps around the upper forearm and turns the palm upward.",
+ clinical:"The deep branch of the radial nerve passes straight through it. That makes it a compression site producing outer-elbow pain that mimics tennis elbow but sits a few centimetres further down and does not respond to tendon loading. Worth testing before adding more load.",
+ ex:["Forearm Rotation","Radial Nerve Slider","Hammer Rotation","Wrist Extensor Stretch"]},
+
+/* -- hand intrinsics -- */
+{id:"elbow-wrist-thenar", name:"Thenar Group", latin:"mm. thenaris", region:"elbow-wrist", system:"muscular", layer:2,
+ action:"The muscular bulge at the base of the thumb. Moves the thumb across the palm to meet the fingers.",
+ clinical:"Median nerve supplied. Visible flattening of this bulge is a late and serious sign of carpal tunnel syndrome — by then the nerve has been compressed a long time.",
+ ex:["Thumb Opposition","Thumb Base Isometric","Grip Squeeze","Putty or Rice Bucket Work"]},
+
+{id:"elbow-wrist-hypothenar", name:"Hypothenar Group", latin:"mm. hypothenaris", region:"elbow-wrist", system:"muscular", layer:2,
+ action:"The bulge at the base of the little finger, moving and cupping that side of the hand.",
+ clinical:"Ulnar nerve supplied. Wasting here alongside a normal thumb bulge separates an ulnar problem from a median one at a glance.",
+ ex:["Finger Spread and Squeeze","Grip Squeeze","Putty or Rice Bucket Work","Intrinsic Plus Hold"]},
+
+{id:"elbow-wrist-adductor-pollicis", name:"Adductor Pollicis", latin:"m. adductor pollicis", region:"elbow-wrist", system:"muscular", layer:2,
+ action:"Draws the thumb in toward the palm. The main muscle of a key pinch.",
+ clinical:"Ulnar supplied. When it is weak the thumb tip bends to compensate during a pinch — the thumb buckling while gripping paper is a classic ulnar nerve sign.",
+ ex:["Thumb Base Isometric","Grip Squeeze","Thumb Opposition","Putty or Rice Bucket Work"]},
+
+{id:"elbow-wrist-lumbricals", name:"Lumbricals of the Hand", latin:"mm. lumbricales manus", region:"elbow-wrist", system:"muscular", layer:2,
+ action:"Four small muscles that bend the knuckles while straightening the finger joints beyond them.",
+ clinical:"Produce the L-shaped finger position that a stiff or swollen hand loses first. No amount of gripping trains them — the position has to be trained directly.",
+ ex:["Intrinsic Plus Hold","Tendon Glides","Finger Spread and Squeeze","Putty or Rice Bucket Work"]},
+
+{id:"elbow-wrist-interossei", name:"Interossei of the Hand", latin:"mm. interossei dorsales et palmares", region:"elbow-wrist", system:"muscular", layer:2,
+ action:"Spread and close the fingers, and assist the lumbricals in the L-shaped position.",
+ clinical:"All ulnar supplied. Hollowing of the web space between thumb and index is the earliest visible sign of ulnar nerve trouble and is easy to spot by comparing hands.",
+ ex:["Finger Spread and Squeeze","Intrinsic Plus Hold","Putty or Rice Bucket Work","Ulnar Nerve Slider"]},
+
+/* -- joints and connective tissue -- */
+{id:"elbow-wrist-proximal-ru-joint", name:"Proximal Radioulnar Joint", latin:"articulatio radioulnaris proximalis", region:"elbow-wrist", system:"articular", layer:3,
+ action:"Where the radius head spins inside a ring of ligament at the elbow, allowing the forearm to rotate.",
+ clinical:"Held by the annular ligament. In young children a sharp pull on the arm slips the radius head out of that ring — the classic pulled elbow, which reduces easily and is not a fracture.",
+ ex:["Forearm Rotation","Hammer Rotation","Elbow Flexion and Extension"]},
+
+{id:"elbow-wrist-distal-ru-joint", name:"Distal Radioulnar Joint", latin:"articulatio radioulnaris distalis", region:"elbow-wrist", system:"articular", layer:3,
+ action:"Where the two forearm bones meet at the wrist, completing forearm rotation.",
+ clinical:"Cushioned by a cartilage complex on the little-finger side. Ulnar wrist pain worse with rotation and gripping, particularly after a fall onto an outstretched hand, points here.",
+ ex:["Forearm Rotation","Hammer Rotation","Radial and Ulnar Deviation","Wrist Circles"]},
+
+{id:"elbow-wrist-interosseous-membrane", name:"Interosseous Membrane", latin:"membrana interossea antebrachii", region:"elbow-wrist", system:"fascial", layer:2,
+ action:"A fibrous sheet between the two forearm bones that transfers load between them.",
+ clinical:"Load through the hand is shared between radius and ulna via this sheet. When it tears alongside a radial head fracture the ulna migrates upward — a combination that turns a simple fracture into a difficult one.",
+ ex:["Forearm Rotation","Wrist Weight-Bearing Progression","Hammer Rotation"]},
+
+{id:"elbow-wrist-flexor-retinaculum", name:"Flexor Retinaculum", latin:"retinaculum musculorum flexorum", region:"elbow-wrist", system:"fascial", layer:2,
+ action:"A tough band across the front of the wrist forming the roof of the carpal tunnel.",
+ clinical:"The tunnel cannot expand — the floor is bone and the roof is this band. Anything that increases the contents, including swelling and fluid retention, raises pressure on the nerve. That is why symptoms are worst at night.",
+ ex:["Median Nerve Slider","Tendon Glides","Wrist Flexor Stretch","Prayer and Reverse Prayer"]},
+
+{id:"elbow-wrist-extensor-retinaculum", name:"Extensor Retinaculum", latin:"retinaculum musculorum extensorum", region:"elbow-wrist", system:"fascial", layer:2,
+ action:"A band across the back of the wrist holding the extensor tendons down, divided into six compartments.",
+ clinical:"Each compartment can inflame separately. The first, on the thumb side, is de Quervain's; the sixth, on the little-finger side, is the ECU tendon. Knowing which compartment is tender names the problem.",
+ ex:["Thumb and First Compartment Stretch","Wrist Circles","Radial and Ulnar Deviation","Wrist Extensor Stretch"]},
+
+{id:"elbow-wrist-palmar-aponeurosis", name:"Palmar Aponeurosis", latin:"aponeurosis palmaris", region:"elbow-wrist", system:"fascial", layer:1,
+ action:"A triangular sheet of fascia across the palm, protecting what runs beneath it and anchoring the skin for grip.",
+ clinical:"Where Dupuytren's contracture forms — painless cords and nodules that gradually pull the ring and little fingers into the palm. Stretching does not reverse it, but keeping the palm mobile is worth doing early.",
+ ex:["Palmar Fascia Stretch","Tendon Glides","Finger Spread and Squeeze","Putty or Rice Bucket Work"]},
+
+{id:"elbow-wrist-guyons-canal", name:"Guyon's Canal", latin:"canalis ulnaris", region:"elbow-wrist", system:"fascial", layer:2,
+ action:"A small tunnel on the little-finger side of the wrist carrying the ulnar nerve into the hand.",
+ clinical:"Distinguishes itself from cubital tunnel by what it spares — the back of the hand keeps normal sensation, because that branch leaves the nerve before the wrist. Classic in cyclists from handlebar pressure.",
+ ex:["Ulnar Nerve Slider","Finger Spread and Squeeze","Wrist Circles","Prayer and Reverse Prayer"]},
+
+{id:"elbow-wrist-cubital-tunnel", name:"Cubital Tunnel", latin:"canalis cubitalis", region:"elbow-wrist", system:"fascial", layer:2,
+ action:"The groove behind the inner elbow where the ulnar nerve passes, roofed by a fibrous band.",
+ clinical:"The tunnel narrows as the elbow bends, which is why symptoms come on during phone calls and on waking with a bent arm. Numbness covering both the front and back of the little finger side places the problem here rather than at the wrist.",
+ ex:["Ulnar Nerve Slider","Ulnar Nerve Tensioner","Wrist Flexor Stretch","Elbow Extension Hold"]},
 
 {id:"elbow-wrist-joint", name:"Wrist Joint Complex", latin:"articulationes carpi", region:"elbow-wrist", system:"articular", layer:3,
  action:"Two rows of small bones giving the wrist movement in every direction.",
@@ -2808,7 +2998,7 @@ const ANATOMY = [
  clinical:"The classic sprain. Roughly a third of people develop ongoing instability, almost always because balance and eversion work was stopped once the pain settled.",
  ex:["Band Eversion","Foot Tripod Balance","Lateral Hop and Stick","Single Leg Balance Progression"]},
 
-/* ---- Peripheral nerves — 10 ---- */
+/* ---- Peripheral nerves — 29 ---- */
 {id:"nerve-cervical-roots", name:"Cervical Nerve Roots", latin:"radices nervorum cervicalium", region:"cervical", system:"nervous", layer:3,
  action:"Emerge from the neck between vertebrae and form the nerve supply to the arm.",
  clinical:"Root irritation follows a band down the arm rather than a nerve's own territory. Lateral glide is usually the gentlest and safest place to start.",
@@ -2857,7 +3047,108 @@ const ANATOMY = [
 {id:"nerve-tibial", name:"Tibial Nerve", latin:"nervus tibialis", region:"ankle-foot", system:"nervous", layer:2,
  action:"Runs down the back of the calf and behind the inner ankle into the sole.",
  clinical:"Compression behind the inner ankle produces burning in the sole, often mistaken for plantar fasciitis. The distinguishing feature is night symptoms.",
- ex:["Tibial Nerve Glide","Sciatic Nerve Slider (seated)","Calf Stretch, Knee Bent","Plantar Ball Roll"]}
+ ex:["Tibial Nerve Glide","Sciatic Nerve Slider (seated)","Calf Stretch, Knee Bent","Plantar Ball Roll"]},
+
+/* -- head and neck -- */
+{id:"nerve-spinal-accessory", name:"Spinal Accessory Nerve", latin:"nervus accessorius (XI)", region:"cervical", system:"nervous", layer:2,
+ action:"Supplies sternocleidomastoid and trapezius. The only cranial nerve to supply a large limb-girdle muscle.",
+ clinical:"Runs superficially across the back triangle of the neck with almost no protection, which is why lymph node biopsy is the classic cause of injury. Presents as a drooping shoulder, trapezius wasting and difficulty raising the arm overhead.",
+ ex:["Prone Trap Raise","Scapular Circles","Band Pull-Apart","Cervical Lateral Glide"]},
+
+{id:"nerve-greater-occipital", name:"Greater Occipital Nerve", latin:"nervus occipitalis major", region:"cervical", system:"nervous", layer:2,
+ action:"Sensory nerve from the C2 level supplying the back of the scalp up to the crown.",
+ clinical:"Pierces semispinalis capitis and trapezius on its way up — both are compression sites. Produces a sharp or burning headache from the base of the skull over the back of the head, often mistaken for migraine. Tender on pressure just below the skull line.",
+ ex:["Sub-occipital Release","Sub-occipital Stretch","Chin Nod","Cervical Lateral Glide"]},
+
+{id:"nerve-phrenic", name:"Phrenic Nerve", latin:"nervus phrenicus", region:"cervical", system:"nervous", layer:3,
+ action:"Arises from C3, C4 and C5 and is the sole motor supply to the diaphragm.",
+ clinical:"C3, 4, 5 keeps the diaphragm alive. Because it starts in the neck, diaphragm irritation refers to the shoulder tip — a patient with unexplained shoulder-top pain and no shoulder findings deserves a second thought.",
+ ex:["Rib Roll Breathing","Nasal Breathing with Jaw at Rest","Scalene Stretch","Pelvic Tilts"]},
+
+{id:"nerve-trigeminal", name:"Trigeminal Nerve", latin:"nervus trigeminus (V)", region:"head-jaw", system:"nervous", layer:3,
+ action:"Sensation to the face, and via its lower branch the motor supply to all four chewing muscles.",
+ clinical:"Trigeminal neuralgia is sharp, electric, one-sided facial pain triggered by light touch, chewing or wind. That presentation needs medical assessment, not manual therapy — jaw work is for muscular jaw pain, which is a different problem entirely.",
+ ex:["Masseter Self-Release","Temporalis Self-Release","Resting Tongue Position","Isometric Closing"]},
+
+/* The one entry in the map that exists to tell you not to treat something. */
+{id:"nerve-facial", name:"Facial Nerve", latin:"nervus facialis (VII)", region:"head-jaw", system:"nervous", layer:3,
+ action:"Supplies every muscle of facial expression, plus platysma, stylohyoid and the back belly of digastric.",
+ clinical:"Bell's palsy is sudden one-sided facial weakness including the forehead. Forehead sparing points to a stroke instead and is a medical emergency. Facial retraining is a specialist field and not homecare exercise.",
+ ex:[],
+ noExercises:"Facial nerve rehabilitation is specialist neuromuscular retraining, outside the scope of this library. Refer rather than prescribe."},
+
+/* -- shoulder girdle -- */
+{id:"nerve-dorsal-scapular", name:"Dorsal Scapular Nerve", latin:"nervus dorsalis scapulae", region:"shoulder", system:"nervous", layer:2,
+ action:"Supplies levator scapulae and both rhomboids.",
+ clinical:"Pierces the middle scalene, which makes a tight scalene a genuine compression site. Produces a deep ache along the inner border of the shoulder blade that resists surface work because the source is in the neck.",
+ ex:["Scalene Stretch","Band Pull-Apart","Prone Y-T-W-I","Cervical Lateral Glide"]},
+
+{id:"nerve-long-thoracic", name:"Long Thoracic Nerve", latin:"nervus thoracicus longus", region:"shoulder", system:"nervous", layer:2,
+ action:"Supplies serratus anterior. Arises from C5, C6 and C7 and runs a long superficial course down the side of the ribcage.",
+ clinical:"Its length and exposure make it the most commonly injured nerve in this group — carrying a heavy bag, a blow to the ribs, or sustained overhead work. Produces a winged scapula and an inability to raise the arm fully overhead.",
+ ex:["Push-Up Plus","Serratus Wall Slide","Wall Plank Protraction Hold","Quadruped Protraction Rock"]},
+
+{id:"nerve-suprascapular", name:"Suprascapular Nerve", latin:"nervus suprascapularis", region:"shoulder", system:"nervous", layer:2,
+ action:"Supplies supraspinatus and infraspinatus.",
+ clinical:"Two narrow points along its path — the notch at the top of the shoulder blade and a second behind the joint. Compression at the second spares supraspinatus, so isolated infraspinatus wasting with intact abduction strength points here rather than at the cuff.",
+ ex:["Side-lying External Rotation","Full Can Raise","Band External Rotation at 90/90","Cross-Body Stretch"]},
+
+{id:"nerve-axillary", name:"Axillary Nerve", latin:"nervus axillaris", region:"shoulder", system:"nervous", layer:2,
+ action:"Supplies deltoid and teres minor, plus sensation over the outer shoulder.",
+ clinical:"Wraps the surgical neck of the humerus and passes through a small gap behind the joint. Vulnerable in shoulder dislocation and in fractures of the upper humerus. Numbness over the shoulder badge area after a dislocation is the sign to check for.",
+ ex:["Full Can Raise","Shoulder CARs","Side-lying External Rotation","Rhythmic Stabilization"]},
+
+{id:"nerve-musculocutaneous", name:"Musculocutaneous Nerve", latin:"nervus musculocutaneus", region:"shoulder", system:"nervous", layer:2,
+ action:"Supplies coracobrachialis, biceps and brachialis, then continues as sensation to the outer forearm.",
+ clinical:"Pierces coracobrachialis, which is a compression site in heavy overhead athletes. Weak elbow flexion with a normal grip, plus numbness along the outer forearm, is the pattern.",
+ ex:["Elbow Flexion and Extension","Doorway Pec Stretch","Half-Kneeling Overhead Reach","Brachial Plexus Opener"]},
+
+{id:"nerve-thoracodorsal", name:"Thoracodorsal Nerve", latin:"nervus thoracodorsalis", region:"shoulder", system:"nervous", layer:2,
+ action:"Supplies latissimus dorsi.",
+ clinical:"Runs down the back wall of the armpit. Most often injured during axillary surgery. Rarely a manual therapy finding, but worth knowing when lat strength is unexpectedly and one-sidedly poor.",
+ ex:["Ring or Inverted Row","Kneeling Lat Stretch","Single Arm Row","Dowel Pass-Throughs"]},
+
+{id:"nerve-pectoral", name:"Pectoral Nerves", latin:"nervi pectorales medialis et lateralis", region:"shoulder", system:"nervous", layer:2,
+ action:"Supply pectoralis major and minor.",
+ clinical:"The medial branch passes through pectoralis minor. A short pec minor therefore compresses both this nerve and the neurovascular bundle behind it, which is why pec minor length matters more than its strength.",
+ ex:["Doorway Pec Stretch","Wall Plank Protraction Hold","Brachial Plexus Opener","Prone Trap Raise"]},
+
+/* -- trunk -- */
+{id:"nerve-intercostal", name:"Intercostal Nerves", latin:"nervi intercostales", region:"thoracic", system:"nervous", layer:2,
+ action:"Twelve pairs running in a groove under each rib, supplying the intercostals and the abdominal wall.",
+ clinical:"Run in a protected groove on the underside of each rib, which is why rib fractures and post-surgical scars produce persistent band-like pain around the chest. Pain following one rib line rather than a broad area points here.",
+ ex:["Rib Roll Breathing","Child's Pose Lateral Reach","Open Book","Standing Lateral Flexion with Reach"]},
+
+{id:"nerve-superior-cluneal", name:"Superior Cluneal Nerves", latin:"nervi clunium superiores", region:"lumbar", system:"nervous", layer:1,
+ action:"Sensory branches from the upper lumbar levels crossing the top of the pelvis to supply the skin over the buttock.",
+ clinical:"Cross the iliac crest through a tight fibrous tunnel roughly seven centimetres from the midline. Entrapment there produces low back and buttock pain indistinguishable from a facet or disc problem — and it responds to belts and waistbands rather than to spinal work. Genuinely underdiagnosed.",
+ ex:["Side Plank","Standing Lateral Flexion with Reach","Child's Pose Lateral Reach","Quadruped Rock Back"]},
+
+/* -- hip and lower limb -- */
+{id:"nerve-obturator", name:"Obturator Nerve", latin:"nervus obturatorius", region:"hip", system:"nervous", layer:2,
+ action:"Supplies the adductor group and sensation to the inner thigh.",
+ clinical:"Passes through a canal at the front of the pelvis. Compression there produces groin pain that worsens with exercise and eases with rest — a recognised and frequently missed cause of persistent groin pain in kicking and change-of-direction athletes.",
+ ex:["Obturator Nerve Slider","Adductor Rock Back","Copenhagen Plank","Frog Rock"]},
+
+{id:"nerve-superior-gluteal", name:"Superior Gluteal Nerve", latin:"nervus gluteus superior", region:"hip", system:"nervous", layer:2,
+ action:"Supplies gluteus medius, gluteus minimus and tensor fasciae latae.",
+ clinical:"Injury produces a dropping pelvis on the unsupported side when standing on one leg. Classically iatrogenic from badly placed injections into the buttock — which is why the upper outer quadrant is the only safe site.",
+ ex:["Standing Banded Abduction","Lateral Band Walks","Hip Airplane","Single Leg Balance Progression"]},
+
+{id:"nerve-inferior-gluteal", name:"Inferior Gluteal Nerve", latin:"nervus gluteus inferior", region:"hip", system:"nervous", layer:2,
+ action:"Supplies gluteus maximus.",
+ clinical:"Injury makes rising from a chair and climbing stairs difficult while walking on the flat stays normal. That specific pattern separates it from general hip weakness.",
+ ex:["Glute Bridge Series","Sit-to-Stand Progression","Step Up","Split Squat to Bulgarian"]},
+
+{id:"nerve-lat-fem-cutaneous", name:"Lateral Femoral Cutaneous Nerve", latin:"nervus cutaneus femoris lateralis", region:"hip", system:"nervous", layer:1,
+ action:"Purely sensory to the outer thigh. Passes under the inguinal ligament near the front of the hip bone.",
+ clinical:"Meralgia paraesthetica — burning, numbness or hypersensitivity over the outer thigh with no weakness at all. Caused by tight belts, low-rise waistbands, tool belts, body armour, pregnancy or weight gain. The most effective intervention is usually removing the compression, not exercise.",
+ ex:["Lateral Femoral Cutaneous Nerve Slider","Half-Kneeling Hip Flexor Series","Hip CARs (Controlled Rotations)","Pelvic Tilts"]},
+
+{id:"nerve-saphenous", name:"Saphenous Nerve", latin:"nervus saphenus", region:"knee", system:"nervous", layer:2,
+ action:"The longest sensory branch of the femoral nerve, running down the inside of the thigh, knee and shin.",
+ clinical:"Compressed where it exits a tunnel in the inner thigh. Produces inner knee pain with no joint findings, frequently misattributed to the medial meniscus or the pes anserinus. Purely sensory, so strength is always normal.",
+ ex:["Saphenous Nerve Slider","Adductor Rock Back","Hamstring Stretch","Kneeling Sit-Back"]}
 
 ];
 
@@ -4060,7 +4351,7 @@ function renderFilterChips(){
   chips($("#fRegion"), regionOptsNow(), "region");
   chips($("#fType"),   typeOptsNow(), "type");
   chips($("#fLevel"),  levelOpts, "level");
-  /* A few custom entries are unfindable among 303 built-ins without this — but
+  /* A few custom entries are unfindable among 311 built-ins without this — but
      the filter is noise until there is something to filter down to. */
   $("#fSourceGroup").style.display = CUSTOM.length ? "" : "none";
   chips($("#fSource"), [{v:"all",l:"All"},{v:"custom",l:"Custom only"}], "source");
@@ -4615,6 +4906,10 @@ function renderAnatDetail(){
   const defects = anatDefects.filter(d=>d.id === s.id);
   const ambiguous = anatAmbiguous.filter(m=>m.id === s.id);
   const parent = s.inherits ? ANATOMY.find(x=>x.id === s.inherits) : null;
+  /* The parent's ids are always the head of the list, so its length is exactly
+     where the inherited run ends — no need to re-derive it from the child. */
+  const inherited = parent ? (anatEx[parent.id] || []).length : 0;
+  const ownAdded = drills.length - inherited;
   const where = S ? (isSingle() ? "this handout" : phase().name) : "";
 
   el.innerHTML = `
@@ -4639,7 +4934,10 @@ function renderAnatDetail(){
     ${drills.length ? `
     <div class="anat-sec">
       <span class="lbl">Drills that load this${S ? " — adding to " + esc(where) : ""}</span>
-      ${parent ? `<p class="anat-note">Shares ${esc(parent.name)}'s drills; anything below those is specific to this structure.</p>` : ""}
+      ${parent ? `<p class="anat-note">${ownAdded
+        ? "The first " + inherited + " are inherited from " + esc(parent.name) + ". The "
+          + (ownAdded === 1 ? "last one is" : "last " + ownAdded + " are") + " specific to this structure."
+        : "All inherited from " + esc(parent.name) + " — this structure adds none of its own."}</p>` : ""}
       ${drills.map(x=>{
         const added = inPhase && inPhase.has(x.id);
         return `<div class="anat-drill">
