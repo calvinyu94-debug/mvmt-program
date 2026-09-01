@@ -103,6 +103,16 @@ structure itself. It runs on every library change, not once at boot, because a
 **custom entry can introduce a clash long after load** and deleting it takes the
 clash away again.
 
+Structure ids are cheaper still, and Batch D established how far: `ANATOMY` ids
+are referenced only by `inherits`, and **no saved program stores one** — every
+item a program holds is `{exerciseId, rx, freq, note}`, from all four sites that
+build one. A structure can therefore be retired outright, which is what happened
+to `thoracic-erector-spinae` and `lumbar-erector-spinae` when the nine named
+columns arrived: a structure cannot be both "the thoracic part of all three
+columns" and "the whole of one column", so the two cuts could not coexist.
+**Verify the absence of references before deleting rather than trusting this
+paragraph** — it is a fact about today's code, not a guarantee.
+
 Renaming an exercise is cheap in a way that renaming an id is not: saved programs
 store `exerciseId`, so a `name` change costs nothing downstream. The one thing it
 touches is any `ANATOMY` `ex` entry naming it — and that will report itself
@@ -380,7 +390,7 @@ and skipped, so re-importing your own export does not breed duplicates.
 
 ## The anatomy index
 
-`ANATOMY` is a flat array of 182 structures — muscles, joints, ligaments, fascia
+`ANATOMY` is a flat array of 212 structures — muscles, joints, ligaments, fascia
 and nerves — each resolving to the library drills that load it. It backs the
 Anatomy view, and a separate 3D viewer project consumes the same dataset and
 treats this file as its source. **Keep it liftable:** plain data, one top-level
@@ -402,6 +412,15 @@ array, no reference to anything that renders it.
   noExercises: "A landmark, …"   // why this structure legitimately has none
 }
 ```
+
+Structures take `alsoRegion` on the same terms exercises do, and it is
+load-bearing rather than cosmetic: Erector Spinae is filed `lumbar` with
+`alsoRegion: ["thoracic","cervical"]`, and that is the only reason the Thoracic
+filter still shows an erector entry after the two region-cut ones were retired.
+`regionsOf()` is shared with the library; on a structure it carries **none** of
+the safety-callout coupling it has on an exercise, because the callouts only ever
+read exercises. Adding a structure to `"cervical"` or `"head-jaw"` is therefore
+a filing decision, not a clinical one — the opposite of the rule for exercises.
 
 `region` is the MVMT region so a structure's drills and the region filter agree.
 That is why psoas is filed under **lumbar** rather than hip, and why the nerves
@@ -440,6 +459,34 @@ Both are optional, and both are now in use.
   once, on the parent.
 - `noExercises` — one entry, `nerve-facial`. Facial retraining is specialist
   work, so the map says so rather than inventing a drill for it.
+
+`inherits` is now two things at once, and the second is why it must not be
+used for loose association: **it is the sole input to the group/detail toggle.**
+A structure with a parent is a *part*; anything else is a group or a standalone.
+Nothing else distinguishes them, and no field was added to.
+
+> **Show named parts** (Anatomy view, default **off**) hides every structure with
+> an `inherits`. Erector Spinae reads as one entry; turn it on and the nine
+> named parts appear nested beneath it.
+
+Three rules that toggle has to keep:
+
+- **Search ignores it.** `anatPasses()` returns on the query *before* consulting
+  the toggle. A structure you typed the name of and still could not see would be
+  a bug, not a filter working.
+- **It never persists.** Module state, same reasoning as the patient-view toggle:
+  the default has to be what a reload lands in.
+- **The hierarchy stays navigable with it off.** A parent lists its children as
+  links under *Breaks down into*, a child links back under *Part of* — so a
+  hidden part is always one click away, and that is what makes defaulting to off
+  safe.
+
+Nesting is by `inherits` within a region group. A part whose parent is filtered
+out, or files under a different region, renders flat and carries a **Part** tag
+instead of an indent — better a row in a slightly odd place than a row silently
+missing. The same instinct guards the walk itself: a structure an `inherits`
+loop keeps out of the tree is appended flat rather than dropped, since
+`resolveAnatomy()` already reports the loop.
 
 `inherits: "<parent-id>"` makes a split structure show **the parent's drills
 first, then only what it adds**, deduplicated. Splitting hamstrings into three or
