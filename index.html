@@ -2337,7 +2337,7 @@ const ANATOMY = [
  clinical:"Often involved where neck tightness comes with symptoms into the arm — the brachial plexus passes between them.",
  ex:["Scalene Stretch","First Rib Self-Mobilization","Rib Roll Breathing","Cervical Lateral Glide"]},
 
-{id:"cervical-upper-trap", name:"Upper Trapezius", latin:"m. trapezius pars descendens", region:"cervical", system:"muscular", layer:1,
+{id:"cervical-upper-trap", name:"Upper Trapezius", latin:"m. trapezius pars descendens", region:"cervical", system:"muscular", layer:1, inherits:"shoulder-trapezius",
  action:"Lifts the shoulder blade and side-bends the neck.",
  clinical:"Rarely genuinely weak. Usually overworking because lower trapezius and serratus are not holding their end — treat the cause, not the ache.",
  ex:["Upper Trapezius Stretch","Prone Trap Raise","Serratus Wall Slide","Axial Elongation"]},
@@ -2481,12 +2481,12 @@ const ANATOMY = [
  clinical:"Restricts overhead reach with the lats. Often the tender spot found at the back of the armpit.",
  ex:["Kneeling Lat Stretch","Cross-Body Stretch","Dowel-Assisted Flexion","Ring or Inverted Row"]},
 
-{id:"shoulder-mid-trap", name:"Middle Trapezius", latin:"m. trapezius pars transversa", region:"shoulder", system:"muscular", layer:1,
+{id:"shoulder-mid-trap", name:"Middle Trapezius", latin:"m. trapezius pars transversa", region:"shoulder", system:"muscular", layer:1, inherits:"shoulder-trapezius",
  action:"Draws the shoulder blades toward the spine.",
  clinical:"Endurance rather than strength is what fails here. Train it in long sets.",
  ex:["Band Pull-Apart","Prone Y-T-W-I","Ring or Inverted Row","Face Pull"]},
 
-{id:"shoulder-lower-trap", name:"Lower Trapezius", latin:"m. trapezius pars ascendens", region:"shoulder", system:"muscular", layer:2,
+{id:"shoulder-lower-trap", name:"Lower Trapezius", latin:"m. trapezius pars ascendens", region:"shoulder", system:"muscular", layer:2, inherits:"shoulder-trapezius",
  action:"Draws the shoulder blade down and rotates it upward for overhead reach.",
  clinical:"Sets the shoulder blade before the arm goes overhead. Weak in almost everyone with a desk job, and the direct counterpart to an overworking upper trapezius.",
  ex:["Prone Trap Raise","Prone Y-T-W-I","Face Pull","Banded Wall Slide"]},
@@ -2525,6 +2525,43 @@ const ANATOMY = [
  action:"A floating bone suspended on muscle, with its only bony link to the trunk through the collarbone.",
  clinical:"Its resting position and its ability to rotate upward govern nearly everything the shoulder can do.",
  ex:["Scapular Circles","Side-lying Scapular Punch","Scap Push-Up","Prone Trap Raise"]},
+
+/* -- Batch G: the trapezius group. Its three parts already existed as separate
+      entries; this is what they are parts of. -- */
+{id:"shoulder-trapezius", name:"Trapezius", latin:"m. trapezius", region:"shoulder", alsoRegion:["cervical","thoracic"], system:"muscular", layer:1,
+ action:"A large diamond-shaped muscle from the skull and spine to the shoulder blade and collarbone, with three parts pulling in different directions.",
+ clinical:"Treated as one muscle and behaves as three. The upper part is almost never weak and almost always overworking; the lower part is almost always weak. Treating the tight part without training the weak one is why it comes back.",
+ ex:["Prone Trap Raise","Band Pull-Apart","Prone Y-T-W-I","Upper Trapezius Stretch"]},
+
+{id:"shoulder-subclavius", name:"Subclavius", latin:"m. subclavius", region:"shoulder", system:"muscular", layer:2,
+ action:"A small muscle beneath the collarbone, drawing it down and forward.",
+ clinical:"Occupies the narrow space between collarbone and first rib that the nerve bundle also passes through. Small, but positionally significant in thoracic outlet symptoms.",
+ ex:["First Rib Self-Mobilization","Doorway Pec Stretch","Brachial Plexus Opener","Scapular Circles"]},
+
+{id:"shoulder-coracobrachialis", name:"Coracobrachialis", latin:"m. coracobrachialis", region:"shoulder", system:"muscular", layer:2,
+ action:"Runs from the coracoid process to the middle of the humerus, drawing the arm forward and in.",
+ clinical:"The musculocutaneous nerve pierces straight through it, making it a compression site in heavy overhead athletes. Palpable high in the armpit with the arm abducted.",
+ ex:["Doorway Pec Stretch","Half-Kneeling Overhead Reach","Shoulder CARs","Brachial Plexus Opener"]},
+
+{id:"shoulder-subacromial-bursa", name:"Subacromial Bursa", latin:"bursa subacromialis", region:"shoulder", system:"fascial", layer:2,
+ action:"A fluid sac between the bony arch above and the rotator cuff below, letting the cuff glide as the arm rises.",
+ clinical:"The largest bursa in the body. Painful arc between roughly 60 and 120 degrees of elevation is the classic finding — pain that eases above that range points here rather than at the joint.",
+ ex:["Side-lying External Rotation","Full Can Raise","Wall Walk","Prone Trap Raise"]},
+
+{id:"shoulder-glenoid-labrum", name:"Glenoid Labrum", latin:"labrum glenoidale", region:"shoulder", system:"articular", layer:3,
+ action:"A rim of cartilage deepening the shallow shoulder socket.",
+ clinical:"Deepens the socket by roughly half and anchors the long head of biceps at its top. Tears there produce deep clicking or catching with overhead loading rather than a painful arc.",
+ ex:["Shoulder CARs","Rhythmic Stabilization","Bottoms-Up Kettlebell Hold","Supine 90/90 Rotation Arcs"]},
+
+{id:"shoulder-sternoclavicular-joint", name:"Sternoclavicular Joint", latin:"articulatio sternoclavicularis", region:"shoulder", system:"articular", layer:3,
+ action:"Where the collarbone meets the breastbone. The only true joint connecting the arm to the trunk.",
+ clinical:"Everything the shoulder blade does passes through this one small joint. Easily palpated, rarely examined, and a real source of anterior chest pain that gets attributed elsewhere.",
+ ex:["Scapular Circles","Band Pull-Apart","Doorway Pec Stretch","Prone Trap Raise"]},
+
+{id:"shoulder-scapulothoracic-bursa", name:"Scapulothoracic Bursae", latin:"bursae scapulothoracicae", region:"shoulder", system:"fascial", layer:2,
+ action:"Fluid spaces between the shoulder blade and the ribs allowing it to glide.",
+ clinical:"Where snapping scapula comes from — audible or palpable grinding as the blade moves over the ribs. Usually mechanical rather than inflammatory, and it responds to serratus and posture work.",
+ ex:["Serratus Wall Slide","Wall Plank Protraction Hold","Scapular Circles","Quadruped Protraction Rock"]},
 
 /* ---- Elbow & wrist ---- */
 {id:"elbow-common-extensor", name:"Common Extensor Origin", latin:"origo communis extensorum", region:"elbow-wrist", system:"muscular", layer:2,
@@ -2791,6 +2828,27 @@ const ANATOMY = [
  clinical:"Often the source of a deep ache under the shoulder blade that resists surface work because it sits beneath the blade.",
  ex:["Rib Roll Breathing","Thread the Needle","Open Book","Prone Swimmers"]},
 
+/* -- Batch G -- */
+{id:"thoracic-serratus-post-superior", name:"Serratus Posterior Superior", latin:"m. serratus posterior superior", region:"thoracic", system:"muscular", layer:2, inherits:"thoracic-serratus-posterior",
+ action:"A thin sheet under the shoulder blade lifting the upper ribs during breathing in.",
+ clinical:"A frequent source of deep ache under the shoulder blade that resists surface work, because the shoulder blade sits over it. Breathing work reaches it better than pressure does.",
+ ex:["Rib Roll Breathing","Thread the Needle"]},
+
+{id:"thoracic-serratus-post-inferior", name:"Serratus Posterior Inferior", latin:"m. serratus posterior inferior", region:"thoracic", system:"muscular", layer:2, inherits:"thoracic-serratus-posterior",
+ action:"Draws the lower ribs down and back during breathing out.",
+ clinical:"Sits at the thoracolumbar junction and blends with the thoracolumbar fascia — one of the several structures that make that junction a concentration point for load.",
+ ex:["Rib Roll Breathing","Child's Pose Lateral Reach"]},
+
+{id:"thoracic-sternum", name:"Sternum", latin:"sternum", region:"thoracic", system:"skeletal", layer:3,
+ action:"The breastbone. Three parts — manubrium, body and xiphoid process — anchoring the ribs at the front.",
+ clinical:"The ridge where the top two parts meet sits level with the second rib, which makes it the landmark for counting ribs. It also sits at the level of the T4 and T5 disc behind.",
+ ex:["Doorway Pec Stretch","Rib Roll Breathing","Foam Roller Thoracic Extension","Open Book"]},
+
+{id:"thoracic-costal-cartilage", name:"Costal Cartilages", latin:"cartilagines costales", region:"thoracic", system:"articular", layer:3,
+ action:"Cartilage bars connecting the ribs to the breastbone, giving the chest wall its spring.",
+ clinical:"Costochondritis is tenderness at these junctions reproduced by pressing, and it is a common cause of chest pain that alarms people considerably. Reproducible on palpation is the reassuring feature.",
+ ex:["Rib Roll Breathing","Doorway Pec Stretch","Child's Pose Lateral Reach","Open Book"]},
+
 /* ---- Lumbar ---- */
 {id:"lumbar-multifidus", name:"Lumbar Multifidus", latin:"m. multifidus lumborum", region:"lumbar", system:"muscular", layer:2, inherits:"spine-multifidus",
  action:"Small deep muscles controlling one or two segments at a time.",
@@ -2846,6 +2904,38 @@ const ANATOMY = [
  action:"Forms the base of the abdominal pressure system and works with the diaphragm on every breath.",
  clinical:"Part of the same canister as the diaphragm and transversus abdominis. Breath-holding through effort is a sign the system is not coordinating — and it belongs in any low back conversation, including with men.",
  ex:["Dead Bug","Rib Roll Breathing","Pelvic Tilts","Glute Bridge Series"]},
+
+/* -- Batch G: the two obliques the grouped entry names -- */
+{id:"lumbar-external-oblique", name:"External Oblique", latin:"m. obliquus externus abdominis", region:"lumbar", system:"muscular", layer:1, inherits:"lumbar-obliques",
+ action:"The outermost abdominal layer, fibres running down and forward. Rotates the trunk to the opposite side.",
+ clinical:"Works with the internal oblique of the other side as a diagonal pair — that pairing is the trunk's rotational engine and why anti-rotation work loads both.",
+ ex:["Pallof Press","Half-Kneeling Chop"]},
+
+{id:"lumbar-internal-oblique", name:"Internal Oblique", latin:"m. obliquus internus abdominis", region:"lumbar", system:"muscular", layer:2, inherits:"lumbar-obliques",
+ action:"Lies beneath the external oblique with fibres running the opposite way. Rotates the trunk to the same side.",
+ clinical:"Its deepest fibres blend with transversus abdominis and behave like it, contributing to trunk pressure rather than rotation.",
+ ex:["Dead Bug","Side Plank"]},
+
+{id:"lumbar-psoas-minor", name:"Psoas Minor", latin:"m. psoas minor", region:"lumbar", system:"muscular", layer:2,
+ action:"A small muscle in front of psoas major running to the pelvic brim, tilting the pelvis backward slightly.",
+ clinical:"Absent in roughly four people in ten. Its absence is a normal variant and its presence contributes little, but it explains occasional anatomical confusion on imaging.",
+ ex:["Pelvic Tilts","Dead Bug","Half-Kneeling Hip Flexor Series"]},
+
+{id:"lumbar-linea-alba", name:"Linea Alba", latin:"linea alba", region:"lumbar", system:"fascial", layer:1,
+ action:"The fibrous midline seam where the abdominal sheets from both sides meet.",
+ clinical:"Where the abdominal wall separates in diastasis recti. The width matters less than whether tension can be generated across it — a wide gap that stiffens under load is a better outcome than a narrow one that domes.",
+ ex:["Dead Bug","Pelvic Tilts","Bird Dog","McGill Curl-Up"]},
+
+{id:"lumbar-rectus-sheath", name:"Rectus Sheath", latin:"vagina musculi recti abdominis", region:"lumbar", system:"fascial", layer:1,
+ action:"The fibrous envelope formed by the flat abdominal muscles wrapping around rectus abdominis.",
+ clinical:"Its composition changes below a line partway down the abdomen, leaving the back wall of the sheath deficient below that point. That transition is a recognised site of abdominal wall pain and hernia.",
+ ex:["Dead Bug","Hollow Body Hold","Front Plank to RKC Plank","Ab Wheel / Ball Rollout"]},
+
+/* -- Batch E: the lumbar-filed ligament -- */
+{id:"lumbar-iliolumbar-ligament", name:"Iliolumbar Ligament", latin:"ligamentum iliolumbale", region:"lumbar", system:"articular", layer:3,
+ action:"Runs from the L4 and L5 transverse processes to the back of the pelvis.",
+ clinical:"The main passive restraint on the lowest lumbar segment. A frequent and specific source of one-sided low back pain just above the pelvic rim, and easily confused with the sacroiliac joint below it.",
+ ex:["Side Plank","Bird Dog","Standing Lateral Flexion with Reach","Dead Bug"]},
 
 /* ---- Spine — the erector and deep columns, filed by column rather than by region ---- */
 /* Cut by column rather than by region. The two region-cut erector spinae
@@ -2994,7 +3084,7 @@ const ANATOMY = [
  clinical:"It does not meaningfully lengthen — it is not a stretchable structure. Symptoms come from compression at the knee under poor hip control, so treat the hip.",
  ex:["Lateral Thigh Roll","Standing Banded Abduction","Eccentric Step Down","Lateral Band Walks"]},
 
-{id:"hip-piriformis", name:"Piriformis", latin:"m. piriformis", region:"hip", system:"muscular", layer:2,
+{id:"hip-piriformis", name:"Piriformis", latin:"m. piriformis", region:"hip", system:"muscular", layer:2, inherits:"hip-deep-rotators",
  action:"Rotates the hip outward with the leg straight, and inward once the hip is bent past 90 degrees.",
  clinical:"The sciatic nerve runs beneath it, and through it in a minority of people. Buttock pain with leg symptoms — test the nerve before deciding it is the muscle.",
  ex:["Supine Figure-4 to Active Pigeon","Hip CARs (Controlled Rotations)","Sciatic Nerve Slider (seated)","Prone Windshield Wipers"]},
@@ -3024,7 +3114,7 @@ const ANATOMY = [
  clinical:"Unlike psoas it does not attach to the spine, so it affects hip position without directly pulling on the low back.",
  ex:["Half-Kneeling Hip Flexor Series","Wall Press March","Pelvic Tilts","Deep Squat Hold"]},
 
-{id:"hip-rectus-femoris", name:"Rectus Femoris", latin:"m. rectus femoris", region:"hip", system:"muscular", layer:1,
+{id:"hip-rectus-femoris", name:"Rectus Femoris", latin:"m. rectus femoris", region:"hip", alsoRegion:["knee"], system:"muscular", layer:1, inherits:"knee-quadriceps",
  action:"The only quadriceps head crossing the hip as well as the knee.",
  clinical:"Because it crosses both, it must be tested with the hip extended and knee bent together. A tight rectus femoris tips the pelvis forward and is frequently misread as a low back problem.",
  ex:["Half-Kneeling Hip Flexor Series","Quadriceps Stretch","Reverse Nordic","Bretzel 2"]},
@@ -3044,13 +3134,91 @@ const ANATOMY = [
  clinical:"Loads where the two sides of the pelvis move asymmetrically — kicking, lunging, or late pregnancy. Adductor and deep abdominal work together, not either alone.",
  ex:["Copenhagen Plank","Dead Bug","Adductor Rock Back","Side Plank"]},
 
+/* -- Batch E: the five deep external rotators, under the existing group -- */
+{id:"hip-obturator-internus", name:"Obturator Internus", latin:"m. obturator internus", region:"hip", system:"muscular", layer:2, inherits:"hip-deep-rotators",
+ action:"Arises inside the pelvis and turns sharply through a notch in the bone to reach the femur.",
+ clinical:"The largest of the group and the one most worth knowing. Because it passes through the lesser sciatic notch it is a genuine site of deep buttock pain, and it can be reached internally when external work fails.",
+ ex:["Seated 90/90 Lift-Offs","Supine Figure-4 to Active Pigeon"]},
+
+{id:"hip-obturator-externus", name:"Obturator Externus", latin:"m. obturator externus", region:"hip", system:"muscular", layer:2, inherits:"hip-deep-rotators",
+ action:"Covers the outer surface of the hole in the front of the pelvis and rotates the hip outward.",
+ clinical:"Deep, anterior, and effectively unpalpable. Relevant in deep groin pain that does not behave like an adductor problem.",
+ ex:["Frog Rock","Hip CARs (Controlled Rotations)"]},
+
+{id:"hip-gemellus-superior", name:"Superior Gemellus", latin:"m. gemellus superior", region:"hip", system:"muscular", layer:2, inherits:"hip-deep-rotators",
+ action:"A small muscle above obturator internus, blending with its tendon.",
+ clinical:"Functionally part of obturator internus rather than independent. Named separately, treated together.",
+ ex:["Prone Windshield Wipers"]},
+
+{id:"hip-gemellus-inferior", name:"Inferior Gemellus", latin:"m. gemellus inferior", region:"hip", system:"muscular", layer:2, inherits:"hip-deep-rotators",
+ action:"A small muscle below obturator internus, blending with its tendon.",
+ clinical:"Same story as its partner above — part of the obturator internus complex in practice.",
+ ex:["Prone Windshield Wipers"]},
+
+{id:"hip-quadratus-femoris", name:"Quadratus Femoris", latin:"m. quadratus femoris", region:"hip", system:"muscular", layer:2, inherits:"hip-deep-rotators",
+ action:"The lowest and squarest of the group, running from the sitting bone to the back of the femur.",
+ clinical:"Sits in a narrow space between the sitting bone and the femur. That space narrows with hip extension and adduction, producing a deep buttock ache on walking that is easily mistaken for a hamstring origin problem.",
+ ex:["Supine Figure-4 to Active Pigeon","Standing Banded Abduction"]},
+
+/* -- the two adductors the grouped entry names -- */
+{id:"hip-adductor-longus-only", name:"Adductor Longus", latin:"m. adductor longus", region:"hip", system:"muscular", layer:1, inherits:"hip-adductor-longus",
+ action:"The most superficial and most anterior adductor, forming a visible cord in the groin.",
+ clinical:"The single most commonly strained groin muscle in change-of-direction sport, almost always at its attachment to the pubic bone. Palpable as a distinct cord with the hip abducted.",
+ ex:["Copenhagen Plank","Adductor Rock Back"]},
+
+{id:"hip-adductor-brevis", name:"Adductor Brevis", latin:"m. adductor brevis", region:"hip", system:"muscular", layer:2, inherits:"hip-adductor-longus",
+ action:"Lies behind adductor longus, running from the pubis to the upper femur.",
+ clinical:"The obturator nerve splits around it, one branch in front and one behind — which makes it directly relevant to obturator nerve entrapment in athletes.",
+ ex:["Obturator Nerve Slider","Frog Rock"]},
+
+/* -- standalone additions -- */
+{id:"hip-sartorius", name:"Sartorius", latin:"m. sartorius", region:"hip", alsoRegion:["knee"], system:"muscular", layer:1,
+ action:"The longest muscle in the body. Runs diagonally across the thigh, bending the hip and knee and turning the hip outward.",
+ clinical:"Produces the cross-legged sitting position, which is where its name comes from. Contributes to the pes anserinus at the inner knee, so it links a hip complaint to inner knee pain.",
+ ex:["Supine Figure-4 to Active Pigeon","Half-Kneeling Hip Flexor Series","Cossack Squat","Hip CARs (Controlled Rotations)"]},
+
+{id:"hip-pectineus", name:"Pectineus", latin:"m. pectineus", region:"hip", system:"muscular", layer:2,
+ action:"A short flat muscle high in the groin that both bends and adducts the hip.",
+ clinical:"Sits between the hip flexors and the adductors and behaves like both, which is why high groin pain often does not sort cleanly into either category. Frequently the tender point in deep anterior groin pain.",
+ ex:["Half-Kneeling Hip Flexor Series","Adductor Rock Back","Frog Rock","Copenhagen Plank"]},
+
+{id:"hip-trochanteric-bursa", name:"Trochanteric Bursa", latin:"bursa trochanterica", region:"hip", system:"fascial", layer:2,
+ action:"A fluid sac between the bony point of the hip and the tendons crossing it.",
+ clinical:"Lateral hip pain is now usually understood as tendon rather than bursa — gluteal tendinopathy, not bursitis. That matters because the treatment inverts: loading rather than resting, and avoiding the crossed-leg and hip-hitched positions that compress it.",
+ ex:["Standing Banded Abduction","Side Plank with Clam","Lateral Band Walks","Single Leg Balance Progression"]},
+
+{id:"hip-iliofemoral-ligament", name:"Iliofemoral Ligament", latin:"ligamentum iliofemorale", region:"hip", system:"articular", layer:3,
+ action:"A thick Y-shaped band across the front of the hip. The strongest ligament in the body.",
+ clinical:"It is what stops you falling backwards when standing still — hip extension is checked by ligament, not muscle. Tight, it limits the hip extension a stride needs and the low back supplies the difference.",
+ ex:["Half-Kneeling Hip Flexor Series","Banded Hip Distraction","Hip CARs (Controlled Rotations)","Glute Bridge Series"]},
+
+{id:"hip-sacrotuberous-ligament", name:"Sacrotuberous Ligament", latin:"ligamentum sacrotuberale", region:"lumbar", alsoRegion:["hip"], system:"articular", layer:3,
+ action:"Runs from the sacrum to the sitting bone, resisting the sacrum tipping forward.",
+ clinical:"Blends with the hamstring origin and the thoracolumbar fascia, making it a direct mechanical link between hamstring tension and sacroiliac loading. Tender on deep palpation medial to the sitting bone.",
+ ex:["Hamstring Bridge","Single Leg RDL","Glute Bridge Series","Side Plank"]},
+
+{id:"hip-sacrospinous-ligament", name:"Sacrospinous Ligament", latin:"ligamentum sacrospinale", region:"lumbar", alsoRegion:["hip"], system:"articular", layer:3,
+ action:"Runs from the sacrum to the bony spine of the ischium, dividing the sciatic notch into two openings.",
+ clinical:"It is what turns one notch into two — the sciatic nerve leaves above it, other structures below. Its position defines the anatomy of deep buttock pain.",
+ ex:["Sciatic Nerve Slider (seated)","Supine Figure-4 to Active Pigeon","Glute Bridge Series"]},
+
+{id:"hip-inguinal-ligament", name:"Inguinal Ligament", latin:"ligamentum inguinale", region:"hip", system:"fascial", layer:2,
+ action:"A thickened band of abdominal fascia running from the front of the pelvis to the pubic bone.",
+ clinical:"Everything entering the thigh passes under it — femoral nerve, artery, vein, and the lateral femoral cutaneous nerve. It is the reason a tight belt produces burning on the outer thigh.",
+ ex:["Lateral Femoral Cutaneous Nerve Slider","Half-Kneeling Hip Flexor Series","Dead Bug","Pelvic Tilts"]},
+
+{id:"hip-adductor-canal", name:"Adductor Canal", latin:"canalis adductorius", region:"hip", alsoRegion:["knee"], system:"fascial", layer:2,
+ action:"A tunnel in the middle third of the inner thigh carrying the femoral vessels and the saphenous nerve toward the knee.",
+ clinical:"Where the saphenous nerve is compressed, producing inner knee pain with no joint findings. Roofed by a fascial band under sartorius, so sartorius tension is part of the picture.",
+ ex:["Saphenous Nerve Slider","Adductor Rock Back","Cossack Squat"]},
+
 /* ---- Knee ---- */
 {id:"knee-quadriceps", name:"Quadriceps", latin:"mm. vasti lateralis, medialis, intermedius", region:"knee", system:"muscular", layer:1,
  action:"Straighten the knee and control the descent of every step down.",
  clinical:"Switches off remarkably fast after knee swelling — within days. Reawakening it with quad sets comes before anything else.",
  ex:["Quad Set","Short Arc Quad","Squat Progression","Sit-to-Stand Progression"]},
 
-{id:"knee-vmo", name:"Vastus Medialis Oblique", latin:"m. vastus medialis obliquus", region:"knee", system:"muscular", layer:2,
+{id:"knee-vmo", name:"Vastus Medialis Oblique", latin:"m. vastus medialis obliquus", region:"knee", system:"muscular", layer:2, inherits:"knee-vastus-medialis",
  action:"The inner fibres of the quadriceps that steady the kneecap in its groove.",
  clinical:"Cannot be trained in isolation despite decades of claims otherwise. Train the quadriceps through full range and it comes with it.",
  ex:["Short Arc Quad","Spanish Squat","Step Up","Terminal Knee Extension"]},
@@ -3114,6 +3282,60 @@ const ANATOMY = [
  action:"Where the kneecap tracks in its groove on the thigh bone.",
  clinical:"Pain on stairs, hills and prolonged sitting. The problem is usually above and below — hip control and foot position — rather than at the kneecap itself.",
  ex:["Lateral Step Down","Standing Banded Abduction","Kneecap Mobilization","Spanish Squat"]},
+
+/* -- Batch E: the quadriceps heads. VMO hangs off vastus medialis, making
+      VMO -> Vastus Medialis -> Quadriceps a three-level chain. -- */
+{id:"knee-vastus-lateralis", name:"Vastus Lateralis", latin:"m. vastus lateralis", region:"knee", system:"muscular", layer:1, inherits:"knee-quadriceps",
+ action:"The largest quadriceps head, on the outside of the thigh.",
+ clinical:"Blends with the IT band, so tightness here contributes to the lateral pull on the kneecap. Frequently the dominant head, and the one that tracks the kneecap outward.",
+ ex:["Lateral Thigh Roll","Lateral Step Down"]},
+
+{id:"knee-vastus-medialis", name:"Vastus Medialis", latin:"m. vastus medialis", region:"knee", system:"muscular", layer:1, inherits:"knee-quadriceps",
+ action:"The inner quadriceps head, running down to the inside of the kneecap.",
+ clinical:"Wastes visibly and fast after knee swelling — compare the two thighs a hand's width above the kneecap and the difference is usually obvious.",
+ ex:["Short Arc Quad","Terminal Knee Extension"]},
+
+{id:"knee-vastus-intermedius", name:"Vastus Intermedius", latin:"m. vastus intermedius", region:"knee", system:"muscular", layer:2, inherits:"knee-quadriceps",
+ action:"Lies directly on the femur beneath rectus femoris.",
+ clinical:"Not palpable — you are always feeling rectus femoris over it. Its deepest fibres form articularis genus, which pulls the joint capsule clear as the knee straightens.",
+ ex:["Quad Set","Prone Hang"]},
+
+/* -- the hamstrings, split -- */
+{id:"knee-biceps-femoris-long", name:"Biceps Femoris, Long Head", latin:"caput longum m. bicipitis femoris", region:"knee", alsoRegion:["hip"], system:"muscular", layer:1, inherits:"knee-hamstrings",
+ action:"Runs from the sitting bone to the head of the fibula. Crosses both hip and knee.",
+ clinical:"The most commonly strained hamstring, and almost always at the top where the muscle meets tendon. Crossing two joints is why it fails during the reaching phase of a sprint stride.",
+ ex:["Nordic Hamstring Curl","Single Leg RDL"]},
+
+{id:"knee-biceps-femoris-short", name:"Biceps Femoris, Short Head", latin:"caput breve m. bicipitis femoris", region:"knee", system:"muscular", layer:2, inherits:"knee-hamstrings",
+ action:"Arises from the femur itself and crosses only the knee.",
+ clinical:"The only hamstring part supplied by the common fibular nerve rather than the tibial — which is why it can be spared or affected independently of the others.",
+ ex:["Slider Hamstring Curl","Hamstring Bridge"]},
+
+{id:"knee-semitendinosus", name:"Semitendinosus", latin:"m. semitendinosus", region:"knee", alsoRegion:["hip"], system:"muscular", layer:1, inherits:"knee-hamstrings",
+ action:"Runs from the sitting bone to the inside of the shin as a long cord-like tendon.",
+ clinical:"Its tendon is prominent and easily felt behind the inner knee. Commonly harvested for ACL reconstruction, which leaves a measurable deficit in deep knee flexion strength.",
+ ex:["Hamstring Bridge","Slider Hamstring Curl"]},
+
+{id:"knee-semimembranosus", name:"Semimembranosus", latin:"m. semimembranosus", region:"knee", alsoRegion:["hip"], system:"muscular", layer:2, inherits:"knee-hamstrings",
+ action:"The deepest and broadest hamstring, running to the back of the inner shin.",
+ clinical:"Lies under semitendinosus, so tenderness felt deep to that cord is usually this. Its attachment is a common site of persistent posterior knee pain in runners.",
+ ex:["Hamstring Stretch","Hamstring Bridge"]},
+
+/* -- Batch F: the knee-filed additions -- */
+{id:"knee-plantaris", name:"Plantaris", latin:"m. plantaris", region:"knee", alsoRegion:["ankle-foot"], system:"muscular", layer:2,
+ action:"A small muscle with a very long thin tendon running from the back of the knee to the heel.",
+ clinical:"Absent in roughly one person in ten. Its rupture produces sudden sharp pain in the calf — the classic tennis leg — which mimics a serious calf tear but recovers far better.",
+ ex:["Calf Stretch, Knee Straight","Calf Stretch, Knee Bent","Eccentric Heel Drop"]},
+
+{id:"knee-patella", name:"Patella", latin:"patella", region:"knee", system:"skeletal", layer:3,
+ action:"The kneecap. A bone embedded within the quadriceps tendon.",
+ clinical:"It exists to increase the leverage of the quadriceps, moving the tendon away from the joint centre. Its tracking depends on what pulls it — quadriceps balance above, hip control further up, foot position below.",
+ ex:["Kneecap Mobilization","Short Arc Quad","Lateral Step Down","Spanish Squat"]},
+
+{id:"knee-proximal-tibiofibular", name:"Proximal Tibiofibular Joint", latin:"articulatio tibiofibularis", region:"knee", system:"articular", layer:3,
+ action:"A small joint just below and outside the knee where the fibula meets the shin bone.",
+ clinical:"Moves with every ankle movement, so a stiff one produces outer knee pain that changes with walking rather than with knee bending. The common fibular nerve wraps immediately below it.",
+ ex:["Shin Rotation","Knee CARs","Common Fibular Nerve Glide","Ankle CARs"]},
 
 /* ---- Ankle & foot ---- */
 {id:"ankle-gastrocnemius", name:"Gastrocnemius", latin:"m. gastrocnemius", region:"ankle-foot", system:"muscular", layer:1,
@@ -3180,6 +3402,95 @@ const ANATOMY = [
  action:"Resist the ankle rolling outward at the outside of the joint.",
  clinical:"The classic sprain. Roughly a third of people develop ongoing instability, almost always because balance and eversion work was stopped once the pain settled.",
  ex:["Band Eversion","Foot Tripod Balance","Lateral Hop and Stick","Single Leg Balance Progression"]},
+
+/* -- Batch F: the two fibularis muscles the grouped entry names -- */
+{id:"ankle-fibularis-longus", name:"Fibularis Longus", latin:"m. fibularis longus", region:"ankle-foot", system:"muscular", layer:1, inherits:"ankle-fibularis",
+ action:"Runs the length of the outer shin, then crosses under the foot to the base of the big toe.",
+ clinical:"The only muscle that crosses the sole transversely, which makes it a genuine arch support and the reason it matters in flat foot as well as in ankle sprain.",
+ ex:["Short Foot","Foot Tripod Balance"]},
+
+{id:"ankle-fibularis-brevis", name:"Fibularis Brevis", latin:"m. fibularis brevis", region:"ankle-foot", system:"muscular", layer:2, inherits:"ankle-fibularis",
+ action:"Runs to the base of the fifth metatarsal on the outside of the foot.",
+ clinical:"Its attachment is avulsed in the classic fifth metatarsal base fracture from an inversion sprain. Tenderness at that bony prominence after a rolled ankle needs imaging, not exercise.",
+ ex:["Band Eversion","Lateral Hop and Stick"]},
+
+/* -- the sole, by layer rather than by muscle: eleven small muscles named
+      individually would be a list nobody reads, and they are treated in layers -- */
+{id:"ankle-foot-layer-1", name:"Sole, First Layer", latin:"stratum primum plantae", region:"ankle-foot", system:"muscular", layer:2, inherits:"ankle-intrinsics",
+ action:"The most superficial layer — abductor hallucis, flexor digitorum brevis and abductor digiti minimi.",
+ clinical:"Abductor hallucis is the one that matters. It sits directly under the arch and is the main active support for it, and it is directly trained by short foot work.",
+ ex:["Short Foot","Toe Yoga"]},
+
+{id:"ankle-foot-layer-2", name:"Sole, Second Layer", latin:"stratum secundum plantae", region:"ankle-foot", system:"muscular", layer:2, inherits:"ankle-intrinsics",
+ action:"Quadratus plantae and the lumbricals, working with the long toe flexor tendons.",
+ clinical:"Quadratus plantae straightens the pull of the long flexor tendon so the toes curl in line rather than diagonally. Weakness here contributes to hammer toe.",
+ ex:["Towel Scrunch","Toe Flexion and Extension"]},
+
+{id:"ankle-foot-layer-3", name:"Sole, Third Layer", latin:"stratum tertium plantae", region:"ankle-foot", system:"muscular", layer:2, inherits:"ankle-intrinsics",
+ action:"Flexor hallucis brevis, adductor hallucis and flexor digiti minimi brevis, concentrated at the front of the sole.",
+ clinical:"Adductor hallucis pulls the big toe toward the others, so it is directly implicated in bunion progression. Toe splay work opposes it.",
+ ex:["Toe Splay","Toe Yoga"]},
+
+{id:"ankle-foot-layer-4", name:"Sole, Fourth Layer", latin:"stratum quartum plantae", region:"ankle-foot", system:"muscular", layer:2, inherits:"ankle-intrinsics",
+ action:"The interossei, deepest in the foot, spreading and closing the toes.",
+ clinical:"The foot's equivalent of the hand interossei but far weaker in most people, because shoes remove the demand entirely.",
+ ex:["Toe Splay","Short Foot"]},
+
+/* -- standalone additions -- */
+{id:"ankle-fdl", name:"Flexor Digitorum Longus", latin:"m. flexor digitorum longus", region:"ankle-foot", system:"muscular", layer:2,
+ action:"Runs down the back of the calf and behind the inner ankle to bend the four small toes.",
+ clinical:"Passes through the tarsal tunnel with the tibial nerve. Claw-toe posture at rest often reflects it overworking to compensate for weak intrinsics.",
+ ex:["Toe Flexion and Extension","Towel Scrunch","Calf Stretch, Knee Bent","Short Foot"]},
+
+{id:"ankle-ehl", name:"Extensor Hallucis Longus", latin:"m. extensor hallucis longus", region:"ankle-foot", system:"muscular", layer:2,
+ action:"Lifts the big toe and assists pulling the foot upward.",
+ clinical:"Its strength is the single most useful test for an L5 nerve root problem — weakness of big toe extension with everything else intact is a specific finding.",
+ ex:["Toe Flexion and Extension","Band Dorsiflexion","Big Toe Extension Mobilization","Heel Walk and Toe Walk"]},
+
+{id:"ankle-edl", name:"Extensor Digitorum Longus", latin:"m. extensor digitorum longus", region:"ankle-foot", system:"muscular", layer:1,
+ action:"Lifts the four small toes and helps pull the foot upward.",
+ clinical:"Its tendons are visible fanning across the top of the foot. Works with tibialis anterior to clear the toes during the swing phase of a stride.",
+ ex:["Band Dorsiflexion","Toe Flexion and Extension","Heel Walk and Toe Walk","Ankle Alphabet"]},
+
+{id:"ankle-fibularis-tertius", name:"Fibularis Tertius", latin:"m. fibularis tertius", region:"ankle-foot", system:"muscular", layer:1,
+ action:"A small muscle that lifts the foot and turns it outward.",
+ clinical:"Absent in a minority of people, so a missing tendon is a variant rather than a finding. Contributes to the combined lift-and-evert action that resists an inversion sprain.",
+ ex:["Band Eversion","Band Dorsiflexion","Ankle CARs"]},
+
+{id:"ankle-edb", name:"Extensor Digitorum Brevis", latin:"m. extensor digitorum brevis", region:"ankle-foot", system:"muscular", layer:2,
+ action:"A small muscle on the top of the foot assisting toe extension.",
+ clinical:"Its fleshy belly on the outer top of the foot is commonly mistaken for swelling after an ankle sprain. Comparing both feet resolves it in seconds.",
+ ex:["Toe Flexion and Extension","Toe Splay","Ankle Alphabet"]},
+
+{id:"ankle-deltoid-ligament", name:"Deltoid Ligament", latin:"ligamentum deltoideum", region:"ankle-foot", system:"articular", layer:3,
+ action:"A broad fan of ligament on the inner ankle resisting the foot rolling outward.",
+ clinical:"Far stronger than the outer ankle ligaments and much less often injured. When it is injured the ankle usually broke first — an inner ankle sprain deserves more suspicion than an outer one.",
+ ex:["Band Inversion","Foot Tripod Balance","Subtalar Inversion and Eversion","Single Leg Balance Progression"]},
+
+{id:"ankle-spring-ligament", name:"Spring Ligament", latin:"ligamentum calcaneonaviculare plantare", region:"ankle-foot", system:"articular", layer:3,
+ action:"A thick band under the arch supporting the head of the talus from below.",
+ clinical:"The passive counterpart to tibialis posterior. When that tendon fails this ligament takes the load and eventually gives, which is the point at which a flexible flat foot becomes a fixed one.",
+ ex:["Short Foot","Band Inversion","Foot Tripod Balance","Plantar Fascia Stretch"]},
+
+{id:"ankle-tarsal-tunnel", name:"Tarsal Tunnel", latin:"canalis tarsalis", region:"ankle-foot", system:"fascial", layer:2,
+ action:"A passage behind the inner ankle carrying the tibial nerve, tendons and vessels into the sole.",
+ clinical:"Produces burning in the sole that is often mistaken for plantar fasciitis. The distinguishing feature is night symptoms — plantar fascia pain is worst on the first steps of the morning and eases with movement.",
+ ex:["Tibial Nerve Glide","Heel Bone Mobilization","Calf Stretch, Knee Bent","Ankle CARs"]},
+
+{id:"ankle-extensor-retinaculum", name:"Extensor Retinaculum of the Ankle", latin:"retinaculum musculorum extensorum", region:"ankle-foot", system:"fascial", layer:2,
+ action:"Bands across the front of the ankle holding the extensor tendons down.",
+ clinical:"Compression here from tightly laced boots or ski boots produces numbness across the top of the foot and is entirely resolved by changing the lacing.",
+ ex:["Ankle CARs","Band Dorsiflexion","Ankle Alphabet","Kneeling Ankle Rock"]},
+
+{id:"ankle-retrocalcaneal-bursa", name:"Retrocalcaneal Bursa", latin:"bursa tendinis calcanei", region:"ankle-foot", system:"fascial", layer:2,
+ action:"A fluid sac between the heel bone and the Achilles tendon.",
+ clinical:"Tender on squeezing either side of the tendon just above the heel, which distinguishes it from tendon pain felt in the tendon itself. Aggravated by rigid heel counters.",
+ ex:["Isometric Calf Hold","Calf Stretch, Knee Bent","Heel Bone Mobilization"]},
+
+{id:"ankle-sinus-tarsi", name:"Sinus Tarsi", latin:"sinus tarsi", region:"ankle-foot", system:"articular", layer:3,
+ action:"A funnel-shaped space on the outside of the foot between the heel bone and the talus.",
+ clinical:"Persistent tenderness in the soft dimple in front of the outer ankle bone after a sprain, worse on uneven ground. Dense with position sensors, which is part of why balance is disrupted long after a sprain has stopped hurting.",
+ ex:["Subtalar Inversion and Eversion","Heel Bone Mobilization","Foot Tripod Balance","Single Leg Balance Progression"]},
 
 /* ---- Peripheral and cranial nerves ---- */
 {id:"nerve-cervical-roots", name:"Cervical Nerve Roots", latin:"radices nervorum cervicalium", region:"cervical", system:"nervous", layer:3,

@@ -390,7 +390,7 @@ and skipped, so re-importing your own export does not breed duplicates.
 
 ## The anatomy index
 
-`ANATOMY` is a flat array of 212 structures — muscles, joints, ligaments, fascia
+`ANATOMY` is a flat array of 271 structures — muscles, joints, ligaments, fascia
 and nerves — each resolving to the library drills that load it. It backs the
 Anatomy view, and a separate 3D viewer project consumes the same dataset and
 treats this file as its source. **Keep it liftable:** plain data, one top-level
@@ -480,6 +480,16 @@ Three rules that toggle has to keep:
   links under *Breaks down into*, a child links back under *Part of* — so a
   hidden part is always one click away, and that is what makes defaulting to off
   safe.
+
+**Reparenting an entry removes it from the default browse list.** That is the
+toggle working, not a bug, but it is a real cost and it lands on exactly the
+entries you reach for most: Piriformis, Upper Trapezius and Rectus Femoris all
+became parts in Batches E–G and none of them appears in the default list any
+more. Three things make that acceptable, and a fourth would not survive losing
+any of them — search finds a part regardless of the toggle, the parent lists it
+under *Breaks down into*, and the parent is itself the thing you usually wanted.
+**Weigh that before making a well-known entry a child of something.** The test is
+whether someone looking for it would accept the parent as the answer.
 
 Nesting is by `inherits` within a region group. A part whose parent is filtered
 out, or files under a different region, renders flat and carries a **Part** tag
