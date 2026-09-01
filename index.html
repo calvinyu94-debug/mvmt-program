@@ -3492,6 +3492,343 @@ const ANATOMY = [
  clinical:"Persistent tenderness in the soft dimple in front of the outer ankle bone after a sprain, worse on uneven ground. Dense with position sensors, which is part of why balance is disrupted long after a sprain has stopped hurting.",
  ex:["Subtalar Inversion and Eversion","Heel Bone Mobilization","Foot Tripod Balance","Single Leg Balance Progression"]},
 
+/* ---- Bones and joints ---- */
+/* Lower priority for prescription, higher for explaining something to a patient
+   with the model in front of you. Every one still resolves to drills — a bone is
+   loaded by what moves it. */
+
+/* -- bones -- */
+{id:"bone-cranium", name:"Cranium", latin:"cranium", region:"head-jaw", system:"skeletal", layer:3,
+ action:"The skull without the lower jaw. Eight bones forming the brain case and fourteen forming the face.",
+ clinical:"The sutures between them fuse with age but retain a small amount of movement throughout life. The pterion, where four bones meet at the temple, is the thinnest part of the skull.",
+ ex:["Sub-occipital Release","Scalp and Forehead Release","Chin Nod"]},
+
+{id:"bone-clavicle", name:"Clavicle", latin:"clavicula", region:"shoulder", system:"skeletal", layer:3,
+ action:"The collarbone. The only long bone lying horizontally, and the sole bony strut connecting the arm to the trunk.",
+ clinical:"The first bone to begin forming in the fetus and the last to finish. Its S-shape and subcutaneous position make it the most commonly fractured bone in the body.",
+ ex:["Scapular Circles","Band Pull-Apart","Doorway Pec Stretch","First Rib Self-Mobilization"]},
+
+{id:"bone-humerus", name:"Humerus", latin:"humerus", region:"shoulder", alsoRegion:["elbow-wrist"], system:"skeletal", layer:3,
+ action:"The upper arm bone, from the shoulder socket to the elbow.",
+ clinical:"The radial nerve spirals around its back in a groove, which is why a mid-shaft fracture produces wrist drop. The axillary nerve wraps its neck, which is why dislocation produces numbness over the outer shoulder.",
+ ex:["Shoulder CARs","Supine 90/90 Rotation Arcs","Elbow Flexion and Extension"]},
+
+{id:"bone-radius", name:"Radius", latin:"radius", region:"elbow-wrist", system:"skeletal", layer:3,
+ action:"The forearm bone on the thumb side. It rotates around the ulna to turn the palm.",
+ clinical:"Its lower end is the most commonly fractured site in the body from a fall onto an outstretched hand. Its head at the elbow is where a pulled elbow slips out of its ligament ring.",
+ ex:["Forearm Rotation","Wrist Circles","Hammer Rotation"]},
+
+{id:"bone-ulna", name:"Ulna", latin:"ulna", region:"elbow-wrist", system:"skeletal", layer:3,
+ action:"The forearm bone on the little-finger side. It forms the main hinge of the elbow and stays relatively still during rotation.",
+ clinical:"Almost entirely subcutaneous along its length, so it is followed easily from the point of the elbow to the wrist. It carries the elbow; the radius carries the wrist.",
+ ex:["Elbow Flexion and Extension","Forearm Rotation","Radial and Ulnar Deviation"]},
+
+{id:"bone-carpals", name:"Carpal Bones", latin:"ossa carpi", region:"elbow-wrist", system:"skeletal", layer:3,
+ action:"Eight small bones in two rows of four forming the wrist.",
+ clinical:"The scaphoid bridges both rows and takes the load from a fall, which is why it fractures most and heals worst — its blood supply enters from the far end, so a fracture can cut off the near half.",
+ ex:["Wrist Circles","Quadruped Wrist Rocks","Wrist Weight-Bearing Progression"]},
+
+{id:"bone-hand", name:"Metacarpals and Phalanges", latin:"ossa metacarpi et phalanges", region:"elbow-wrist", system:"skeletal", layer:3,
+ action:"Five metacarpals in the palm and fourteen finger bones, with two in the thumb rather than three.",
+ clinical:"The thumb's metacarpal joint is a saddle shape allowing movement in every direction, which is what makes opposition possible and is also why it wears out.",
+ ex:["Tendon Glides","Thumb Opposition","Finger Spread and Squeeze"]},
+
+{id:"bone-hip-bone", name:"Hip Bone", latin:"os coxae", region:"hip", alsoRegion:["lumbar"], system:"skeletal", layer:3,
+ action:"Three bones — ilium, ischium and pubis — fused into one during adolescence.",
+ clinical:"The three meet in the hip socket itself, so a growth plate injury there in a young athlete is a different problem from an adult hip injury.",
+ ex:["Hip CARs (Controlled Rotations)","Glute Bridge Series","Side Plank"]},
+
+{id:"bone-sacrum-coccyx", name:"Sacrum and Coccyx", latin:"os sacrum et os coccygis", region:"lumbar", system:"skeletal", layer:3,
+ action:"Five fused vertebrae forming the back of the pelvis, ending in three to five small fused coccygeal bones.",
+ clinical:"The spinal cord ends around L1 but nerve roots continue through the sacral canal. The coccyx retains some movement and is a genuine source of pain after a fall onto it.",
+ ex:["Pelvic Tilts","Cat-Cow","Glute Bridge Series"]},
+
+{id:"bone-femur", name:"Femur", latin:"os femoris", region:"hip", alsoRegion:["knee"], system:"skeletal", layer:3,
+ action:"The thigh bone. The longest and strongest bone in the body.",
+ clinical:"Its neck angles inward from the shaft, and that angle governs how load transfers into the pelvis. Too steep or too shallow changes hip mechanics for a lifetime.",
+ ex:["Hip CARs (Controlled Rotations)","Split Squat to Bulgarian","Single Leg RDL"]},
+
+{id:"bone-tibia", name:"Tibia", latin:"tibia", region:"knee", alsoRegion:["ankle-foot"], system:"skeletal", layer:3,
+ action:"The shin bone. Carries essentially all the weight from knee to ankle.",
+ clinical:"Its front border is entirely subcutaneous, which is why shin injuries hurt disproportionately and why stress fractures there are so tender to direct pressure.",
+ ex:["Knee CARs","Knee-to-Wall Dorsiflexion","Heel Walk and Toe Walk"]},
+
+{id:"bone-fibula", name:"Fibula", latin:"fibula", region:"ankle-foot", alsoRegion:["knee"], system:"skeletal", layer:3,
+ action:"The slender outer leg bone. Carries almost no weight but stabilises the ankle.",
+ clinical:"Bears under a tenth of the load, which is why sections of it can be removed as bone graft. Its lower end forms the outer ankle and is essential to ankle stability even though it carries no weight.",
+ ex:["Band Eversion","Ankle CARs","Common Fibular Nerve Glide"]},
+
+{id:"bone-tarsals", name:"Tarsal Bones", latin:"ossa tarsi", region:"ankle-foot", system:"skeletal", layer:3,
+ action:"Seven bones forming the back half of the foot — talus, calcaneus, navicular, cuboid and three cuneiforms.",
+ clinical:"The talus has no muscle attachments at all; it is moved entirely by the bones around it. Its blood supply is precarious, so talar fractures risk the bone dying.",
+ ex:["Subtalar Inversion and Eversion","Heel Bone Mobilization","Ankle CARs","Foot Tripod Balance"]},
+
+{id:"bone-foot", name:"Metatarsals and Phalanges", latin:"ossa metatarsi et phalanges", region:"ankle-foot", system:"skeletal", layer:3,
+ action:"Five metatarsals and fourteen toe bones forming the front half of the foot.",
+ clinical:"The second metatarsal is the longest and most rigidly fixed, which is why it takes most stress fractures in runners and marchers.",
+ ex:["Toe Splay","Short Foot","Toe Flexion and Extension"]},
+
+/* -- joints -- */
+{id:"joint-atlanto-occipital", name:"Atlanto-Occipital Joint", latin:"articulatio atlantooccipitalis", region:"cervical", system:"articular", layer:3,
+ action:"Where the skull sits on the first vertebra. Produces nodding — flexion and extension only.",
+ clinical:"The yes joint. Restriction here shows up as a chin that pokes forward on nodding because the movement is coming from lower down instead.",
+ ex:["Chin Nod","Sub-occipital Release","Head Repositioning"]},
+
+{id:"joint-atlantoaxial", name:"Atlantoaxial Joint", latin:"articulatio atlantoaxialis", region:"cervical", system:"articular", layer:3,
+ action:"Where the first vertebra pivots on the peg of the second. Produces rotation.",
+ clinical:"The no joint, and roughly half of all neck rotation happens here. Test it in full flexion, which locks the levels below. Instability here is a genuine concern in rheumatoid arthritis and Down syndrome.",
+ ex:["Rotation in Flexion","Head Repositioning","Neck CARs"]},
+
+{id:"joint-uncovertebral", name:"Uncovertebral Joints", latin:"articulationes uncovertebrales", region:"cervical", system:"articular", layer:3,
+ action:"Small joints at the upper side edges of the cervical vertebral bodies, unique to the neck.",
+ clinical:"They form after childhood rather than being present from birth. Bony spurs here narrow the exit hole for the nerve root, which is a common cause of arm symptoms in older patients.",
+ ex:["Cervical Lateral Glide","Neck Rotation","Chin Retraction","Axial Elongation"]},
+
+{id:"joint-sternocostal", name:"Sternocostal Joints", latin:"articulationes sternocostales", region:"thoracic", system:"articular", layer:3,
+ action:"Where the upper seven rib cartilages meet the breastbone.",
+ clinical:"Costochondritis sits here — chest pain reproduced exactly by pressing on the joint. That reproducibility is what distinguishes it from cardiac pain and is worth demonstrating to an anxious patient.",
+ ex:["Rib Roll Breathing","Doorway Pec Stretch","Open Book"]},
+
+{id:"joint-sacrococcygeal", name:"Sacrococcygeal Joint", latin:"articulatio sacrococcygea", region:"lumbar", system:"articular", layer:3,
+ action:"Where the coccyx meets the bottom of the sacrum.",
+ clinical:"Moves during sitting and childbirth. Coccydynia after a fall or delivery is real and often dismissed — sitting on one buttock or on a wedge cushion is the most effective single change.",
+ ex:["Pelvic Tilts","Glute Bridge Series","Cat-Cow"]},
+
+{id:"joint-intercarpal", name:"Intercarpal Joints", latin:"articulationes intercarpales", region:"elbow-wrist", system:"articular", layer:3,
+ action:"The many small joints between the eight wrist bones, contributing collectively to wrist movement.",
+ clinical:"Wrist movement is distributed across two rows rather than happening at one joint. That is why a stiff wrist rarely has one restriction, and why weight-bearing progressions restore range better than stretching does.",
+ ex:["Wrist Circles","Quadruped Wrist Rocks","Wrist Weight-Bearing Progression"]},
+
+{id:"joint-hand-joints", name:"Finger Joints", latin:"articulationes digitorum manus", region:"elbow-wrist", system:"articular", layer:3,
+ action:"The knuckle joints and the two joints in each finger.",
+ clinical:"Knuckles are loosest straight and tightest bent, which is why a hand splinted straight stiffens badly. Any hand held still should be positioned with the knuckles bent.",
+ ex:["Tendon Glides","Intrinsic Plus Hold","Finger Spread and Squeeze","Putty or Rice Bucket Work"]},
+
+{id:"joint-mtp", name:"Metatarsophalangeal Joints", latin:"articulationes metatarsophalangeae", region:"ankle-foot", system:"articular", layer:3,
+ action:"The joints at the base of the toes, where the foot pivots at push-off.",
+ clinical:"The big toe joint needs around sixty degrees of extension for a normal step. Restriction there is one of the most commonly missed drivers of foot, knee and hip complaints.",
+ ex:["Big Toe Extension Mobilization","Toe Flexion and Extension","Toe Splay","Short Foot"]},
+
+/* ---- Palpable landmarks ---- */
+/* Not tissues — these are where you put your hands, and what you point at when
+   explaining something. They carry attachments instead of ex: the question a
+   landmark answers is "what attaches here", not "what loads this". */
+
+/* -- head and neck -- */
+{id:"lm-mastoid-process", name:"Mastoid Process", latin:"processus mastoideus", region:"cervical", system:"landmark", layer:3,
+ action:"The bony bump directly behind the earlobe.",
+ clinical:"The single most useful upper cervical landmark. Almost everything that rotates or side-bends the head attaches here or just behind it.",
+ attachments:["Sternocleidomastoid","Splenius Capitis","Longissimus Capitis","Digastric","Stylohyoid"]},
+
+{id:"lm-occipital-protuberance", name:"External Occipital Protuberance", latin:"protuberantia occipitalis externa", region:"cervical", system:"landmark", layer:3,
+ action:"The bump in the midline at the back of the skull, level with the top of the ears.",
+ clinical:"The midline reference for suboccipital work. Trace laterally from here along the ridge to find the whole suboccipital attachment line.",
+ attachments:["Trapezius","Occipitofrontalis"]},
+
+{id:"lm-superior-nuchal-line", name:"Superior Nuchal Line", latin:"linea nuchalis superior", region:"cervical", system:"landmark", layer:3,
+ action:"The ridge running sideways from the occipital bump toward each mastoid process.",
+ clinical:"Where the suboccipitals, upper trapezius and semispinalis all attach. Tenderness anywhere along it is the most common physical finding in cervicogenic headache.",
+ attachments:["Trapezius","Semispinalis Capitis","Rectus Capitis Posterior Major","Rectus Capitis Posterior Minor","Obliquus Capitis Superior","Occipitofrontalis"]},
+
+{id:"lm-c1-transverse", name:"Transverse Process of C1", latin:"processus transversus atlantis", region:"cervical", system:"landmark", layer:3,
+ action:"A small bony point in the hollow between the mastoid process and the jaw angle.",
+ clinical:"The widest cervical transverse process and the only one reachable from the side. Press gently — the vertebral artery runs close by, and it is tender in almost everyone.",
+ attachments:["Obliquus Capitis Superior","Obliquus Capitis Inferior","Levator Scapulae"]},
+
+{id:"lm-c2-spinous", name:"Spinous Process of C2", latin:"processus spinosus axis", region:"cervical", system:"landmark", layer:3,
+ action:"The first large bump you meet moving down the midline from the base of the skull.",
+ clinical:"The anchor for counting cervical levels, and the attachment for the deepest suboccipitals. Its rotation under your thumb during head turn tells you how C1 on C2 is moving.",
+ attachments:["Rectus Capitis Posterior Major","Obliquus Capitis Inferior","Semispinalis Cervicis","Splenius Cervicis"]},
+
+{id:"lm-c7-spinous", name:"Vertebra Prominens (C7)", latin:"vertebra prominens", region:"cervical", system:"landmark", layer:3,
+ action:"The most prominent bump at the base of the neck.",
+ clinical:"The starting point for counting down the spine. Distinguish it from T1 by feeling while the head turns — C7 moves, T1 stays put.",
+ attachments:["Trapezius","Rhomboids","Splenius Capitis","Semispinalis Thoracis"]},
+
+{id:"lm-mandible-angle", name:"Angle of the Mandible", latin:"angulus mandibulae", region:"head-jaw", system:"landmark", layer:3,
+ action:"The corner of the jaw, below and in front of the earlobe.",
+ clinical:"Masseter attaches on the outside and medial pterygoid on the inside of this same corner — the two mirror each other across the bone, which is why jaw work often needs both.",
+ attachments:["Masseter","Medial Pterygoid","Platysma"]},
+
+{id:"lm-zygomatic-arch", name:"Zygomatic Arch", latin:"arcus zygomaticus", region:"head-jaw", system:"landmark", layer:3,
+ action:"The bony bridge running from the cheekbone back toward the ear.",
+ clinical:"Masseter hangs from it and temporalis runs beneath it. Following the arch backward leads directly to the jaw joint.",
+ attachments:["Masseter","Temporalis","Temporomandibular Joint"]},
+
+/* -- shoulder and thorax -- */
+{id:"lm-acromion", name:"Acromion", latin:"acromion", region:"shoulder", system:"landmark", layer:3,
+ action:"The flat bony shelf forming the point of the shoulder.",
+ clinical:"The roof of the subacromial space. Palpating just under its front edge with the arm extended behind reaches the supraspinatus tendon.",
+ attachments:["Deltoid","Trapezius","Acromioclavicular Joint","Subacromial Bursa"]},
+
+{id:"lm-coracoid", name:"Coracoid Process", latin:"processus coracoideus", region:"shoulder", system:"landmark", layer:3,
+ action:"A finger-shaped projection about two centimetres below the outer end of the collarbone, felt in the hollow below it.",
+ clinical:"Three muscles attach to one small point — pectoralis minor, coracobrachialis and the short head of biceps. Universally tender, so tenderness alone means little.",
+ attachments:["Pectoralis Minor","Coracobrachialis","Subclavius"]},
+
+{id:"lm-scapular-spine", name:"Spine of the Scapula", latin:"spina scapulae", region:"shoulder", system:"landmark", layer:3,
+ action:"The horizontal ridge across the back of the shoulder blade, continuous with the acromion.",
+ clinical:"Divides supraspinatus above from infraspinatus below. Its medial end sits level with the T3 spinous process — a useful cross-check when counting thoracic levels.",
+ attachments:["Trapezius","Deltoid","Supraspinatus","Infraspinatus"]},
+
+{id:"lm-inferior-angle", name:"Inferior Angle of the Scapula", latin:"angulus inferior scapulae", region:"shoulder", system:"landmark", layer:3,
+ action:"The bottom point of the shoulder blade.",
+ clinical:"Sits level with T7. The easiest single point for tracking shoulder blade position and for feeling upward rotation as the arm rises.",
+ attachments:["Latissimus Dorsi","Teres Major","Serratus Anterior"]},
+
+{id:"lm-scapular-medial-border", name:"Medial Border of the Scapula", latin:"margo medialis scapulae", region:"shoulder", system:"landmark", layer:3,
+ action:"The inner edge of the shoulder blade running vertically beside the spine.",
+ clinical:"Where people point when they say the pain is between the shoulder blades. Rhomboids attach along it and serratus anterior wraps around its front surface.",
+ attachments:["Rhomboids","Serratus Anterior","Levator Scapulae"]},
+
+{id:"lm-greater-tubercle", name:"Greater Tubercle of the Humerus", latin:"tuberculum majus humeri", region:"shoulder", system:"landmark", layer:3,
+ action:"The bony prominence on the outer top of the arm bone, just below and lateral to the acromion.",
+ clinical:"Three of the four cuff tendons converge here. Rolling the arm outward brings supraspinatus forward under your fingers.",
+ attachments:["Supraspinatus","Infraspinatus","Teres Minor"]},
+
+{id:"lm-bicipital-groove", name:"Bicipital Groove", latin:"sulcus intertubercularis", region:"shoulder", system:"landmark", layer:3,
+ action:"A vertical channel on the front of the upper arm bone, found by rolling the arm gently in and out under your thumb.",
+ clinical:"Carries the long head of biceps. Tenderness here in an overhead athlete points at the biceps tendon rather than the cuff — but the groove is tender in most people, so compare sides.",
+ attachments:["Biceps Long Head","Pectoralis Major","Latissimus Dorsi","Teres Major"]},
+
+{id:"lm-jugular-notch", name:"Jugular Notch", latin:"incisura jugularis", region:"thoracic", system:"landmark", layer:3,
+ action:"The hollow at the top of the breastbone between the two collarbones.",
+ clinical:"Sits level with the T2 and T3 disc. The starting point for finding the sternoclavicular joints, one on each side.",
+ attachments:["Sternocleidomastoid","Sternohyoid","Sternoclavicular Joint"]},
+
+{id:"lm-sternal-angle", name:"Sternal Angle", latin:"angulus sterni", region:"thoracic", system:"landmark", layer:3,
+ action:"The ridge partway down the breastbone where its top section meets the body.",
+ clinical:"The second rib attaches here, which makes it the reference for counting ribs — the only reliable way to number them. Sits level with the T4 and T5 disc behind.",
+ attachments:["Ribs","Costal Cartilages","Sternum"]},
+
+{id:"lm-costal-margin", name:"Costal Margin", latin:"arcus costalis", region:"thoracic", system:"landmark", layer:3,
+ action:"The lower border of the ribcage, sloping down and out from the bottom of the breastbone.",
+ clinical:"Where the diaphragm attaches all the way round. Its movement under your hands during breathing tells you whether someone is breathing into their ribs or their neck.",
+ attachments:["Diaphragm","External Oblique","Internal Oblique","Transversus Abdominis","Rectus Abdominis"]},
+
+/* -- elbow, wrist and hand -- */
+{id:"lm-medial-epicondyle", name:"Medial Epicondyle of the Humerus", latin:"epicondylus medialis humeri", region:"elbow-wrist", system:"landmark", layer:3,
+ action:"The bony bump on the inner side of the elbow.",
+ clinical:"Golfer's elbow. The ulnar nerve runs in a groove immediately behind it — tapping there produces tingling into the little finger, and that groove is a treatment site as much as the tendon in front of it.",
+ attachments:["Common Flexor Origin","Pronator Teres","Flexor Carpi Radialis","Flexor Carpi Ulnaris","Palmaris Longus","Cubital Tunnel"]},
+
+{id:"lm-lateral-epicondyle", name:"Lateral Epicondyle of the Humerus", latin:"epicondylus lateralis humeri", region:"elbow-wrist", system:"landmark", layer:3,
+ action:"The bony bump on the outer side of the elbow.",
+ clinical:"Tennis elbow, though the tender point is usually a centimetre distal on the ECRB tendon rather than on the bone itself. Tenderness further down again suggests the radial nerve through supinator instead.",
+ attachments:["Common Extensor Origin","Extensor Carpi Radialis Brevis","Extensor Digitorum","Extensor Carpi Ulnaris","Anconeus","Supinator"]},
+
+{id:"lm-olecranon", name:"Olecranon", latin:"olecranon", region:"elbow-wrist", system:"landmark", layer:3,
+ action:"The point of the elbow.",
+ clinical:"With the elbow bent, it forms a triangle with the two epicondyles. Loss of that triangle after trauma suggests dislocation. A swelling directly over it is olecranon bursitis, which sits on top of the bone rather than in the joint.",
+ attachments:["Triceps Brachii","Anconeus","Elbow Joint"]},
+
+{id:"lm-radial-styloid", name:"Radial Styloid Process", latin:"processus styloideus radii", region:"elbow-wrist", system:"landmark", layer:3,
+ action:"The bony point on the thumb side of the wrist.",
+ clinical:"Sits about a centimetre further down than the ulnar styloid — a difference that disappears in a Colles fracture. The de Quervain's tendons cross directly over it.",
+ attachments:["Brachioradialis","First Dorsal Compartment","Wrist Joint Complex"]},
+
+{id:"lm-ulnar-styloid", name:"Ulnar Styloid Process", latin:"processus styloideus ulnae", region:"elbow-wrist", system:"landmark", layer:3,
+ action:"The bony point on the little-finger side of the wrist.",
+ clinical:"The cartilage complex sits just distal to it. Tenderness in the hollow between this and the pisiform is the classic finding in ulnar-sided wrist pain.",
+ attachments:["Extensor Carpi Ulnaris","Distal Radioulnar Joint","Flexor Carpi Ulnaris"]},
+
+{id:"lm-anatomical-snuffbox", name:"Anatomical Snuffbox", latin:"fovea radialis", region:"elbow-wrist", system:"landmark", layer:3,
+ action:"The hollow at the base of the thumb, deepest when the thumb is lifted away from the hand.",
+ clinical:"The scaphoid sits in its floor. Tenderness here after a fall onto an outstretched hand means a scaphoid fracture until proven otherwise — and it often does not show on an initial X-ray.",
+ attachments:["First Dorsal Compartment","Extensor Pollicis Longus","Extensor Retinaculum"]},
+
+{id:"lm-pisiform", name:"Pisiform", latin:"os pisiforme", region:"elbow-wrist", system:"landmark", layer:3,
+ action:"A pea-sized bone felt on the little-finger side of the palm at the wrist crease.",
+ clinical:"The entrance to Guyon's canal sits immediately beside it. In cyclists with hand numbness, this is where the handlebar pressure lands.",
+ attachments:["Flexor Carpi Ulnaris","Guyon's Canal","Hypothenar Group"]},
+
+/* -- pelvis and hip -- */
+{id:"lm-iliac-crest", name:"Iliac Crest", latin:"crista iliaca", region:"lumbar", system:"landmark", layer:3,
+ action:"The top rim of the pelvis, followed easily with both hands resting on the hips.",
+ clinical:"Its highest point sits level with the L4 spinous process — the standard way to count lumbar levels. The superior cluneal nerves cross it about seven centimetres from the midline.",
+ attachments:["Latissimus Dorsi","External Oblique","Internal Oblique","Transversus Abdominis","Quadratus Lumborum","Thoracolumbar Fascia","Superior Cluneal Nerves"]},
+
+{id:"lm-asis", name:"Anterior Superior Iliac Spine", latin:"spina iliaca anterior superior", region:"hip", system:"landmark", layer:3,
+ action:"The bony point at the front of the pelvis, at the front end of the iliac crest.",
+ clinical:"The primary reference for pelvic position and for comparing leg length. The lateral femoral cutaneous nerve passes just medial to it — the reason a belt sitting here produces burning on the outer thigh.",
+ attachments:["Sartorius","Tensor Fasciae Latae","Inguinal Ligament","Lateral Femoral Cutaneous Nerve"]},
+
+{id:"lm-psis", name:"Posterior Superior Iliac Spine", latin:"spina iliaca posterior superior", region:"lumbar", system:"landmark", layer:3,
+ action:"The bony point at the back of the pelvis, found under the dimples above the buttocks.",
+ clinical:"Sits level with the second sacral segment and marks the sacroiliac joint. Comparing the two sides against the ASIS is the standard pelvic position assessment.",
+ attachments:["Sacroiliac Joint","Thoracolumbar Fascia","Gluteus Maximus","Multifidus"]},
+
+{id:"lm-ischial-tuberosity", name:"Ischial Tuberosity", latin:"tuber ischiadicum", region:"hip", system:"landmark", layer:3,
+ action:"The sitting bone, easiest to find with the hip bent.",
+ clinical:"All three hamstrings and part of adductor magnus attach here. Deep pain worse on sitting on a hard chair and worse with stretching is high hamstring tendinopathy — which needs loading, not stretching.",
+ attachments:["Hamstring Origin","Adductor Magnus","Sacrotuberous Ligament","Quadratus Femoris"]},
+
+{id:"lm-greater-trochanter", name:"Greater Trochanter", latin:"trochanter major", region:"hip", system:"landmark", layer:3,
+ action:"The broad bony prominence on the outside of the hip, about a hand's width below the iliac crest.",
+ clinical:"The most commonly tender lateral hip landmark. Gluteus medius and minimus attach to distinct facets on it — the tendinopathy is usually at the medius facet, slightly behind and above the most obvious point.",
+ attachments:["Gluteus Medius","Gluteus Minimus","Piriformis","Obturator Internus","Superior Gemellus","Inferior Gemellus","Trochanteric Bursa"]},
+
+{id:"lm-pubic-tubercle", name:"Pubic Tubercle", latin:"tuberculum pubicum", region:"hip", system:"landmark", layer:3,
+ action:"A small bony point either side of the midline at the front of the pelvis.",
+ clinical:"The adductor longus tendon attaches immediately below it, which is where a groin strain is felt. The inguinal ligament ends here. Explain before palpating.",
+ attachments:["Adductor Longus","Inguinal Ligament","Rectus Abdominis","Pubic Symphysis"]},
+
+{id:"lm-sacral-base", name:"Sacral Base", latin:"basis ossis sacri", region:"lumbar", system:"landmark", layer:3,
+ action:"The flat top surface of the sacrum, felt just below the L5 spinous process.",
+ clinical:"The transition between the mobile lumbar spine and the fixed pelvis, and therefore a concentration point for load. The step down from L5 to sacrum is palpable and exaggerated in spondylolisthesis.",
+ attachments:["Multifidus","Thoracolumbar Fascia","Sacroiliac Joint","Iliolumbar Ligament"]},
+
+/* -- knee, ankle and foot -- */
+{id:"lm-tibial-tuberosity", name:"Tibial Tuberosity", latin:"tuberositas tibiae", region:"knee", system:"landmark", layer:3,
+ action:"The bump on the front of the shin a few centimetres below the kneecap.",
+ clinical:"Where the patellar tendon attaches. Enlarged and tender in adolescents with Osgood-Schlatter, which is a growth plate traction problem and settles with skeletal maturity.",
+ attachments:["Patellar Tendon","Quadriceps"]},
+
+{id:"lm-gerdys-tubercle", name:"Gerdy's Tubercle", latin:"tuberculum tractus iliotibialis", region:"knee", system:"landmark", layer:3,
+ action:"A small flat area on the outer shin, level with and lateral to the tibial tuberosity.",
+ clinical:"Where the IT band attaches. Tenderness here is distal IT band pain, distinct from the far more common pain at the outer femoral condyle a few centimetres higher.",
+ attachments:["Iliotibial Band","Tibialis Anterior","Extensor Digitorum Longus"]},
+
+{id:"lm-knee-joint-line", name:"Knee Joint Line", latin:"linea articularis genus", region:"knee", system:"landmark", layer:3,
+ action:"The horizontal gap between thigh bone and shin, easiest to find with the knee bent to ninety degrees.",
+ clinical:"Tenderness along it is the most reproducible physical sign of a meniscal problem. The medial and lateral collateral ligaments cross it at either end.",
+ attachments:["Menisci","Medial Collateral Ligament","Lateral Collateral Ligament","Tibiofemoral Joint"]},
+
+{id:"lm-fibular-head", name:"Head of the Fibula", latin:"caput fibulae", region:"knee", system:"landmark", layer:3,
+ action:"The bony knob on the outside of the leg, just below and behind the knee joint line.",
+ clinical:"The common fibular nerve wraps around the bone immediately below it, where it is the most superficial nerve in the leg. Crossed legs, plaster casts and a fall onto the outer knee all compress it there.",
+ attachments:["Biceps Femoris, Long Head","Lateral Collateral Ligament","Fibularis Longus","Common Fibular Nerve","Proximal Tibiofibular Joint"]},
+
+{id:"lm-adductor-tubercle", name:"Adductor Tubercle", latin:"tuberculum adductorium", region:"knee", system:"landmark", layer:3,
+ action:"A small bony point at the top of the inner knee, just above the femoral condyle.",
+ clinical:"Where the hamstring portion of adductor magnus attaches. A reliable reference for finding the adductor canal, which runs just above and in front of it.",
+ attachments:["Adductor Magnus","Medial Collateral Ligament","Adductor Canal"]},
+
+{id:"lm-medial-malleolus", name:"Medial Malleolus", latin:"malleolus medialis", region:"ankle-foot", system:"landmark", layer:3,
+ action:"The bony bump on the inside of the ankle.",
+ clinical:"Sits higher and further forward than the outer one. The tarsal tunnel runs immediately behind it, carrying the tibial nerve and the tibialis posterior tendon into the sole.",
+ attachments:["Deltoid Ligament","Tarsal Tunnel","Tibialis Posterior","Tibial Nerve","Flexor Digitorum Longus"]},
+
+{id:"lm-lateral-malleolus", name:"Lateral Malleolus", latin:"malleolus lateralis", region:"ankle-foot", system:"landmark", layer:3,
+ action:"The bony bump on the outside of the ankle.",
+ clinical:"Lower and further back than the inner one. The anterior talofibular ligament runs forward from its front edge and is the first structure torn in an inversion sprain.",
+ attachments:["Lateral Ankle Ligaments","Fibularis Longus","Fibularis Brevis","Talocrural Joint"]},
+
+{id:"lm-navicular-tuberosity", name:"Navicular Tuberosity", latin:"tuberositas ossis navicularis", region:"ankle-foot", system:"landmark", layer:3,
+ action:"A bony prominence on the inner border of the foot, roughly midway between the inner ankle bump and the big toe joint.",
+ clinical:"The main attachment of tibialis posterior, and the keystone of the inner arch. Its height off the floor between sitting and standing is a simple measure of how much the arch drops under load.",
+ attachments:["Tibialis Posterior","Spring Ligament","Sole, First Layer"]},
+
+{id:"lm-fifth-metatarsal-base", name:"Base of the Fifth Metatarsal", latin:"tuberositas ossis metatarsi quinti", region:"ankle-foot", system:"landmark", layer:3,
+ action:"The prominent bump on the outer border of the midfoot.",
+ clinical:"Fibularis brevis attaches here and can avulse it during an inversion sprain. Tenderness at this point after a rolled ankle needs imaging before any loading.",
+ attachments:["Fibularis Brevis","Fibularis Tertius","Sole, First Layer"]},
+
+{id:"lm-sustentaculum-tali", name:"Sustentaculum Tali", latin:"sustentaculum tali", region:"ankle-foot", system:"landmark", layer:3,
+ action:"A small shelf on the heel bone, felt about a thumb's width directly below the inner ankle bump.",
+ clinical:"Supports the talus from below and anchors the spring ligament. A precise reference point for locating the subtalar joint and for heel bone mobilisation.",
+ attachments:["Spring Ligament","Subtalar Joint","Tibialis Posterior","Flexor Hallucis Longus"]},
+
 /* ---- Peripheral and cranial nerves ---- */
 {id:"nerve-cervical-roots", name:"Cervical Nerve Roots", latin:"radices nervorum cervicalium", region:"cervical", system:"nervous", layer:3,
  action:"Emerge from the neck between vertebrae and form the nerve supply to the arm.",
@@ -4041,6 +4378,16 @@ let anatLoose = [];     /* {structure, name, matched} — needed the fallback */
 let anatDupNames = [];  /* {key, entries:[{id,name}], reachable} */
 /* The subset that actually bit: a structure that named an ambiguous name. */
 let anatAmbiguous = []; /* {id, structure, name, chosen, others} */
+/* Landmarks answer "what attaches here" rather than "what loads this", so they
+   resolve structure names where every other entry resolves exercise names. Same
+   rules, same failure handling, separate arrays — the two name spaces are
+   different and a message telling you to add an exercise would be wrong. */
+let anatAttach = {};        /* landmark id -> resolved structure ids */
+let anatAttachMissing = []; /* {id, structure, name} — did not resolve */
+let anatAttachLoose = [];   /* {structure, name, matched} — needed the fallback */
+/* And because attachments resolve by structure name, structure names are now a
+   resolution key exactly as exercise names are, and carry the same requirement. */
+let anatDupStructNames = []; /* {key, entries:[{id,name}], reachable} */
 /* Defects in the map's own wiring rather than in a name: a dangling or looping
    inherits, an unexplained empty drill list, a stated reason contradicted by a
    list that is not empty. Reported exactly like a failed name, because the
@@ -4051,6 +4398,7 @@ let anatDefects = [];   /* {id, structure, problem} */
 function resolveAnatomy(){
   anatEx = {}; anatOwn = {}; anatMissing = []; anatLoose = []; anatDefects = [];
   anatDupNames = []; anatAmbiguous = [];
+  anatAttach = {}; anatAttachMissing = []; anatAttachLoose = []; anatDupStructNames = [];
   /* EX comes first in ALL, so a custom entry sharing a built-in's name can
      never shadow the library entry the map meant. */
   const exact = Object.create(null), loose = Object.create(null);
@@ -4134,14 +4482,72 @@ function resolveAnatomy(){
   }
   ANATOMY.forEach(resolveOne);
 
-  /* An empty drill list is legal — landmarks, most bones and several nerves are
-     not things a home exercise loads — but only when the map says why. Without
-     a reason there is no telling a structure that legitimately has no homecare
-     from one whose every name failed to resolve, and that ambiguity is the
-     silent failure this index exists to refuse. */
+  /* Pass three: attachments. Structure names, not exercise names — and grouped
+     by the same case-and-space-insensitive key, because the fallback conflates
+     them the same way and only the first holder of a name is reachable. */
+  const stExact = Object.create(null), stLoose = Object.create(null), stGrouped = Object.create(null);
+  ANATOMY.forEach(s=>{
+    if(!(s.name in stExact)) stExact[s.name] = s.id;
+    const k = nameKey(s.name);
+    if(!(k in stLoose)) stLoose[k] = s.id;
+    (stGrouped[k] = stGrouped[k] || []).push({id:s.id, name:s.name});
+  });
+  Object.keys(stGrouped).forEach(k=>{
+    if(stGrouped[k].length < 2) return;
+    anatDupStructNames.push({key:k, entries:stGrouped[k], reachable:stGrouped[k][0].id});
+  });
+
+  ANATOMY.forEach(s=>{
+    if(!s.attachments) return;
+    const ids = [];
+    s.attachments.forEach(n=>{
+      if(n in stExact){ ids.push(stExact[n]); return; }
+      const k = nameKey(n);
+      if(k in stLoose){
+        anatAttachLoose.push({structure:s.name, name:n,
+          matched:(ANATOMY.find(x=>x.id === stLoose[k])||{}).name});
+        ids.push(stLoose[k]);
+        return;
+      }
+      anatAttachMissing.push({id:s.id, structure:s.name, name:n});
+    });
+    anatAttach[s.id] = ids;
+  });
+
+  /* An empty drill list is legal — most bones and several nerves are not things
+     a home exercise loads — but only when the map says why. Without a reason
+     there is no telling a structure that legitimately has no homecare from one
+     whose every name failed to resolve, and that ambiguity is the silent failure
+     this index exists to refuse.
+
+     A landmark is the one entry that needs no such reason, because its type
+     already says what it is. It answers a different question, so it is held to
+     the equivalent requirement on the other side: attachments, not drills. */
   ANATOMY.forEach(s=>{
     const reason = typeof s.noExercises === "string" && !!s.noExercises.trim();
     const n = anatEx[s.id].length;
+
+    if(s.system === "landmark"){
+      if(!(anatAttach[s.id] || []).length){
+        anatDefects.push({id:s.id, structure:s.name,
+          problem:"is a landmark with nothing attached — list what attaches here, or fix the names"});
+      }
+      if(n || reason){
+        anatDefects.push({id:s.id, structure:s.name,
+          problem:"is a landmark but carries " + (reason ? "a noExercises reason" : "drills")
+            + " — a landmark answers what attaches here, not what loads it"});
+      }
+      if(s.inherits){
+        anatDefects.push({id:s.id, structure:s.name,
+          problem:"is a landmark with an inherits — landmarks are never parts of anything"});
+      }
+      return;
+    }
+
+    if(s.attachments){
+      anatDefects.push({id:s.id, structure:s.name,
+        problem:"carries attachments but is not a landmark — set system:\"landmark\", or drop the field"});
+    }
     if(!n && !reason){
       anatDefects.push({id:s.id, structure:s.name,
         problem:"has no drills and no noExercises reason — state why it has none, or fix the names"});
@@ -4172,6 +4578,22 @@ function resolveAnatomy(){
       + "can be reached and any reference meaning another silently gets the wrong one. Rename all "
       + "but one.",
       anatDupNames.map(d=>d.entries.map(e=>JSON.stringify(e.name) + " (" + e.id + ")").join("  vs  ")));
+  }
+  if(anatDupStructNames.length){
+    console.error("Anatomy index: " + anatDupStructNames.length + " structure name(s) are held by more "
+      + "than one structure. Landmarks resolve attachments by name, so only the first structure under "
+      + "each name can be reached. Rename all but one.",
+      anatDupStructNames.map(d=>d.entries.map(e=>JSON.stringify(e.name) + " (" + e.id + ")").join("  vs  ")));
+  }
+  if(anatAttachLoose.length){
+    console.warn("Anatomy index: " + anatAttachLoose.length + " attachment name(s) matched only after "
+      + "ignoring case and spacing.",
+      anatAttachLoose.map(m=>m.structure + " → " + JSON.stringify(m.name) + " matched " + JSON.stringify(m.matched)));
+  }
+  if(anatAttachMissing.length){
+    console.error("Anatomy index: " + anatAttachMissing.length + " attachment name(s) did not resolve "
+      + "against the map. The landmarks below are showing an incomplete attachment list.",
+      anatAttachMissing.map(m=>m.structure + " (" + m.id + ") → " + JSON.stringify(m.name)));
   }
   if(anatAmbiguous.length){
     console.error("Anatomy index: " + anatAmbiguous.length + " reference(s) name an exercise that is "
@@ -5250,6 +5672,10 @@ const SYSTEMS = [
   {k:"articular", name:"Articular"},
   {k:"nervous",   name:"Nervous"},
   {k:"fascial",   name:"Fascial"},
+  /* A landmark is not a tissue — it is where you put your hands. It answers
+     "what attaches here" instead of "what loads this", which is why it needs
+     its own system rather than sitting under skeletal. */
+  {k:"landmark",  name:"Landmark"},
 ];
 const systemName = k=>(SYSTEMS.find(y=>y.k===k)||{}).name || k;
 
@@ -5339,8 +5765,41 @@ function anatNest(group){
 function renderAnatWarn(){
   const el = $("#anatWarn");
   if(!anatMissing.length && !anatLoose.length && !anatDefects.length
-     && !anatDupNames.length && !anatAmbiguous.length){ el.innerHTML = ""; return; }
+     && !anatDupNames.length && !anatAmbiguous.length
+     && !anatDupStructNames.length && !anatAttachMissing.length && !anatAttachLoose.length){
+    el.innerHTML = ""; return;
+  }
   let h = "";
+  if(anatDupStructNames.length){
+    h += `<div class="anat-warn">
+      <span class="lbl">${anatDupStructNames.length} structure name${anatDupStructNames.length===1?"":"s"} held by more than one entry</span>
+      Landmarks resolve their attachments by structure name, so only the first structure under a name
+      can be reached — the rest are invisible to every landmark that means them. Rename all but one.
+      <ul>${anatDupStructNames.map(d=>
+        `<li>${d.entries.map((e,i)=>
+          `<code>${esc(e.name)}</code> (${esc(e.id)}${i?"":" — the one that resolves"})`).join(" · ")}</li>`).join("")}</ul>
+    </div>`;
+  }
+  if(anatAttachMissing.length){
+    const by = {};
+    anatAttachMissing.forEach(m=>{ (by[m.structure] = by[m.structure] || []).push(m.name); });
+    h += `<div class="anat-warn">
+      <span class="lbl">${anatAttachMissing.length} attachment${anatAttachMissing.length===1?"":"s"} did not resolve</span>
+      The landmarks below are showing an incomplete attachment list. Correct the name in
+      <code>ANATOMY</code>, or add the structure.
+      <ul>${Object.keys(by).map(k=>
+        `<li>${esc(k)} — ${by[k].map(n=>`<code>${esc(n)}</code>`).join(", ")}</li>`).join("")}</ul>
+    </div>`;
+  }
+  if(anatAttachLoose.length){
+    h += `<div class="anat-warn">
+      <span class="lbl">${anatAttachLoose.length} attachment name${anatAttachLoose.length===1?"":"s"} matched only loosely</span>
+      Matched after ignoring case and spacing, so the link is showing — but the wording has drifted
+      and should be brought back into line.
+      <ul>${anatAttachLoose.map(m=>
+        `<li>${esc(m.structure)} — <code>${esc(m.name)}</code> matched <code>${esc(m.matched)}</code></li>`).join("")}</ul>
+    </div>`;
+  }
   /* The clash comes first: it is the cause, and the ambiguous references below
      are only its symptom. */
   if(anatDupNames.length){
@@ -5464,6 +5923,10 @@ function renderAnatDetail(){
   /* Both directions of the hierarchy are navigable, and the children list is
      the discovery path while the parts toggle is off. */
   const children = ANATOMY.filter(x=>x.inherits === s.id);
+  /* A landmark answers a different question, so it gets a different section. */
+  const isLandmark = s.system === "landmark";
+  const attached = (anatAttach[s.id] || []).map(id=>ANATOMY.find(x=>x.id === id)).filter(Boolean);
+  const attachMissing = anatAttachMissing.filter(m=>m.id === s.id);
   /* The parent's ids are always the head of the list, so its length is exactly
      where the inherited run ends — no need to re-derive it from the child. */
   const inherited = parent ? (anatEx[parent.id] || []).length : 0;
@@ -5491,6 +5954,19 @@ function renderAnatDetail(){
       <p>${esc(s.clinical)}</p>
     </div>`}
 
+    ${isLandmark ? `
+    <div class="anat-sec">
+      <span class="lbl">What attaches here</span>
+      <div class="anat-kids">
+        ${attached.map(a=>`<button type="button" data-goto="${esc(a.id)}">${esc(a.name)}</button>`).join("")}
+      </div>
+    </div>
+    ${attachMissing.length ? `<div class="anat-warn">
+      <span class="lbl">Incomplete</span>
+      ${attachMissing.length} name${attachMissing.length===1?"":"s"} listed here
+      ${attachMissing.length===1?"does":"do"} not exist in the map:
+      <ul>${attachMissing.map(m=>`<li><code>${esc(m.name)}</code></li>`).join("")}</ul>
+    </div>` : ""}` : `
     ${drills.length ? `
     <div class="anat-sec">
       <span class="lbl">Drills that load this${S ? " — adding to " + esc(where) : ""}</span>
@@ -5511,7 +5987,7 @@ function renderAnatDetail(){
     <div class="anat-sec">
       <span class="lbl">No drills load this</span>
       <p>${esc(s.noExercises)}</p>
-    </div>` : "")}
+    </div>` : "")}`}
 
     ${children.length ? `
     <div class="anat-sec">
