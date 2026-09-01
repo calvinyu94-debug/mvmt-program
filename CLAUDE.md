@@ -13,6 +13,18 @@ Printable home-exercise program builder for clinical use. Single self-contained
 - **Print fidelity is a feature.** The printed handout is the actual deliverable
   to patients. Preserve and extend the `@media print` rules.
 - **Colour lives in `:root`, nowhere else.** See the theme layer below.
+- **The library is user-mutable. Nothing may assume it is fixed at boot.** Any
+  check, assertion or resolution over `EX` must run on **library change**, not
+  once at boot. Boot-time-only logic misses clashes and resolutions introduced
+  by custom entries, and misses their removal.
+
+  `rebuildLibrary()` is that hook, and it is also what runs at boot — so putting
+  the work there gets the boot pass for free and cannot drift out of step. Two
+  things live there today for exactly this reason: `resolveAnatomy()`'s
+  name-to-id lookup (a custom entry can satisfy a name the map needs, and
+  deleting one takes it away again) and the exercise-name uniqueness assertion
+  (a custom entry can introduce a clash long after load). This has been got
+  wrong twice; assume the next one too, and check before writing `// at load`.
 
 ## `alsoRegion` is coupled to a safety callout — read before cross-tagging
 
