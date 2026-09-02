@@ -567,12 +567,23 @@ button{cursor:pointer}
      otherwise print as unbordered text floating on the page. */
   .panel{border:1px solid var(--line);box-shadow:none;border-radius:0}
   .lib,.asg{max-height:none;overflow:visible}
-  /* The level tag is white text on an ink fill. Print drops the fill, so it
-     was printing as white text on nothing — invisible, and unnoticed for as
-     long as it shipped. Ink on white with a rule, in both modes: legibility on
-     paper has to come from ink, never from a fill, and colour mode must never
-     be the thing that makes something readable. */
-  .tag.stage{background:var(--panel);color:var(--ink);border:1px solid var(--ink)}
+  /* Tags and filter chips are filled pills on screen, and the fill is exactly
+     what print drops. The level tag and the Custom tag were white text on an
+     ink or accent fill — invisible on paper, and unnoticed for as long as they
+     shipped. The selected chip was worse than invisible: a printed filtered
+     library showed every unselected chip and hid the selected one, the inverse
+     of the actual state. The plain tags kept their text but lost their edge,
+     and a pill with no outline reads as loose text.
+
+     All of them carry their meaning on a rule now, in both modes: legibility
+     on paper comes from ink, never from a fill, and colour mode must never be
+     the thing that makes something readable. The screen hierarchy survives as
+     rule weight — ink for the level tag, the Custom tag and the selected chip;
+     the muted ink for the plain ones — and the selected chip also takes the
+     heavier weight, so its state does not rest on one hairline. */
+  .tag{background:var(--panel);border:1px solid var(--ink-3)}
+  .tag.stage,.tag.custom{background:var(--panel);color:var(--ink);border-color:var(--ink)}
+  .chip[aria-pressed="true"]{background:var(--panel);color:var(--ink);border-color:var(--ink);font-weight:700}
   .ex-acts{display:none}
   .acard{break-inside:avoid}
 }
