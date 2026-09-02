@@ -872,3 +872,51 @@ the hip's box, and the rotatores are one mesh from neck to sacrum.
 
 The debt is closed in mvmt-anatomy's three files only once the integration
 PR lands, with a pointer to where it was paid — not before.
+
+### The viewer is a way into the handout, and the index and the viewer say one thing
+
+Tap a muscle, read what it does, add the drills, print the handout: that
+chain is the product, and three things keep it honest.
+
+**One detail body.** `anatDetailBody(s)` renders what a structure does, why
+it matters, and the drills that load it, and both the Anatomy index and the
+3D panel call it. The caller supplies the head and handles the clicks; the
+body never differs between the two, so a drill list or a clinical note can
+never be right in one place and stale in the other. Adding a drill from the
+3D panel goes through `anatAddToPhase()`, the same function the index uses,
+which pushes the same `{exerciseId, rx, freq, note}` item the library's own
+checkbox does. No anatomy text travels with it.
+
+**One patient toggle.** `anatPatient` is the index's variable and the 3D
+panel reads the same one; the `Patient view` button on the 3D side flips it
+and the index's button shows the new state the next time that view renders.
+Module state, never stored — a reload lands in practitioner mode in both
+views, for the reason given under the Anatomy index.
+
+**The three print guards hold from here too.** `#threeView` carries
+`no-print`; the 3D panel copies nothing into a program; `renderPatient()`
+still never reads `ANATOMY`. The check that was run: every rendered element
+carrying a `clinical` sentence sits under a `.no-print` ancestor (the only
+other carrier is the script source itself), the print block's `.no-print`
+rule is `display:none!important`, and the patient copy's HTML contains no
+clinical text after a drill has been added from 3D.
+
+### View in 3D is offered from a generated set, not a fetch
+
+The Anatomy index shows **View in 3D** only for structures the join gives
+geometry — `mapped`, `authored` or `anchor` — and hides it for `text-only`,
+`absent` and `unresolved`. It cannot read `structure-meshes.json` to decide,
+because the index must fetch nothing 3D; so `V3_HAS_GEOMETRY` is a generated
+`Set` of ids in the script, with the regenerating one-liner in the comment
+above it. At 3D setup the set is checked against the file and any drift is
+reported to the console and beside the layer toggles. **Regenerate it
+whenever the join changes**; never hand-edit it.
+
+`v3Show(id)` is the one entry point from the index, from an attachment link
+and from *Also part of*: it loads the region that holds the structure if the
+current one does not, turns on whichever layer the structure lives in
+(landmarks, nerves, or insertions for a structure that has patches and no
+belly), selects it and frames it. Framing is the viewer's single camera
+animation, half a second eased, and it is a jump under
+`prefers-reduced-motion`. A request made before the viewer has finished
+setting up is kept in `V3.pendingShow` and replayed, never dropped.
