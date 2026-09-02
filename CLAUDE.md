@@ -261,6 +261,16 @@ and no border. Re-run it when adding anything to a print path that carries
 a fill: filled tags, selected chips, pressed states, checkboxes drawn with
 `accent-color`.
 
+The audit's full list is now fixed, and the fix shows what the rule looks like
+in practice: every tag and the selected filter chip print as ink on
+`--panel` with a 1px rule. The screen hierarchy — ink fill, accent fill, light
+fill — survives as **rule weight**: `--ink` for the level tag, the Custom tag
+and the selected chip, `--ink-3` for the plain type and region tags. The
+selected chip also takes `font-weight:700`, so its state does not rest on one
+hairline. The chip was the one that mattered: a printed filtered library was
+showing every unselected chip and hiding the selected one — the inverse of the
+actual state, which is worse than missing.
+
 Two things it is easy to reach for that do not satisfy this:
 
 - `print-color-adjust: exact` on the element. That is colour mode's tool, and
