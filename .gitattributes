@@ -1,0 +1,2 @@
+# Model files are binary — never line-ending normalised.
+*.glb binary

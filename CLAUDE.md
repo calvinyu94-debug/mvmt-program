@@ -714,3 +714,83 @@ Unknown exercise ids are dropped and reported to the user, never silently.
 Autosave debounces 800ms. Any code path that replaces the open program must call
 `flushSave()` first, or the pending write lands on the wrong program and the
 previous one's last edit is lost.
+
+## The 3D viewer
+
+The first thing that lives outside `index.html`. The models are in `assets/`:
+nineteen `.glb` files — nine regions, nine insertion layers, `nerves.glb` —
+plus `regions.json`, all exported by the mvmt-anatomy pipeline and served
+same-origin from Pages so there is no CORS and the browser caches them like
+anything else. `assets/ATTRIBUTION.md` carries the licence chain: CC BY-SA
+throughout, and `nerves.glb` is original schematic work rather than a
+derivative. Keep it accurate if a file is replaced.
+
+### Nothing 3D loads until the 3D view is opened
+
+The app runs on clinic wifi, and Programs, handouts and the Anatomy index must
+stay exactly as fast as they are. So boot fetches no three.js, no decoder and
+no model — **the check is the network tab on a fresh load**, not a reading of
+the code. Everything the viewer needs is imported inside `v3Setup()`, which
+runs on the first `setView("3d")` and never before. The import map in `<head>`
+is not a fetch: it only says where `three` and `three/addons/` resolve once
+something imports them, and it is the whole of the "build step". Script tags
+and an import map, no bundler — that stays true.
+
+Regions load one at a time and never all nine. `v3Load()` disposes the
+previous region's geometries and GLTF-built materials before the next lands
+(`v3DisposeRegion()`), and a load superseded while in flight is disposed
+rather than shown (`V3.token`). Verify with
+`V3.renderer.info.memory.geometries` across several switches: it should equal
+the current region's mesh count after a render, and never climb.
+
+### The CDN split, and why the decoder is preloaded
+
+cdnjs carries only the three.js core module, nothing under `examples/`. The
+loaders, the controls and the Draco decoder therefore come from jsDelivr,
+pinned to the same release — `V3_VERSION` in the script and the number in the
+import map are the same release and **move together**. The decoder is
+`preload()`ed at setup so a bad decoder URL fails at setup with the viewer's
+own message, instead of at the first compressed mesh, where it looks like a
+broken model rather than a broken URL.
+
+### Failure leaves the rest of the app alone
+
+Every 3D path is caught and reported on the canvas overlay, in plain words,
+with a retry. Nothing 3D may throw into the rest of the page: a model that
+will not load must never take a handout with it. The view carries `no-print`
+like the Anatomy view, hides the print controls the same way, and is exempt
+from the needs-a-program rule in `setView()`.
+
+### The viewer's colour is still theme colour
+
+The `--v3-*` tokens in `:root` are the viewer's whole palette — ground, key
+and fill light, one colour per tissue, one for context. The viewer reads them
+by name through `getComputedStyle` and holds no literal of its own, so the
+one-line colour check still comes back empty and a theme swap reaches the
+model. Meshes are coloured **by tissue**, from the node's `system` extra with
+the exporter's material name breaking the ties a hand cares about (tendon,
+bursa, ligament) — never by region. The region tokens are a scanning aid
+across a list, and mean nothing wrapped round a femur. The exported materials
+themselves are Z-Anatomy's functional-group atlas, 37 names and nearly all
+plain white, so they are replaced on load and disposed.
+
+### The glTF extras are the contract with mvmt-anatomy
+
+Every node carries `sourceName`, `region`, `side`, `context` and `system` in
+its extras; the nerve nodes carry `authored: true` and `source: "schematic"`
+and no `sourceName`. Context meshes (`context: true`) are the neighbouring
+regions, drawn dim with depthWrite off so they never occlude the region
+itself, and are not selectable. Coordinates are baked to world space with
+identity transforms, glTF Y-up, **+Z anterior**, `.l` at +X.
+
+### `.gitignore` negations are exactly three
+
+`*.json` stays blanket, and a patient export dropped in the repo folder must
+still be ignored — in the root and inside `assets/`, and that is worth
+re-checking with `git check-ignore` after any edit to the file. The three
+negations are the three runtime data files and nothing broader. `.glb` was
+never ignored; `.gitattributes` marks it binary so it can never be
+line-ending normalised.
+
+Two smaller things the viewer keeps: it respects `prefers-reduced-motion` by
+turning orbit damping off, and it caps the device pixel ratio at 2.

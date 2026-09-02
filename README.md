@@ -12,6 +12,11 @@ Open the live URL in any browser and it runs.
 - **Build** view is the practitioner working view.
 - **Patient copy** is the clean handout, laid out for printing.
 - **Print / Save as PDF** produces the patient-facing sheet.
+- **Anatomy** is the structure index: what each muscle, joint and nerve does
+  and which drills load it.
+- **3D** is the anatomy viewer. It loads nothing until it is opened — the
+  libraries and the region models arrive on demand, one region at a time, so
+  the rest of the app stays exactly as fast as it is.
 
 ## Where your data lives
 
@@ -29,5 +34,7 @@ back or move it to another device.
 
 ## Editing
 
-Everything lives in `index.html`. Changes pushed to `main` go live automatically
-via GitHub Pages.
+Everything lives in `index.html`, except the 3D models, which are the `.glb`
+files in `assets/`. Those derive from Z-Anatomy and are CC BY-SA 4.0 — see
+[`assets/ATTRIBUTION.md`](assets/ATTRIBUTION.md). Changes pushed to `main` go
+live automatically via GitHub Pages.

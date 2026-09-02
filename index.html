@@ -7,6 +7,20 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+<!-- The 3D viewer's libraries. An import map costs no fetch — it only says
+     where a bare specifier resolves once something imports it, and nothing
+     imports until the 3D view is opened. There is no bundler and this is the
+     whole of the "build": pinned, and both hosts serve the same release.
+     cdnjs carries only the three.js core module, so the loaders, the controls
+     and the Draco decoder come from jsDelivr at that same version. -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.170.0/three.module.min.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
 
 <style>
 :root{
@@ -93,6 +107,23 @@
   --level-1: #2E7181;
   --level-2: #A66A2E;
   --level-3: #9C4A63;
+
+  /* 3D viewer. The scene is coloured and lit off these and nothing else, so
+     the model sits on the same paper as the rest of the page and a theme swap
+     reaches it. They are CSS tokens the viewer reads back through
+     getComputedStyle at setup — colour still lives here and nowhere else, the
+     JS only ever asks for a token by name. Meshes are coloured by tissue, not
+     by region: the region tokens above are a scanning aid across a list, and
+     a scanning aid wrapped round a femur means nothing. */
+  --v3-bg:        #FFFFFF;   /* the ground the model sits on — paper, not a void */
+  --v3-key:       #FFF3E4;   /* warm key light, rides with the camera */
+  --v3-fill:      #DCE6F0;   /* cool fill, fixed in the scene */
+  --v3-muscular:  #B8654F;
+  --v3-skeletal:  #EEE5D3;
+  --v3-articular: #B6C2CB;   /* ligament, capsule, cartilage, disc */
+  --v3-tendon:    #E4D5C0;
+  --v3-fascial:   #D9CFC2;   /* bursa, fascia, fat pad — drawn translucent */
+  --v3-context:   #DAD3CB;   /* neighbouring regions, dimmed and unselectable */
 
   --radius-sm: 6px;    /* tags */
   --radius:    12px;   /* inputs, buttons */
@@ -492,6 +523,33 @@ button{cursor:pointer}
 .anat-warn li{margin:0 0 4px}
 .anat-warn code{font-family:var(--font-ui);font-size:12.5px;color:var(--ink)}
 
+/* ---------- 3D viewer ---------- */
+/* The stage takes the width; the region picker takes a fixed column. Same
+   panel, the same chips as the library filters, so nothing here is a new
+   control to learn. */
+.v3-cols{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:var(--gap);align-items:start}
+@media(max-width:1080px){.v3-cols{grid-template-columns:1fr}}
+/* touch-action:none hands the whole gesture to the controls — otherwise a
+   one-finger drag scrolls the page instead of turning the model, and a pinch
+   zooms the page. */
+.v3-canvas{position:relative;height:calc(100vh - 230px);min-height:420px;background:var(--v3-bg);touch-action:none;overflow:hidden}
+.v3-canvas canvas{display:block;width:100%;height:100%;outline:0}
+/* Progress and failure sit over the canvas rather than beside it: a 5 MB
+   region on clinic wifi is several seconds, and an empty white box for that
+   long reads as broken. */
+.v3-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:22px;background:var(--v3-bg)}
+.v3-overlay[hidden]{display:none}
+.v3-msg{max-width:380px;text-align:center;font-size:14px;color:var(--ink-2)}
+.v3-msg b{display:block;font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:var(--ink-2);margin-bottom:8px}
+.v3-msg.err b{color:var(--danger)}
+.v3-msg .pbtn{margin-top:14px}
+.v3-bar{height:6px;border-radius:3px;background:var(--line-2);overflow:hidden;margin:12px auto 8px;width:240px}
+.v3-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .15s}
+.v3-side{padding:var(--pad)}
+.v3-side .chips{gap:6px}
+.v3-hint{font-size:12.5px;color:var(--ink-3);margin:14px 0 0}
+.v3-hint+.v3-hint{margin-top:8px}
+
 /* ---------- print ---------- */
 /* Shadows do not print, and this theme took the panel borders away in exchange
    for them. Everything that was relying on elevation for its edges gets a real
@@ -675,6 +733,7 @@ button{cursor:pointer}
       <button id="vPrac" aria-pressed="false">Build</button>
       <button id="vPat" aria-pressed="false">Patient copy</button>
       <button id="vAnat" aria-pressed="false">Anatomy</button>
+      <button id="v3d" aria-pressed="false">3D</button>
     </div>
     <button class="btn" id="bNew" title="Start a new program">New program</button>
     <button class="btn" id="bSave" title="Keeps your work in this browser">Save</button>
@@ -803,6 +862,34 @@ button{cursor:pointer}
           <button class="pbtn" id="bAnatMode" title="Hides the practitioner-only notes so the screen can be turned toward a patient">Patient view: off</button>
         </div>
         <div class="anat-detail" id="anatDetail"></div>
+      </section>
+    </div>
+  </div>
+  <!-- The 3D viewer. Reference material like the anatomy index, and it carries
+       no-print for the same reason. Nothing inside it exists until the view is
+       first opened: the canvas is created then, and the libraries and the
+       region files are fetched then — see the 3D VIEWER section of the script. -->
+  <div id="threeView" class="no-print" style="display:none">
+    <div class="v3-cols">
+      <section class="panel">
+        <div class="panel-hd">
+          <h2>3D anatomy</h2>
+          <span class="count" id="v3Status"></span>
+        </div>
+        <div class="v3-canvas" id="v3Canvas">
+          <div class="v3-overlay" id="v3Overlay"><div class="v3-msg" id="v3Msg"></div></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-hd">
+          <h2>Region</h2>
+        </div>
+        <div class="v3-side">
+          <div class="chips" id="v3Region"></div>
+          <p class="v3-hint">Drag to turn. Scroll or pinch to zoom.</p>
+          <p class="v3-hint">One region is held at a time, about 1–2 MB each. Neighbouring regions are drawn dimmed for context.</p>
+        </div>
       </section>
     </div>
   </div>
@@ -6129,17 +6216,20 @@ $("#bAnatParts").onclick = ()=>{ anatParts = !anatParts; renderAnat(); };
 
 function setView(v){
   /* Build and Patient copy need a program; without one there is only the list.
-     Anatomy is reference material and stands on its own, so it is exempt. */
-  if(v !== "list" && v !== "anat" && !S) v = "list";
+     Anatomy and 3D are reference material and stand on their own, so they are
+     exempt. */
+  if(v !== "list" && v !== "anat" && v !== "3d" && !S) v = "list";
   U.view = v;
   $("#vList").setAttribute("aria-pressed", v==="list");
   $("#vPrac").setAttribute("aria-pressed", v==="prac");
   $("#vPat").setAttribute("aria-pressed", v==="pat");
   $("#vAnat").setAttribute("aria-pressed", v==="anat");
+  $("#v3d").setAttribute("aria-pressed", v==="3d");
   $("#listView").style.display    = v==="list" ? "" : "none";
   $("#buildView").style.display   = v==="prac" ? "" : "none";
   $("#patientView").style.display = v==="pat"  ? "" : "none";
   $("#anatView").style.display    = v==="anat" ? "" : "none";
+  $("#threeView").style.display   = v==="3d"   ? "" : "none";
 
   /* Header and phase chrome only make sense with a program open, and the phase
      bar only when there is more than one phase to move between. Anatomy keeps
@@ -6152,17 +6242,22 @@ function setView(v){
   ["bSave","bBackup","bPrint","printColourWrap"].forEach(id=>{
     $("#"+id).style.display = S ? "" : "none";
   });
-  /* Nothing on the Anatomy screen belongs on paper — it is reference material,
-     and it is the one view that carries no-print. Offering Print here would
-     hand back a blank page. The colour toggle goes with it: it is a print
+  /* Nothing on the Anatomy or 3D screens belongs on paper — they are reference
+     material, and they are the views that carry no-print. Offering Print there
+     would hand back a blank page. The colour toggle goes with it: it is a print
      setting, and a print setting beside no print button is a puzzle. */
-  if(v==="anat") $("#bPrint").style.display = $("#printColourWrap").style.display = "none";
+  if(v==="anat" || v==="3d") $("#bPrint").style.display = $("#printColourWrap").style.display = "none";
   $("#vPrac").disabled = !S;
   $("#vPat").disabled = !S;
+
+  /* The viewer only draws while it is on screen. Leaving is safe before it
+     has ever been entered — it does nothing until the first entry. */
+  if(v === "3d") v3Enter(); else v3Leave();
 
   renderSaved();
   if(v === "list") renderList();
   else if(v === "anat"){ if(S) renderAll(); else renderAnat(); }
+  else if(v === "3d"){ if(S) renderAll(); }
   else renderAll();
 }
 
@@ -6170,6 +6265,7 @@ $("#vList").onclick = ()=>setView("list");
 $("#vPrac").onclick = ()=>setView("prac");
 $("#vPat").onclick  = ()=>setView("pat");
 $("#vAnat").onclick = ()=>setView("anat");
+$("#v3d").onclick   = ()=>setView("3d");
 
 function renderAll(){
   if(!S) return;
@@ -6324,6 +6420,363 @@ $("#fCustomFile").onchange = e=>{
   };
   rd.readAsText(f);
 };
+
+/* ============================ 3D VIEWER ============================ */
+/* Opt-in, always. Nothing in this section runs, and nothing it needs is
+   fetched — not three.js, not the Draco decoder, not a model — until the 3D
+   view is opened. The app is used on clinic wifi, and a practitioner who never
+   opens this must not pay a byte for it: boot fetches zero 3D assets, and that
+   is checked on the network tab, not by reading this comment.
+
+   The libraries arrive as ES modules through the import map in <head>. cdnjs
+   carries only the three.js core, so the loaders, the controls and the Draco
+   decoder come from jsDelivr, pinned to the same release. The decoder is
+   preloaded at setup on purpose: a missing decoder otherwise fails at the first
+   compressed mesh, which looks like a broken model rather than a broken URL.
+
+   Regions load one at a time and the previous one is disposed first —
+   geometries freed, the GLTF-built materials thrown away — because nine
+   regions held at once exhaust memory on a laptop. The materials the meshes
+   actually wear are a handful shared by tissue, made once and kept. */
+const V3_VERSION = "0.170.0";
+const V3_DRACO = "https://cdn.jsdelivr.net/npm/three@" + V3_VERSION + "/examples/jsm/libs/draco/gltf/";
+const V3_ASSETS = "assets/";
+
+const V3 = {
+  lib:null, libPromise:null,   /* the four modules, imported once */
+  regions:null,                /* assets/regions.json, fetched once */
+  setupPromise:null,
+  ok:false,                    /* renderer, scene, camera, controls, loader all exist */
+  renderer:null, scene:null, camera:null, controls:null, loader:null,
+  root:null,                   /* the loaded region's scene graph */
+  region:null,                 /* its key */
+  loading:null,                /* the key in flight, if any */
+  pending:null,                /* a pick made before setup finished */
+  token:0,                     /* load generation — a superseded load never lands */
+  raf:0, dirty:true, visible:false,
+  mats:{},                     /* the shared materials, keyed by look */
+  size:{w:1, h:1}
+};
+
+/* Colour lives in :root. The viewer asks for a token by name and never holds a
+   literal of its own. */
+const v3Tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const v3Reduced = () => !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+const v3Mb = b => (b / 1048576).toFixed(1) + " MB";
+
+function v3Libs(){
+  if(V3.libPromise) return V3.libPromise;
+  V3.libPromise = Promise.all([
+    import("three"),
+    import("three/addons/loaders/GLTFLoader.js"),
+    import("three/addons/loaders/DRACOLoader.js"),
+    import("three/addons/controls/OrbitControls.js")
+  ]).then(mods=>{
+    V3.lib = {THREE:mods[0], GLTFLoader:mods[1].GLTFLoader, DRACOLoader:mods[2].DRACOLoader, OrbitControls:mods[3].OrbitControls};
+    return V3.lib;
+  }).catch(err=>{ V3.libPromise = null; throw err; });
+  return V3.libPromise;
+}
+
+function v3Regions(){
+  if(V3.regions) return Promise.resolve(V3.regions);
+  return fetch(V3_ASSETS + "regions.json").then(r=>{
+    if(!r.ok) throw new Error("regions.json " + r.status);
+    return r.json();
+  }).then(j=>{
+    if(!j || !Array.isArray(j.regions)) throw new Error("regions.json has no regions");
+    V3.regions = j;
+    return j;
+  });
+}
+
+/* ---- overlay: progress and failure, over the canvas ---- */
+function v3Overlay(title, detail, frac){
+  const o = $("#v3Overlay"), m = $("#v3Msg");
+  if(title == null){ o.hidden = true; return; }
+  o.hidden = false;
+  m.className = "v3-msg";
+  m.innerHTML = `<b>${esc(title)}</b>${detail ? `<span>${esc(detail)}</span>` : ""}
+    ${frac != null ? `<div class="v3-bar"><i style="width:${Math.round(Math.max(0, Math.min(1, frac)) * 100)}%"></i></div>` : ""}`;
+}
+/* Plain words, and the rest of the app untouched: a failed model must never
+   take a handout with it. Retry re-runs whichever step failed. */
+function v3Fail(title, detail, retry){
+  const o = $("#v3Overlay"), m = $("#v3Msg");
+  o.hidden = false;
+  m.className = "v3-msg err";
+  m.innerHTML = `<b>${esc(title)}</b><span>${esc(detail || "")}</span>
+    ${retry ? `<button type="button" class="pbtn" id="v3Retry">Try again</button>` : ""}`;
+  if(retry) $("#v3Retry").onclick = retry;
+}
+
+/* ---- materials: by tissue, shared, made once ---- */
+/* The exported materials are Z-Anatomy's functional-group atlas — 37 names,
+   nearly all plain white — so they carry no colour worth keeping. The look is
+   decided from the node's system extra, with the material name breaking the
+   ties that matter to a hand on the patient: a tendon is not a muscle belly, a
+   bursa is not a ligament. Context meshes get one dim translucent look
+   regardless, and depthWrite off so they never hide the region itself. */
+function v3Look(mesh){
+  const ex = mesh.userData || {};
+  if(ex.context) return "context";
+  const m = (mesh.material && mesh.material.name) || "";
+  if(/tendon/i.test(m)) return "tendon";
+  if(/bursa|fascia|fat/i.test(m)) return "fascial";
+  if(ex.system === "skeletal") return "skeletal";
+  if(ex.system === "articular" || /ligament|cartilage|capsule/i.test(m)) return "articular";
+  return "muscular";
+}
+const V3_LOOKS = {
+  muscular:  {tok:"--v3-muscular",  rough:.72, both:true},
+  skeletal:  {tok:"--v3-skeletal",  rough:.62},
+  articular: {tok:"--v3-articular", rough:.55, both:true},
+  tendon:    {tok:"--v3-tendon",    rough:.6,  both:true},
+  fascial:   {tok:"--v3-fascial",   rough:.6,  both:true, opacity:.55},
+  context:   {tok:"--v3-context",   rough:.9,  both:true, opacity:.2}
+};
+function v3Material(look){
+  if(V3.mats[look]) return V3.mats[look];
+  const T = V3.lib.THREE, spec = V3_LOOKS[look];
+  const m = new T.MeshStandardMaterial({
+    color: new T.Color(v3Tok(spec.tok)), roughness: spec.rough, metalness: 0,
+    side: spec.both ? T.DoubleSide : T.FrontSide
+  });
+  if(spec.opacity != null){ m.transparent = true; m.opacity = spec.opacity; m.depthWrite = false; }
+  m.name = look;
+  V3.mats[look] = m;
+  return m;
+}
+
+/* ---- setup: once, on first entry ---- */
+function v3Setup(){
+  if(V3.setupPromise) return V3.setupPromise;
+  V3.setupPromise = (async ()=>{
+    v3Overlay("Loading the viewer", "three.js and the mesh decoder — once per visit.");
+    const res = await Promise.all([v3Libs(), v3Regions()]);
+    const lib = res[0], T = lib.THREE;
+    const host = $("#v3Canvas");
+
+    const renderer = new T.WebGLRenderer({antialias:true, powerPreference:"high-performance"});
+    /* Capped at 2: a 3× phone screen quadruples the fill cost for no visible
+       gain on a model this size. */
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputColorSpace = T.SRGBColorSpace;
+    host.insertBefore(renderer.domElement, host.firstChild);
+    renderer.domElement.addEventListener("webglcontextlost", e=>{
+      e.preventDefault();
+      v3Fail("The graphics context was lost", "The browser took the 3D surface away, usually under memory pressure. Pick a region to rebuild it.");
+      V3.dirty = true;
+    });
+
+    const scene = new T.Scene();
+    scene.background = new T.Color(v3Tok("--v3-bg"));
+    const camera = new T.PerspectiveCamera(35, 1, 0.01, 100);
+    scene.add(camera);
+    /* Warm key rides with the camera so the side you are looking at is always
+       the lit side; cool fill and the hemisphere are fixed, so turning the
+       model still reads as turning it. Sky cool, ground warm, like the room. */
+    const key = new T.DirectionalLight(new T.Color(v3Tok("--v3-key")), 2.6);
+    key.position.set(0.6, 0.9, 1.0);
+    key.target.position.set(0, 0, -1);
+    camera.add(key); camera.add(key.target);
+    const fill = new T.DirectionalLight(new T.Color(v3Tok("--v3-fill")), 1.1);
+    fill.position.set(-1.2, 0.5, -0.9);
+    scene.add(fill);
+    scene.add(new T.HemisphereLight(new T.Color(v3Tok("--v3-fill")), new T.Color(v3Tok("--v3-key")), 1.0));
+
+    const controls = new lib.OrbitControls(camera, renderer.domElement);
+    controls.enablePan = false;
+    /* Damping is a camera animation, and reduced motion means none. */
+    controls.enableDamping = !v3Reduced();
+    controls.dampingFactor = 0.08;
+    controls.rotateSpeed = 0.8;
+    controls.addEventListener("change", ()=>{ V3.dirty = true; });
+
+    V3.renderer = renderer; V3.scene = scene; V3.camera = camera; V3.controls = controls;
+    new ResizeObserver(v3Resize).observe(host);
+    v3Resize();
+
+    /* Verified here rather than discovered at the first mesh. */
+    v3Overlay("Loading the viewer", "Checking the mesh decoder.");
+    const draco = new lib.DRACOLoader();
+    draco.setDecoderPath(V3_DRACO);
+    await draco.preload();
+    const loader = new lib.GLTFLoader();
+    loader.setDRACOLoader(draco);
+    V3.loader = loader;
+    V3.ok = true;
+  })().catch(err=>{
+    V3.setupPromise = null;
+    throw err;
+  });
+  return V3.setupPromise;
+}
+
+function v3Resize(){
+  if(!V3.renderer) return;
+  const host = $("#v3Canvas");
+  const w = host.clientWidth, h = host.clientHeight;
+  if(w < 2 || h < 2) return;   /* hidden — nothing to size against */
+  V3.size = {w:w, h:h};
+  V3.renderer.setSize(w, h, false);
+  V3.camera.aspect = w / h;
+  V3.camera.updateProjectionMatrix();
+  V3.dirty = true;
+}
+
+/* Draws only when something changed. An idle frame costs nothing, an orbit
+   frame costs one render, and a laptop on integrated graphics stays cool. */
+function v3Loop(){
+  V3.raf = 0;
+  if(!V3.visible || !V3.ok) return;
+  const moved = V3.controls.update();
+  if(moved || V3.dirty){
+    V3.dirty = false;
+    V3.renderer.render(V3.scene, V3.camera);
+  }
+  V3.raf = requestAnimationFrame(v3Loop);
+}
+
+/* ---- regions ---- */
+function v3Info(k){ return V3.regions ? V3.regions.regions.find(r=>r.id === k) : null; }
+
+function v3Chips(){
+  const el = $("#v3Region");
+  const current = V3.loading || V3.pending || V3.region;
+  el.innerHTML = REGIONS.map(r=>{
+    const info = v3Info(r.k);
+    const off = V3.regions && !info;
+    return `<button type="button" class="chip" data-k="${esc(r.k)}" aria-pressed="${current === r.k}"
+      title="${esc(info ? v3Mb(info.bytes) : "")}"${off ? " disabled" : ""}>${esc(r.name)}</button>`;
+  }).join("");
+  el.onclick = e=>{
+    const b = e.target.closest(".chip"); if(!b) return;
+    v3Pick(b.dataset.k);
+  };
+}
+
+function v3Pick(k){
+  if(k === V3.region && !V3.loading) return;
+  if(!V3.ok){ V3.pending = k; v3Chips(); return; }
+  v3Load(k);
+}
+
+function v3DisposeObject(obj){
+  obj.traverse(o=>{
+    if(!o.isMesh) return;
+    if(o.geometry) o.geometry.dispose();
+    const m = o.material;
+    (Array.isArray(m) ? m : [m]).forEach(x=>{ if(x && !V3.mats[x.name]) x.dispose(); });
+  });
+}
+function v3DisposeRegion(){
+  if(!V3.root) return;
+  V3.scene.remove(V3.root);
+  v3DisposeObject(V3.root);
+  V3.root = null; V3.region = null;
+  V3.renderer.renderLists.dispose();
+}
+
+async function v3Load(k){
+  const info = v3Info(k);
+  if(!info){ v3Fail("No model for this region", "The region list has no file for “" + regionLabel(k) + "”."); return; }
+  const token = ++V3.token;
+  V3.loading = k; V3.pending = null;
+  v3Chips();
+  $("#v3Status").textContent = regionLabel(k);
+  v3Overlay("Loading " + regionLabel(k), "0 of " + v3Mb(info.bytes), 0);
+  try{
+    const gltf = await new Promise((resolve, reject)=>{
+      V3.loader.load(V3_ASSETS + info.file, resolve, ev=>{
+        if(token !== V3.token) return;
+        const total = ev.total || info.bytes;
+        const done = ev.loaded >= total;
+        v3Overlay("Loading " + regionLabel(k),
+          done ? "Decoding " + v3Mb(total) : v3Mb(ev.loaded) + " of " + v3Mb(total),
+          ev.loaded / total);
+      }, reject);
+    });
+    if(token !== V3.token){ v3DisposeObject(gltf.scene); return; }   /* superseded — free it, land nothing */
+
+    v3DisposeRegion();
+    const T = V3.lib.THREE;
+    const box = new T.Box3();
+    let own = 0, ctx = 0;
+    gltf.scene.updateMatrixWorld(true);
+    gltf.scene.traverse(o=>{
+      if(!o.isMesh) return;
+      const look = v3Look(o);
+      const orig = o.material;
+      o.material = v3Material(look);
+      if(orig && orig !== o.material) orig.dispose();
+      o.userData.look = look;
+      /* Every node is baked to world space with an identity transform, so
+         nothing here needs to move again. */
+      o.matrixAutoUpdate = false;
+      if(o.userData.context){ ctx++; o.renderOrder = -1; }
+      else { own++; box.expandByObject(o); }
+    });
+    V3.root = gltf.scene; V3.region = k;
+    V3.scene.add(V3.root);
+    v3Frame(box);
+    $("#v3Status").textContent = regionLabel(k) + " · " + own + " meshes, " + ctx + " dimmed as context";
+    v3Overlay(null);
+  }catch(err){
+    if(token !== V3.token) return;
+    console.error("3D: could not load " + info.file, err);
+    v3Fail("Couldn't load " + regionLabel(k),
+      "The model file didn't arrive or didn't decode. The rest of the app is unaffected.",
+      ()=>v3Load(k));
+  }finally{
+    if(token === V3.token){ V3.loading = null; v3Chips(); }
+  }
+}
+
+/* Anterior view, the whole region in frame with a little air, zoom limits
+   scaled to the region so a foot and a thorax both feel the same to turn.
+   +Z is anterior: the export turned Blender's -Y (front) into glTF +Z. */
+function v3Frame(box){
+  const T = V3.lib.THREE;
+  if(box.isEmpty()) box.setFromObject(V3.root);
+  const c = box.getCenter(new T.Vector3()), s = box.getSize(new T.Vector3());
+  const radius = Math.max(s.length() / 2, 0.01);
+  const cam = V3.camera, ctl = V3.controls;
+  const fov = cam.fov * Math.PI / 180;
+  let dist = radius / Math.sin(fov / 2) * 1.08;
+  const aspect = V3.size.w / V3.size.h;
+  if(aspect < 1) dist /= aspect;
+  cam.position.set(c.x, c.y + radius * 0.12, c.z + dist);
+  cam.near = radius / 50; cam.far = radius * 60;
+  cam.updateProjectionMatrix();
+  ctl.target.copy(c);
+  ctl.minDistance = radius * 0.3;
+  ctl.maxDistance = dist * 4;
+  ctl.update();
+  V3.dirty = true;
+}
+
+/* ---- entry and exit, from setView ---- */
+function v3Enter(){
+  V3.visible = true;
+  v3Chips();
+  if(V3.ok){ v3Resize(); v3Loop(); return; }
+  v3Setup().then(()=>{
+    v3Chips();
+    if(V3.pending) v3Load(V3.pending);
+    else if(!V3.region) v3Overlay("Choose a region", "Nothing has been downloaded yet. Each region is a separate file and loads when you pick it.");
+    if(V3.visible && !V3.raf) v3Loop();
+  }).catch(err=>{
+    console.error("3D: viewer setup failed", err);
+    v3Fail("The 3D viewer couldn't load",
+      "Its libraries come from the network and didn't arrive — the connection, or a blocked CDN. Programs and handouts are unaffected.",
+      ()=>v3Enter());
+  });
+}
+function v3Leave(){
+  V3.visible = false;
+  if(V3.raf){ cancelAnimationFrame(V3.raf); V3.raf = 0; }
+}
 
 /* ============================ BOOT ============================ */
 (function(){
