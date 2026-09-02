@@ -201,9 +201,13 @@ strip the /* */ comments and the :root{...} blocks from the <style>, then grep
 for '#rrggbb' or 'rgba(' — anything left is a colour that escaped the theme
 ```
 
-The only other place literals appear is the second `:root` block inside
-`@media print`, which re-points the same tokens at flat white. Print is a token
-swap, deliberately, rather than a pile of overrides scattered through the rules.
+The only other place literals appear is inside `@media print`, in two further
+`:root` blocks: the ink-saver swap, which re-points the same tokens at flat
+white, and `:root.print-colour`, which lifts the two print-wash tokens — see
+the print colour section below. Print is a token swap, deliberately, rather
+than a pile of overrides scattered through the rules. The one-line check above
+has to strip all three blocks, and the third carries a class on its selector,
+so match `:root…{` rather than `:root{`.
 
 ### Semantic states must never alias a categorical token — read before any palette change
 
@@ -285,6 +289,74 @@ The cost of `--ink-3` sitting at its floor is that the third step of the ink ram
 is 11.1 L* where the first two are ~21.7. That compression is bought
 deliberately. Do not lighten it back for the sake of an even ramp; if the ramp
 needs evening out, move `--ink-2`.
+
+### Print colour mode is additive, and off must stay byte-identical
+
+The print block holds two `:root` blocks, not one. The first is the ink-saver
+swap that has always been there — every tinted token to flat white — and it is
+the default output: the one that has been reviewed and is in clinical use.
+**Nothing in it may change on account of colour mode**, and nothing about
+colour mode may reach the page unless `<html>` carries `print-colour`. The
+check is that a sheet printed with the toggle off is byte-identical to one
+printed from before the toggle existed. It was verified with headless Chrome
+against `main` when the mode landed, and it should be re-verified the same
+way after any edit to the print block.
+
+The second, `:root.print-colour`, lifts exactly two tokens — `--print-wash`
+and `--print-wash-2` — which the ink-saver block declares white. They are
+their own tokens rather than a re-pointing of `--accent-wash` and
+`--panel-2`, because those two also ground selected library rows, group
+headers and the notes block, none of which comes back in colour mode.
+**Colour mode is not a screenshot of the screen.** What keeps its colour is
+the set of elements whose colour carries meaning, and nothing else:
+
+| Element | Wash |
+|---|---|
+| `.callout.safety` — the three forced callouts | `--print-wash` (accent) |
+| `.callout` — therapist's note, How to run this program | `--print-wash-2` |
+| `.pex .prx` — the dose pill | `--print-wash` |
+
+Page, panel and sheet backgrounds stay white in both modes. Daily
+modifications is not in the table and should not be added: commit e8d3f94
+deliberately demoted it from a callout to a plain numbered Part, and it
+carries no wash on screen. Giving it one in print would reverse that decision
+by the back door.
+
+Two things make this a class rather than a token swap, and both have to hold:
+
+- **Save as PDF and Print both discard backgrounds** unless the user finds the
+  Background graphics box, which is off by default. Removing the white swap
+  would not have been enough: every element in the table carries
+  `print-color-adjust: exact` and the `-webkit-` form, and that is what makes
+  the wash survive. An element added to the table needs both lines.
+- **The borders are not colour mode's job.** The ink-saver block already
+  restores the callout rule and the pill's accent border, and those rules
+  still apply. Colour is additive, not a replacement for structure.
+
+Contrast was measured on the washes, not on white, for the heading (`--ink-3`)
+and the body ink — and again with text and ground both converted to grey,
+because a mono clinic printer renders the wash as a light grey rather than
+dropping it:
+
+| | `--print-wash` | `--print-wash-2` |
+|---|---|---|
+| `--ink-3` heading | 4.50:1 (4.53 in grey) | 4.62:1 (4.65 in grey) |
+| `--ink` body and pill | 13.99:1 | 14.36:1 |
+
+The heading on the safety wash is the binding case at exactly 4.50 — the same
+floor `--ink-3` was set against. If a printer ever renders the wash darker
+than that, **lighten `--print-wash` in the `:root.print-colour` block** —
+that is what a print-only token is for. Do not lighten `--ink-3`, which
+cannot move (see above), and do not retreat from the mode.
+
+The toggle is a checkbox beside Print, not a third button, so printing stays
+one click. It is stored as `printColour` in `homecare:settings` and persists
+deliberately: it is a practitioner preference, not a safety control, so the
+reasoning that keeps the Anatomy patient-view toggle out of storage does not
+apply. It shows and hides with the print button, so the Anatomy view carries
+neither. The class is set on `<html>` whatever view is open, so it governs
+the Build printout on the same terms as the handout — Build simply has nothing
+in the table today.
 
 ### Fonts
 
@@ -583,7 +655,7 @@ reload lands in. Do not make it sticky.
 ```
 homecare:programs   → array of program objects
 homecare:custom     → user-authored exercises, merged over the built-in library
-homecare:settings   → { practitioner, lastProgramId }
+homecare:settings   → { practitioner, lastProgramId, printColour }
 rtt:program         → legacy v1 key, read once on first load, never written
 ```
 

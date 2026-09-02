@@ -177,6 +177,14 @@ button{cursor:pointer}
 .btn:hover{background:var(--panel-2)}
 .btn.solid{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
 .btn.solid:hover{background:var(--accent-dk);border-color:var(--accent-dk)}
+/* The print-colour preference. A checkbox rather than a third button, so the
+   print action stays one click; on the chrome tokens like the rest of the bar. */
+.ptog{
+  display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;
+  font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:600;
+  color:var(--chrome-fg);
+}
+.ptog input{margin:0;width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
 
 /* view switch */
 .switch{display:flex;border:1px solid var(--chrome-btn);border-radius:var(--radius);overflow:hidden}
@@ -502,6 +510,30 @@ button{cursor:pointer}
     --accent-wash:#FFFFFF;
     --shadow:none;
     --shadow-lg:none;
+    /* The two washes colour mode can bring back. Their own tokens rather than
+       --accent-wash and --panel-2, because those also ground selected rows,
+       group headers and the notes block, none of which colour mode restores.
+       White here; the .print-colour block below lifts them. */
+    --print-wash:   #FFFFFF;
+    --print-wash-2: #FFFFFF;
+  }
+  /* Colour mode — additive over everything in this block, which still applies
+     unchanged: the default output is the ink-saver sheet that has been
+     reviewed and is in clinical use, and it must stay byte-identical.
+
+     Colour is opted back in per element, on exactly the elements whose colour
+     carries meaning: the callouts, where a warning has to look different from
+     the text around it, and the dose pill, the one thing on the sheet a patient
+     goes back to find. The page, the panels and the sheet stay white — the
+     ground carries no meaning, and full-bleed paper colour wastes ink even in
+     a PDF. Colour mode is not a screenshot of the screen.
+
+     Still literals inside a :root block, so print remains a token swap. If a
+     mono printer ever renders these as too dark a grey, a lighter print wash
+     goes here — not a retreat from the mode. */
+  :root.print-colour{
+    --print-wash:   #FBF1EA;   /* --accent-wash at screen strength */
+    --print-wash-2: #FAF5EF;   /* --panel-2 */
   }
   body{background:var(--panel)}
   .topbar,.court,.legend,.no-print{display:none!important}
@@ -520,6 +552,14 @@ button{cursor:pointer}
   }
   .callout.safety{border-left-width:6px}
   .pex .prx{border-left:3px solid var(--accent)}
+  /* Save-as-PDF and Print both discard backgrounds unless the user finds the
+     Background graphics box, which is off by default — so removing the white
+     swap above would not have been enough. print-color-adjust is what makes
+     the wash survive with that box unticked. The borders are already restored
+     above and stay as they are: colour is additive, not a replacement. */
+  .print-colour .callout,.print-colour .pex .prx{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .print-colour .callout{background:var(--print-wash-2)}
+  .print-colour .callout.safety,.print-colour .pex .prx{background:var(--print-wash)}
   .sheet-foot{padding:18px 0 0}
   .pex{break-inside:avoid}
   .sheet-sec .modtext{break-inside:avoid}
@@ -623,6 +663,9 @@ button{cursor:pointer}
     <button class="btn" id="bSave" title="Keeps your work in this browser">Save</button>
     <button class="btn" id="bOpen" title="Load a .json program file you saved earlier">Open file</button>
     <button class="btn" id="bBackup" title="Saves this program as a .json data file — not a handout">Save file (.json)</button>
+    <label class="ptog" id="printColourWrap" title="Prints the callouts and dose pills in colour. Off is the ink-saver handout, exactly as it has always printed.">
+      <input type="checkbox" id="cPrintColour"> Colour backgrounds
+    </label>
     <button class="btn solid" id="bPrint" title="Makes the printable handout PDF">Print / Save as PDF</button>
     <input type="file" id="fFile" accept=".json,application/json" style="display:none">
   </div>
@@ -6089,13 +6132,14 @@ function setView(v){
   $("#who").style.display    = (v!=="list" && S) ? "" : "none";
   $("#legend").style.display = (v==="prac" || v==="anat") ? "" : "none";
   $("#courtWrap").style.display = (v!=="list" && S && !isSingle()) ? "" : "none";
-  ["bSave","bBackup","bPrint"].forEach(id=>{
+  ["bSave","bBackup","bPrint","printColourWrap"].forEach(id=>{
     $("#"+id).style.display = S ? "" : "none";
   });
   /* Nothing on the Anatomy screen belongs on paper — it is reference material,
      and it is the one view that carries no-print. Offering Print here would
-     hand back a blank page. */
-  if(v==="anat") $("#bPrint").style.display = "none";
+     hand back a blank page. The colour toggle goes with it: it is a print
+     setting, and a print setting beside no print button is a puzzle. */
+  if(v==="anat") $("#bPrint").style.display = $("#printColourWrap").style.display = "none";
   $("#vPrac").disabled = !S;
   $("#vPat").disabled = !S;
 
@@ -6155,6 +6199,22 @@ function printCurrent(){
   setTimeout(()=>{document.title = orig;}, 800);
 }
 $("#bPrint").onclick = printCurrent;
+
+/* Colour backgrounds in print. A practitioner preference rather than a safety
+   control, so unlike the Anatomy patient-view toggle it is remembered. It
+   defaults off, which is the ink-saver output in clinical use. The class on
+   <html> is the only thing the print stylesheet reads, and it is set whatever
+   view is open, so it governs the Build printout on the same terms as the
+   handout — the Build view simply has nothing in the colour list today. */
+function applyPrintColour(on){
+  document.documentElement.classList.toggle("print-colour", !!on);
+  $("#cPrintColour").checked = !!on;
+}
+$("#cPrintColour").onchange = e=>{
+  applyPrintColour(e.target.checked);
+  if(!writeSettings({printColour: e.target.checked}))
+    toast("Couldn't remember that setting in this browser — it still applies until you close the tab.");
+};
 
 $("#bBackup").onclick = ()=>{
   if(!S) return;
@@ -6259,6 +6319,7 @@ $("#fCustomFile").onchange = e=>{
       writeSettings({lastProgramId: p.id});
     }
   }
+  applyPrintColour(readSettings().printColour === true);
   /* The saved-programs list is the home screen. */
   setView("list");
 })();
