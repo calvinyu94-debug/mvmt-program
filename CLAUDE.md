@@ -230,6 +230,45 @@ they are on explicit `--level-1/2/3`, ordered cool to warm.
 The region palette is chosen for mutual distinctness, not for meaning. Nothing
 that carries meaning — danger, warning, success, level — may point at it.
 
+### Print carries meaning through ink, never through fill alone
+
+Same standing as the two rules above, and it was shipping broken for as long
+as the Build printout has existed.
+
+**Backgrounds are dropped by default in print.** Save as PDF and Print both
+discard background fills unless the user ticks Background graphics, which is
+off by default. Any element that relies on a background fill for legibility
+prints as invisible: the level tag was white text on an ink fill, and printed
+as white text on nothing. Nobody noticed, because an invisible tag leaves no
+trace to notice.
+
+> Print styling must carry meaning through ink — borders, weight, position —
+> never through fill alone. Colour mode is additive and must never be the thing
+> that makes something readable.
+
+So a print rule for a filled element puts ink text on `--panel` with a real
+border, and it does so **in both modes**. A tag that is legible only with the
+colour toggle on is the same bug in a smaller form, because the toggle is off
+by default and off on every machine that has not chosen otherwise.
+
+The test is not "does it look right in print preview" — preview honours the
+Background graphics setting of the moment. It is: **with every background
+fill removed, does every piece of text still contrast with white, and does
+every box still have an edge?** The audit that found the tag walked every
+rendered element on each printable view with the print block applied, and
+flagged text whose colour falls under 3:1 against white and boxes with a fill
+and no border. Re-run it when adding anything to a print path that carries
+a fill: filled tags, selected chips, pressed states, checkboxes drawn with
+`accent-color`.
+
+Two things it is easy to reach for that do not satisfy this:
+
+- `print-color-adjust: exact` on the element. That is colour mode's tool, and
+  it fails the rule above — the element is readable only because a fill
+  survived.
+- A lighter text colour that "reads on both". Text that has to be readable on
+  white and on ink at once is readable on neither.
+
 ### The ninth region colour is deliberately not a colour
 
 Eight muted hues cover the usable wheel. The ninth region, `head-jaw`, is

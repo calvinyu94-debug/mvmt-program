@@ -567,6 +567,12 @@ button{cursor:pointer}
      otherwise print as unbordered text floating on the page. */
   .panel{border:1px solid var(--line);box-shadow:none;border-radius:0}
   .lib,.asg{max-height:none;overflow:visible}
+  /* The level tag is white text on an ink fill. Print drops the fill, so it
+     was printing as white text on nothing — invisible, and unnoticed for as
+     long as it shipped. Ink on white with a rule, in both modes: legibility on
+     paper has to come from ink, never from a fill, and colour mode must never
+     be the thing that makes something readable. */
+  .tag.stage{background:var(--panel);color:var(--ink);border:1px solid var(--ink)}
   .ex-acts{display:none}
   .acard{break-inside:avoid}
 }
