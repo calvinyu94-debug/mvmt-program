@@ -390,7 +390,7 @@ and skipped, so re-importing your own export does not breed duplicates.
 
 ## The anatomy index
 
-`ANATOMY` is a flat array of 271 structures — muscles, joints, ligaments, fascia
+`ANATOMY` is a flat array of 335 structures — muscles, joints, ligaments, fascia
 and nerves — each resolving to the library drills that load it. It backs the
 Anatomy view, and a separate 3D viewer project consumes the same dataset and
 treats this file as its source. **Keep it liftable:** plain data, one top-level
@@ -402,16 +402,45 @@ array, no reference to anything that renders it.
   name: "Rotator Cuff",
   latin: "mm. supraspinatus, infraspinatus, …",
   region: "shoulder",            // an MVMT region, not an anatomical one
-  system: "muscular",            // muscular | skeletal | articular | nervous | fascial
+  system: "muscular",            // muscular | skeletal | articular | nervous
+                                 // | fascial | landmark
   layer: 2,                      // 1 superficial · 2 deep · 3 skeletal
   action: "…", clinical: "…",
   ex: ["Side-lying External Rotation", …]   // NAMES, not ids
 
-  // both optional, both resolved in resolveAnatomy():
+  // all optional, all resolved in resolveAnatomy():
   inherits: "hip-hamstrings",    // show the parent's drills, then this one's own
-  noExercises: "A landmark, …"   // why this structure legitimately has none
+  noExercises: "Specialist work" // why this structure legitimately has none
+  attachments: ["Masseter", …]   // landmarks only — STRUCTURE names, not exercise
 }
 ```
+
+### Landmarks answer a different question
+
+A landmark is not a tissue. It is **where you put your hands**, and what you point
+at when explaining something — so it carries `attachments` where everything else
+carries `ex`, and the detail panel prints **What attaches here** instead of
+**Drills that load this**.
+
+`system: "landmark"` is the whole signal. It needs no `noExercises`: the type
+already says why there are no drills, and 42 entries repeating that sentence
+would be noise. In exchange it is held to the mirror-image requirement — a
+landmark with **no attachments** is a defect for exactly the reason an empty
+`ex` without a reason is: an empty list is otherwise indistinguishable from every
+name having failed. `resolveAnatomy()` also reports a landmark carrying drills, a
+landmark carrying `inherits` (landmarks are never parts, so they show whatever
+the parts toggle is set to), and a non-landmark carrying `attachments`.
+
+**`attachments` resolve by structure name, and that makes structure names a
+resolution key** — the same status exercise names have had since the Wall Ball
+Circles clash, and asserted the same way: grouped on the same
+case-and-whitespace-insensitive key, reported to the console, to the banner and
+on the structure, and re-run on every library change rather than once at boot.
+Two structures under one name means only the first is reachable by any landmark
+that meant the other.
+
+Each resolved attachment renders as a link to that structure, so a landmark is a
+way into the map rather than a leaf of it.
 
 Structures take `alsoRegion` on the same terms exercises do, and it is
 load-bearing rather than cosmetic: Erector Spinae is filed `lumbar` with
