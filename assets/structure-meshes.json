@@ -3,7 +3,7 @@
  "generatedFrom": "mvmt-anatomy structure-mesh-join.json v1, trimmed to id/kind/meshes/insertions",
  "note": "meshes and insertions are glTF node names (sourceName) inside the region files; authored nerves are node names inside nerves.glb. Names, regions and triangle counts are not repeated here — ANATOMY in index.html has them. viewRegion is present only where the export puts a structure’s geometry in a region file other than its own: it is the region to load to see it.",
  "counts": {
-  "mapped": 317,
+  "mapped": 332,
   "absent": 14,
   "unresolved": 1,
   "anchor": 42,
@@ -3116,14 +3116,8 @@
    "id": "knee-proximal-tibiofibular",
    "kind": "mapped",
    "meshes": [
-    "Anterior tibiofibular ligament.l",
-    "Anterior tibiofibular ligament.r",
     "Articular capsule of superior tibiofibular joint.l",
-    "Articular capsule of superior tibiofibular joint.r",
-    "Posterior tibiofibular ligament.l",
-    "Posterior tibiofibular ligament.r",
-    "Transverse tibiofibular ligament.l",
-    "Transverse tibiofibular ligament.r"
+    "Articular capsule of superior tibiofibular joint.r"
    ],
    "insertions": []
   },
@@ -4897,6 +4891,147 @@
    "meshes": [
     "Iliopsoas fascia.l",
     "Iliopsoas fascia.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-atfl",
+   "kind": "mapped",
+   "meshes": [
+    "Anterior talofibular ligament.l",
+    "Anterior talofibular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-cfl",
+   "kind": "mapped",
+   "meshes": [
+    "Calcaneofibular ligament.l",
+    "Calcaneofibular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-ptfl",
+   "kind": "mapped",
+   "meshes": [
+    "Posterior talofibular ligament.l",
+    "Posterior talofibular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-deltoid-post-tibiotalar",
+   "kind": "mapped",
+   "meshes": [
+    "Posterior tibiotalar ligament.l",
+    "Posterior tibiotalar ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-deltoid-tibiocalcaneal",
+   "kind": "mapped",
+   "meshes": [
+    "Tibiocalcaneal ligament.l",
+    "Tibiocalcaneal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-deltoid-tibionavicular",
+   "kind": "mapped",
+   "meshes": [
+    "Tibionavicular ligament.l",
+    "Tibionavicular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-tc-anterior",
+   "kind": "mapped",
+   "meshes": [
+    "Anterior talocalcaneal ligament.l",
+    "Anterior talocalcaneal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-tc-lateral",
+   "kind": "mapped",
+   "meshes": [
+    "Lateral talocalcaneal ligament.l",
+    "Lateral talocalcaneal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-tc-medial",
+   "kind": "mapped",
+   "meshes": [
+    "Medial talocalcaneal ligament.l",
+    "Medial talocalcaneal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-tc-posterior",
+   "kind": "mapped",
+   "meshes": [
+    "Posterior talocalcaneal ligament.l",
+    "Posterior talocalcaneal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-syndesmosis",
+   "kind": "mapped",
+   "meshes": [
+    "Anterior tibiofibular ligament.l",
+    "Anterior tibiofibular ligament.r",
+    "Posterior tibiofibular ligament.l",
+    "Posterior tibiofibular ligament.r",
+    "Transverse tibiofibular ligament.l",
+    "Transverse tibiofibular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-bifurcate",
+   "kind": "mapped",
+   "meshes": [
+    "Calcaneocuboid ligament.l",
+    "Calcaneocuboid ligament.r",
+    "Calcaneonavicular ligament.l",
+    "Calcaneonavicular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-dorsal-talonavicular",
+   "kind": "mapped",
+   "meshes": [
+    "Talonavicular ligament.l",
+    "Talonavicular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-short-plantar",
+   "kind": "mapped",
+   "meshes": [
+    "Plantar calcaneocuboid ligament.l",
+    "Plantar calcaneocuboid ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-dorsal-calcaneocuboid",
+   "kind": "mapped",
+   "meshes": [
+    "Dorsal calcaneocuboid ligament.l",
+    "Dorsal calcaneocuboid ligament.r"
    ],
    "insertions": []
   }

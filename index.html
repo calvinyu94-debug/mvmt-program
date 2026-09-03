@@ -3883,6 +3883,90 @@ const ANATOMY = [
  clinical:"Persistent tenderness in the soft dimple in front of the outer ankle bone after a sprain, worse on uneven ground. Dense with position sensors, which is part of why balance is disrupted long after a sprain has stopped hurting.",
  ex:["Subtalar Inversion and Eversion","Heel Bone Mobilization","Foot Tripod Balance","Single Leg Balance Progression"]},
 
+/* -- Batch M: the ankle ligaments by name, and the syndesmosis --
+   The three groups above stay as parents; each named ligament is a child
+   through inherits, so Show named parts off gives the group and on gives the
+   ligament. Which ligament is the whole clinical question at the ankle — the
+   ATFL alone is a grade I sprain, ATFL plus CFL a different injury and a
+   different timeline, PTFL involvement means the ankle dislocated or came
+   close. The interosseous talocalcaneal ligament is already Sinus Tarsi; it
+   has no subtalar child, deliberately. Cross-referenced against Netter
+   plates 511–516. -- */
+{id:"ankle-atfl", name:"Anterior Talofibular Ligament", latin:"lig. talofibulare anterius", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-lateral-ligaments",
+ action:"Runs forward from the front edge of the outer ankle bone to the neck of the talus.",
+ clinical:"The first structure torn in an inversion sprain and the most commonly injured ligament in the body. Weakest of the three, and taut in plantarflexion — which is why the ankle rolls when the foot is pointed. Tenderness in the hollow just in front of the outer ankle bone.",
+ ex:["Band Eversion","Foot Tripod Balance","Ankle CARs","Single Leg Balance Progression"]},
+
+{id:"ankle-cfl", name:"Calcaneofibular Ligament", latin:"lig. calcaneofibulare", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-lateral-ligaments",
+ action:"Runs down and back from the tip of the outer ankle bone to the heel bone, crossing both the ankle and the joint below it.",
+ clinical:"The second to go, and the only lateral ligament crossing the subtalar joint — so its injury produces the rotational instability the ATFL alone does not. Taut with the foot flat, which is why testing it needs a neutral ankle.",
+ ex:["Band Eversion","Subtalar Inversion and Eversion","Lateral Hop and Stick","Foot Tripod Balance"]},
+
+{id:"ankle-ptfl", name:"Posterior Talofibular Ligament", latin:"lig. talofibulare posterius", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-lateral-ligaments",
+ action:"Runs backward and inward from the inner surface of the outer ankle bone to the back of the talus.",
+ clinical:"The strongest of the three and rarely injured in isolation. Its involvement means the ankle dislocated or came close, so a suspected PTFL injury deserves imaging before loading.",
+ ex:["Band Eversion","Ankle CARs","Foot Tripod Balance"]},
+
+{id:"ankle-deltoid-post-tibiotalar", name:"Posterior Tibiotalar Ligament", latin:"pars tibiotalaris posterior", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-deltoid-ligament",
+ action:"The deepest part of the deltoid, from the inner ankle bone back to the talus.",
+ clinical:"The strongest component and the deep layer of the deltoid. Its rupture is what makes a medial ankle injury a surgical question rather than a rehab one.",
+ ex:["Band Inversion","Foot Tripod Balance","Ankle CARs"]},
+
+{id:"ankle-deltoid-tibiocalcaneal", name:"Tibiocalcaneal Ligament", latin:"pars tibiocalcanea", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-deltoid-ligament",
+ action:"Runs straight down from the inner ankle bone to the sustentaculum tali on the heel.",
+ clinical:"The longest superficial part, and the main restraint against the heel rolling outward. Loaded in the collapsing flat foot alongside tibialis posterior.",
+ ex:["Band Inversion","Short Foot","Single Leg Calf Raise off a Step","Foot Tripod Balance"]},
+
+{id:"ankle-deltoid-tibionavicular", name:"Tibionavicular Ligament", latin:"pars tibionavicularis", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-deltoid-ligament",
+ action:"The most forward part, from the inner ankle bone to the navicular.",
+ clinical:"Blends with the spring ligament below it. The two together are the passive arch support, which is why a failing spring ligament and a stretched deltoid appear as one problem.",
+ ex:["Short Foot","Band Inversion","Plantar Fascia Stretch"]},
+
+{id:"ankle-tc-anterior", name:"Anterior Talocalcaneal Ligament", latin:"lig. talocalcaneum anterius", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-subtalar",
+ action:"Runs from the neck of the talus down to the top of the heel bone.",
+ clinical:"Part of the floor of the sinus tarsi. Contributes to the persistent tenderness in that hollow after a sprain.",
+ ex:["Subtalar Inversion and Eversion","Heel Bone Mobilization","Foot Tripod Balance"]},
+
+{id:"ankle-tc-lateral", name:"Lateral Talocalcaneal Ligament", latin:"lig. talocalcaneum laterale", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-subtalar",
+ action:"Runs down and back from the outer talus to the outer heel bone, parallel to the calcaneofibular ligament.",
+ clinical:"Injured alongside the calcaneofibular ligament in a harder inversion sprain, and part of why subtalar movement stays stiff long after the ankle stops hurting.",
+ ex:["Subtalar Inversion and Eversion","Heel Bone Mobilization","Band Eversion"]},
+
+{id:"ankle-tc-medial", name:"Medial Talocalcaneal Ligament", latin:"lig. talocalcaneum mediale", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-subtalar",
+ action:"Runs from the inner talus to the sustentaculum tali.",
+ clinical:"Sits alongside the tibial nerve's course into the tarsal tunnel, so subtalar stiffness and inner-ankle nerve symptoms often travel together.",
+ ex:["Subtalar Inversion and Eversion","Tibial Nerve Glide","Heel Bone Mobilization"]},
+
+{id:"ankle-tc-posterior", name:"Posterior Talocalcaneal Ligament", latin:"lig. talocalcaneum posterius", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-subtalar",
+ action:"Runs from the back of the talus down to the top of the heel bone.",
+ clinical:"Sits in the same crowded space as the flexor hallucis longus tendon and the posterior talar process — the anatomy behind posterior ankle impingement in dancers.",
+ ex:["Ankle CARs","Heel Bone Mobilization","Calf Stretch, Knee Bent"]},
+
+{id:"ankle-syndesmosis", name:"Distal Tibiofibular Syndesmosis", latin:"syndesmosis tibiofibularis", region:"ankle-foot", system:"articular", layer:3,
+ action:"Binds the two leg bones together just above the ankle, via the anterior, posterior and transverse tibiofibular ligaments.",
+ clinical:"The high ankle sprain. Injured by forced outward rotation rather than inversion, tender above the joint line rather than below it, and it takes roughly twice as long to recover. Mistaking one for a lateral sprain is the single most common reason an ankle does not settle on schedule.",
+ ex:["Band Eversion","Knee-to-Wall Dorsiflexion","Isometric Calf Hold","Single Leg Balance Progression"]},
+
+{id:"ankle-bifurcate", name:"Bifurcate Ligament", latin:"lig. bifurcatum", region:"ankle-foot", system:"articular", layer:3,
+ action:"A Y-shaped ligament from the front of the heel bone splitting to the navicular and the cuboid.",
+ clinical:"Avulses in an inversion sprain and produces tenderness in front of the outer ankle that is routinely misread as an ATFL injury. Point tenderness further forward, over the sinus tarsi rather than in front of the malleolus, distinguishes it.",
+ ex:["Subtalar Inversion and Eversion","Foot Tripod Balance","Short Foot"]},
+
+{id:"ankle-short-plantar", name:"Short Plantar Ligament", latin:"lig. plantare breve", region:"ankle-foot", system:"articular", layer:3,
+ action:"Runs from the front underside of the heel bone to the cuboid, deep to the long plantar ligament.",
+ clinical:"With the long plantar ligament it supports the lateral arch. Relevant in lateral midfoot pain that plantar fascia work does not touch, and it forms part of the tunnel carrying the fibularis longus tendon.",
+ ex:["Short Foot","Plantar Ball Roll","Foot Tripod Balance"]},
+
+{id:"ankle-dorsal-talonavicular", name:"Dorsal Talonavicular Ligament", latin:"lig. talonaviculare dorsale", region:"ankle-foot", system:"articular", layer:3,
+ action:"Crosses the top of the joint between the talus and the navicular.",
+ clinical:"Loaded when the foot is forced into plantarflexion. Dorsal midfoot tenderness after a sprain that is not the sinus tarsi is often this.",
+ ex:["Ankle CARs","Subtalar Inversion and Eversion","Kneeling Ankle Rock"]},
+
+{id:"ankle-dorsal-calcaneocuboid", name:"Dorsal Calcaneocuboid Ligament", latin:"lig. calcaneocuboideum dorsale", region:"ankle-foot", system:"articular", layer:3,
+ action:"Crosses the top of the joint between the heel bone and the cuboid.",
+ clinical:"Part of the outer column of the midfoot. Tender in cuboid syndrome, where the cuboid sits slightly displaced and produces lateral foot pain with a normal X-ray.",
+ ex:["Subtalar Inversion and Eversion","Heel Bone Mobilization","Foot Tripod Balance"]},
+
 /* ---- Ligaments and membranes ----
    Filed here rather than under each region because they are the passive
    restraints as a class: what fails, what buckles, and what a nerve passes
@@ -7041,7 +7125,11 @@ const V3_HAS_GEOMETRY = new Set([
   "head-jaw-sphenomandibular", "head-jaw-stylohyoid-lig", "fascia-deltoid", "fascia-pectoral",
   "fascia-clavipectoral", "fascia-brachial", "fascia-antebrachial", "fascia-lata",
   "fascia-crural", "fascia-popliteal", "fascia-masseteric", "fascia-temporal",
-  "fascia-transversalis", "fascia-iliopsoas"
+  "fascia-transversalis", "fascia-iliopsoas", "ankle-atfl", "ankle-cfl", "ankle-ptfl",
+  "ankle-deltoid-post-tibiotalar", "ankle-deltoid-tibiocalcaneal",
+  "ankle-deltoid-tibionavicular", "ankle-tc-anterior", "ankle-tc-lateral", "ankle-tc-medial",
+  "ankle-tc-posterior", "ankle-syndesmosis", "ankle-bifurcate", "ankle-dorsal-talonavicular",
+  "ankle-short-plantar", "ankle-dorsal-calcaneocuboid"
 ]);
 /* The systems the model can be shown by, and the whole of the toggle list:
    the checkboxes, their order, their defaults and the visibility test all
