@@ -1224,7 +1224,73 @@ whenever the join changes**; never hand-edit it.
 and from *Also part of*: it loads the region that holds the structure if the
 current one does not, turns on whichever layer the structure lives in
 (landmarks, nerves, or insertions for a structure that has patches and no
-belly), selects it and frames it. Framing is the viewer's single camera
-animation, half a second eased, and it is a jump under
-`prefers-reduced-motion`. A request made before the viewer has finished
-setting up is kept in `V3.pendingShow` and replayed, never dropped.
+belly), selects it and frames it. Framing goes through `v3CamTo()`, half a
+second eased, and it is a jump under `prefers-reduced-motion`. A request made
+before the viewer has finished setting up is kept in `V3.pendingShow` and
+replayed, never dropped.
+
+### The camera pans, and framing is why it rarely has to
+
+The viewer shipped with `enablePan = false`, which tied the camera to the
+centre of the model: zoom in on the pelvis and the shoulder was unreachable
+without zooming out and orbiting back. Close inspection is where a 3D atlas
+earns its place, so that was the wrong thing to be missing.
+
+Almost all of it is OrbitControls configuration rather than code, and the
+configuration is worth stating because it is easy to reimplement by hand:
+
+| Input | Action | How |
+|---|---|---|
+| Left drag | Orbit | default |
+| Right drag | Pan | `mouseButtons.RIGHT` — already the default |
+| Middle drag | Pan | `mouseButtons.MIDDLE`, moved off dolly |
+| Shift + left drag | Pan | OrbitControls' own — `MOUSE.ROTATE` with a modifier is pan |
+| Wheel | Zoom **to the cursor** | `zoomToCursor = true` |
+| One finger | Orbit | `touches.ONE` default |
+| Two fingers | Pinch zoom **and** drag pan | `touches.TWO = DOLLY_PAN` default |
+
+Three bindings because mice differ and nobody should have to learn which one
+this app picked. **Pan speed scales with distance for free** — the perspective
+branch of `_pan()` works in the target's own plane — so do not add a speed
+constant. Zoom-to-cursor respects `minDistance`/`maxDistance` because
+`_clampDistance()` is on that path too; it was verified by slamming the wheel
+to both stops.
+
+Four things around it are ours:
+
+- **The context menu is suppressed on the canvas only.** Right-drag is pan, so
+  the menu would open on top of it. Nowhere else in the app.
+- **A click selects; it must never move the camera.** Framing is on
+  double-click and on selection from a panel — *View in 3D*, an attachment
+  link, *Also part of*, *Contains*, a fascial line track. Framing on every
+  click would be disorienting, and the pick already happens on the second
+  click's `pointerup`, so `dblclick` only has to call `v3FrameSel()`.
+  Picking is left-button only now: a right- or middle-drag that happens to end
+  where it started is not a selection.
+- **Pan is clamped to the model's box** plus a quarter-radius of air, both
+  target and camera moved together so a clamp never turns the view. A move the
+  app makes widens the bound to its destination first — a nerve selected inside
+  a region is whole-body geometry and its centre can sit outside that region's
+  box, and framing must never fight the clamp. The clamp runs in `v3Loop()`
+  after `controls.update()` and is skipped while a move is in flight.
+- **`v3StopInertia()` before every programmatic move.** Damping keeps a drag
+  coasting for about half a second, and the loop calls `controls.update()`
+  after the animation has placed the camera — so Reset view clicked straight
+  after a drag landed somewhere neither chose. OrbitControls has no "stop", but
+  one undamped `update()` spends the residue and zeroes it.
+
+**Reset view** returns to `V3.home`, and **five preset angles** — anterior,
+posterior, left, right, superior — turn the model without changing the target
+or the distance. Both are drawn from `V3_VIEWS`, both animate over 400 ms
+through `v3CamTo()`, and both are instant under `prefers-reduced-motion`.
+`V3.home` and the pan box are set in `v3Frame()`, the one place the default
+view for a loaded model is decided.
+
+Two details in `V3_VIEWS` that look like fussiness and are not. Superior is
+`[0, 1, -0.001]`, because a camera exactly over its target has no defined
+azimuth and `makeSafe()` would pick one for us; the thousandth also puts
+anterior at the top of the screen. And `v3Preset()` measures from
+`v3CamNow()` — the destination of a move already in flight, not the live
+camera — because a point part-way along the chord between two views sits
+inside the orbit sphere, so clicking round the five would otherwise walk the
+camera into the model.
