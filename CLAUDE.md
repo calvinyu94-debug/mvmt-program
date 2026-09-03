@@ -721,8 +721,9 @@ previous one's last edit is lost.
 ## The 3D viewer
 
 The first thing that lives outside `index.html`. The models are in `assets/`:
-nineteen `.glb` files — nine regions, nine insertion layers, `nerves.glb` —
-plus `regions.json`, all exported by the mvmt-anatomy pipeline and served
+twenty `.glb` files — nine regions, nine insertion layers, `nerves.glb` and
+`overview.glb` — plus `regions.json`, all exported by the mvmt-anatomy
+pipeline and served
 same-origin from Pages so there is no CORS and the browser caches them like
 anything else. `assets/ATTRIBUTION.md` carries the licence chain: CC BY-SA
 throughout, and `nerves.glb` is original schematic work rather than a
@@ -738,6 +739,88 @@ runs on the first `setView("3d")` and never before. The import map in `<head>`
 is not a fetch: it only says where `three` and `three/addons/` resolve once
 something imports them, and it is the whole of the "build step". Script tags
 and an import map, no bundler — that stays true.
+
+### Whole body is a tenth option, and not a tenth region
+
+`overview.glb` is the whole musculoskeletal model decimated about 15:1 —
+211,971 triangles, 2.1 MB, 1,349 nodes. It is the tenth chip in the viewer's
+region picker, and it exists because **a fascial line cannot be shown in a
+regional model**: the Superficial Back Line runs from the plantar fascia to the
+scalp, and a fragment of it is not a smaller version of the thing.
+
+**It is not an MVMT region and must never become one.** `REGIONS` drives the
+library's filter chips, its groupings and the colour legend, so a tenth entry
+there would put an empty "Whole body" filter in front of every exercise list
+and demand a tenth region colour the palette has no room for — see the ninth
+region colour above. The viewer keeps its own `V3_REGIONS` and its own
+`v3RegionLabel()`; everything inside the viewer uses those, and the structure
+tags in the selection panel keep `regionLabel()` because those are real MVMT
+regions.
+
+The overview is keyed in `regions.json` like a region, so the loader, the
+progress overlay and the chip's size hint all take it unchanged. Three things
+it does **not** carry, each of which the viewer handles rather than hides:
+
+- **No context meshes.** The whole body is the subject, so the status line
+  drops the "dimmed as context" clause rather than saying zero.
+- **No insertion patches.** They are exported as per-region layers and there is
+  no whole-body one. The absence of `insertionLayer` in its `regions.json`
+  entry is the signal; `v3Insertions()` reads it and says so as a **plain
+  note, not an error**, which is why `v3LayerNote()` takes a second argument.
+  The four insertion-only structures (Common Extensor Origin, Common Flexor
+  Origin, Patellar Tendon, Quadriceps Tendon) therefore have no geometry here,
+  and the selection panel says that instead of the region's answer.
+- **No nerves of its own.** `nerves.glb` is already whole-body geometry, so
+  in the whole body every nerve is at home and the sampling containment test in
+  `v3ShowNerves()` is skipped outright. Landmarks are the same: all 42 resolve,
+  78 markers, because the region filter only means something in a region.
+
+Everything else behaves as it does in a region — selection, systems, muscle
+depth and parts all read the same code and the same join, and 313 of the 317
+mapped structures have every one of their meshes in it. Differences a click
+shows are occlusion, not resolution: the whole body simply has more anatomy in
+front of the ray.
+
+### Fascial lines are an index, deliberately not a system
+
+Twelve Anatomy Trains continuities, 92 track references, in the
+`fascialLines` block of `structure-meshes.json`. **Nothing is authored** —
+they are a second index over structures that already exist, and the order of
+each `structures` array is the anatomical sequence and is the point.
+
+**The toggle sits with the system checkboxes but is not in `V3_SYSTEMS`.**
+Every entry there answers "which meshes are of this tissue", and drives
+`v3Shows()` and the per-system counts; a fascial line is a route through
+structures rather than a tissue, and putting it in that array would have made
+the array mean two things. It is its own control, rendered next to them
+because that is where a hand reaches for it.
+
+Whole body only, and **hidden rather than disabled** in a region — there is
+nothing partial worth offering. One line at a time: two lit together are
+unreadable, and the value is in following one continuity. A picked line draws
+its tracks in `--v3-line` and drops everything else to the context look,
+**without touching a single toggle** — a practitioner who turned the bones off
+keeps them off. Its tracks are drawn whatever the toggles say, which is the
+rule the selection has always had, and a track that is also the selection
+stays on `--accent` so the two colours never collide.
+
+Every id is asserted at load beside the other indexes, and for the same reason:
+a line quietly missing a track is a wrong answer that looks right. A dangling
+id, an empty line, and a line in the data that the picker does not hold are all
+reported to the console and to the banner.
+
+Two tracks have no geometry in the whole body — Patellar Tendon and Common
+Extensor Origin are insertion-only — and the panel marks those rows rather than
+letting a name light nothing. The check is scene truth, so it stays correct if
+that ever changes.
+
+**The caveat is owed, on the same terms as the schematic nerves.** Myers argues
+these continuities from dissection and reasoning rather than proving them as
+discrete structures, and a 3D atlas lighting them up makes them look more
+definite than they are. What the viewer can draw is the stations along the
+route — the connective tissue between them, which is what Myers is actually
+describing, has no geometry in the model. `V3_LINE_CAVEAT` says both halves
+and shows with every line. Do not soften it.
 
 Regions load one at a time and never all nine. `v3Load()` disposes the
 previous region's geometries and GLTF-built materials before the next lands
@@ -854,6 +937,16 @@ highest and its "Descending part" lowest — so Upper Trapezius claims the
 model's ascending part and Lower Trapezius its descending part, each with a
 `sourceNote` recording why. Anyone reading the join against a textbook will
 think it is backwards. It is the model that is.
+
+**GLTFLoader splits a node whose mesh has more than one primitive**, into a
+Group carrying the extras and unnamed `Mesh` children carrying none. Two
+objects in the export are like this — "Body of sternum" and "Vertebra L3" — and
+they appear in six of the ten files, so before `v3Adopt()` inherited the
+extras from the nearest ancestor the sternum's body was coloured as muscle,
+answered to the wrong system toggle and could not be selected. That is also why
+`V3.drawn` exists alongside `V3.meshes`: one name can own more than one
+mesh, and the map keeps only the last, so every pass that lights, dims or hides
+walks `V3.drawn` and only the "is this here" lookups use the map.
 
 Nerve nodes carry no `sourceName`, and GLTFLoader sanitises node names on the
 way in — `nerve-femoral.l` arrives as `nerve-femorall`. They are matched by

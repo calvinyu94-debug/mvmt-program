@@ -189,6 +189,15 @@
    }
   }
  ],
+ "overview": {
+  "id": "whole-body",
+  "file": "overview.glb",
+  "triangles": 211971,
+  "bytes": 2155528,
+  "meshCount": 1349,
+  "contextMeshCount": 0,
+  "note": "skeletal, muscular and articular meshes; insertions are per-region layers and are not in the overview"
+ },
  "nerves": {
   "file": "nerves.glb",
   "bytes": 146712,

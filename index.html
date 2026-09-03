@@ -127,6 +127,7 @@
   --v3-insertion: #8E3B2F;   /* origin and insertion patches, on the bone */
   --v3-landmark:  #2B5F9E;   /* palpable landmark markers */
   --v3-nerve:     #E0A427;   /* the authored nerves — drawn unlit, see V3_SCHEMATIC */
+  --v3-line:      #7A3E9D;   /* a picked fascial line — deliberately not --accent */
 
   --radius-sm: 6px;    /* tags */
   --radius:    12px;   /* inputs, buttons */
@@ -587,6 +588,22 @@ button{cursor:pointer}
 .v3-note{margin:6px 0 0;font-size:12.5px;color:var(--ink-3)}
 .v3-note.v3-err{color:var(--danger)}
 .v3-note[hidden]{display:none}
+.v3-linetog{margin-top:8px;padding-top:8px;border-top:1px solid var(--line-2)}
+.v3-linetog[hidden]{display:none}
+.v3-linetog label{display:flex;align-items:center;gap:8px;font-size:13.5px;padding:3px 0;cursor:pointer}
+.v3-linetog input{margin:0;width:15px;height:15px;accent-color:var(--accent)}
+.v3-linegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:4px}
+.v3-linegrid button{border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--panel);
+  color:var(--ink-2);font-family:var(--font-ui);font-size:11px;line-height:1.25;padding:6px;cursor:pointer;text-align:left}
+.v3-linegrid button[aria-pressed="true"]{background:var(--v3-line);border-color:var(--v3-line);color:var(--panel)}
+.v3-linerule{grid-column:1/-1;height:1px;background:var(--line-2);margin:3px 0}
+.v3-linedesc{font-size:13px;color:var(--ink-2);margin:4px 0 0}
+.v3-tracks{list-style:decimal;margin:10px 0 0;padding-left:20px;font-size:12.5px}
+.v3-tracks li{margin:2px 0}
+.v3-tracks button{border:0;background:0;padding:0;color:var(--ink-2);font-family:var(--font-body);
+  font-size:12.5px;text-align:left;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.v3-tracks button:hover{color:var(--accent)}
+.v3-nogeom{margin-left:6px;font-size:11px;color:var(--ink-3);font-style:italic}
 
 /* ---------- print ---------- */
 /* Shadows do not print, and this theme took the panel borders away in exchange
@@ -936,15 +953,29 @@ button{cursor:pointer}
           <div class="v3-ctl v3-toggles">
             <span class="lbl">Systems</span>
             <div id="v3Systems"></div>
+            <!-- Fascial lines sits with the system toggles because that is
+                 where a practitioner reaches for it, but it is deliberately
+                 NOT an entry in V3_SYSTEMS: every entry there answers "which
+                 meshes are of this tissue", and a fascial line is a route
+                 through structures rather than a tissue of its own. Shown in
+                 the whole body only — see v3RenderLines. -->
+            <div class="v3-linetog" id="v3LineTog" hidden>
+              <label><input type="checkbox" id="v3LineOn"> Fascial lines</label>
+            </div>
             <p class="v3-note v3-err" id="v3LayerNote" hidden></p>
           </div>
           <div class="v3-ctl" id="v3MuscleCtl">
             <span class="lbl">Muscle depth</span>
             <div class="v3-seg" id="v3Muscle" role="radiogroup" aria-label="Muscle depth"></div>
           </div>
+          <div class="v3-ctl" id="v3LineCtl" hidden>
+            <span class="lbl">Line</span>
+            <div class="v3-linegrid" id="v3Lines"></div>
+            <div id="v3LineInfo"></div>
+          </div>
           <div class="v3-sel" id="v3Sel"></div>
           <p class="v3-hint">Drag to turn. Scroll or pinch to zoom. Click a structure to name it.</p>
-          <p class="v3-hint">One region is held at a time, about 1–2 MB each. Neighbouring regions are drawn dimmed for context and cannot be selected.</p>
+          <p class="v3-hint">One region is held at a time, about 1–2 MB each. Neighbouring regions are drawn dimmed for context and cannot be selected. Whole body is the same model decimated — for orientation, and for anything that crosses regions.</p>
         </div>
       </section>
     </div>
@@ -7047,6 +7078,51 @@ const V3_MUSCLE = [{v:0, label:"All"}, {v:1, label:"Superficial"}, {v:2, label:"
    and drawn side by side they would look equally authoritative. They are not. */
 const V3_SCHEMATIC = "Schematic — indicative path only";
 
+/* The tenth option in the viewer's region picker. It is NOT an MVMT region and
+   must never become one: REGIONS drives the library's filter chips, its
+   groupings and the colour legend, so a tenth entry there would put an empty
+   "Whole body" filter in front of every exercise list and demand a tenth
+   region colour the palette has no room for. The viewer keeps its own list,
+   and its own label function with it. */
+const V3_WHOLE = "whole-body";
+const V3_REGIONS = REGIONS.concat([{k:V3_WHOLE, name:"Whole body"}]);
+const v3RegionLabel = k => (V3_REGIONS.find(r=>r.k === k) || {}).name || k;
+const v3IsWhole = () => V3.region === V3_WHOLE;
+
+/* Myers' twelve myofascial continuities, in the groups he uses: the four
+   cardinal lines and the Deep Front Line, then the four arm lines, then the
+   functional lines. The keys index the fascialLines block of
+   structure-meshes.json, which holds each line's track order — that order is
+   the anatomical sequence and is the point of the feature, so it is read from
+   the data and never re-sorted here. The copy lives in the script because it
+   is UI text; the tracks live in the join because they are data. */
+const V3_LINES = [
+  {k:"SBL",  desc:"From the sole of the foot to the brow, over the back of the body. Holds the body upright and prevents it folding forward."},
+  {k:"SFL",  desc:"From the top of the foot to the side of the skull. Balances the back line and protects the soft front of the body."},
+  {k:"LL",   desc:"From the outside of the foot up each side to the ear. Balances front against back and left against right, and brakes side-bending."},
+  {k:"SPL",  desc:"Loops around the body in a double helix. Maintains rotational balance, and its imbalance shows as a twist through the trunk."},
+  {k:"DFL",  desc:"The body's myofascial core, from the sole of the foot through the inner leg, pelvis and trunk to the jaw. The hardest to reach and the most implicated in persistent postural problems."},
+  {sep:true},
+  {k:"SFAL", desc:"From the chest and back to the palm. The line of pulling toward you and gripping."},
+  {k:"DFAL", desc:"From the ribs through the biceps to the thumb. Controls the angle of the hand in space."},
+  {k:"SBAL", desc:"From the skull and spine over the shoulder to the back of the hand. The line of pushing away."},
+  {k:"DBAL", desc:"From the spine through the rotator cuff to the little-finger side of the hand. Stabilises the shoulder during arm work."},
+  {sep:true},
+  {k:"FFL",  desc:"From one shoulder across the front of the body to the opposite thigh. Loaded in throwing and any cross-body action."},
+  {k:"BFL",  desc:"From one shoulder across the back to the opposite thigh. The other half of the throwing pattern."},
+  {k:"IFL",  desc:"Down the same side, from the shoulder to the inner thigh. Loaded in same-side reaching and carrying."}
+];
+/* The same debt the schematic nerves carry, for the same reason. Myers argues
+   these continuities from dissection and reasoning rather than proving them as
+   discrete anatomical structures, and a 3D atlas lighting them up makes them
+   look more definite than they are. The second half matters as much: what the
+   viewer can draw is the stations along the route, because the connective
+   tissue running between them — which is what Myers is actually describing —
+   has no geometry in the model. Shown with every line, and not dismissible.
+   Do not soften it for visual tidiness; that is the failure it exists against. */
+const V3_LINE_CAVEAT = "A model, not a dissected structure. What lights up is the stations along the route — the fascia running between them has no geometry here.";
+const v3LineData = k => (V3.join && V3.join.fascialLines && V3.join.fascialLines[k]) || null;
+
 const V3 = {
   lib:null, libPromise:null,   /* the four modules, imported once */
   regions:null,                /* assets/regions.json, fetched once */
@@ -7066,10 +7142,12 @@ const V3 = {
   raf:0, dirty:true, visible:false,
   mats:{},                     /* the shared materials, keyed by look and state */
   size:{w:1, h:1},
-  meshes:new Map(),            /* sourceName -> mesh, for what is in the scene now */
+  meshes:new Map(),            /* sourceName -> a mesh, for "is this here" lookups */
+  drawn:[],                    /* every adopted mesh — a name can own more than one */
   pickable:[],                 /* everything a click may land on */
   sys:null,                    /* system key -> on, seeded from V3_SYSTEMS */
   muscle:0,                    /* muscle depth: 0 all, 1 superficial, 2 deep */
+  lineOn:false, line:null,     /* fascial lines: the control, and the picked line */
   ins:null, insLoading:null,   /* the region's insertion layer, once loaded */
   lm:null,                     /* the region's landmark markers */
   nerves:null, nervesPromise:null, /* nerves.glb, loaded once and kept */
@@ -7141,6 +7219,29 @@ function v3Data(){
       console.error("3D: V3_HAS_GEOMETRY is out of step with structure-meshes.json — regenerate it:", drift);
       v3LayerNote("The list of structures with geometry is out of date (" + drift.length + "). See the console.");
     }
+    /* The fascial lines are a second index over the same structures, so they
+       are asserted the way exercise names and attachments are: a line quietly
+       missing a track is a wrong answer that looks right — the list is short
+       either way, and a clinician has no reason to distrust it. Every id must
+       resolve in the join and in ANATOMY, and the picker and the data must
+       hold the same twelve lines. */
+    const lines = V3.join.fascialLines || {};
+    const bad = [];
+    V3_LINES.forEach(spec=>{
+      if(spec.sep) return;
+      const line = lines[spec.k];
+      if(!line){ bad.push(spec.k + " — no such line in the join"); return; }
+      if(!Array.isArray(line.structures) || !line.structures.length){ bad.push(spec.k + " — no tracks"); return; }
+      line.structures.forEach(id=>{
+        if(!V3.byId[id]) bad.push(spec.k + " → " + id + " (not in the join)");
+        else if(!v3Struct(id)) bad.push(spec.k + " → " + id + " (not in ANATOMY)");
+      });
+    });
+    Object.keys(lines).forEach(k=>{ if(!V3_LINES.some(x=>x.k === k)) bad.push(k + " — in the join, not in the picker"); });
+    if(bad.length){
+      console.error("3D: fascial line tracks that do not resolve:", bad);
+      v3LayerNote("A fascial line names " + bad.length + " structure" + (bad.length === 1 ? "" : "s") + " that don't resolve. See the console.");
+    }
   });
 }
 
@@ -7165,10 +7266,13 @@ function v3Fail(title, detail, retry){
 }
 /* A layer that failed is reported beside its toggle, not over the model:
    the region is still there and still usable. */
-function v3LayerNote(msg){
+function v3LayerNote(msg, plain){
   const el = $("#v3LayerNote");
   el.textContent = msg || "";
   el.hidden = !msg;
+  /* A failure is the danger colour. An expected absence — the whole-body
+     model having no insertion layer — is a plain note, not an error. */
+  el.classList.toggle("v3-err", !plain);
 }
 
 /* ---- materials: by tissue and state, shared, made once ---- */
@@ -7211,15 +7315,18 @@ function v3Material(look, state){
   const key = look + "|" + (state || "");
   if(V3.mats[key]) return V3.mats[key];
   const T = V3.lib.THREE, spec = V3_LOOKS[look];
-  const colour = new T.Color(v3Tok(state === "sel" ? "--accent" : spec.tok));
+  const colour = new T.Color(v3Tok(state === "sel" ? "--accent" : state === "line" ? "--v3-line" : spec.tok));
   const m = spec.flat
     ? new T.MeshBasicMaterial({color:colour, side:T.DoubleSide})
     : new T.MeshStandardMaterial({color:colour, roughness:spec.rough, metalness:0, side:spec.both ? T.DoubleSide : T.FrontSide});
-  if(!spec.flat && (spec.glow || state === "sel")){
+  if(!spec.flat && (spec.glow || state === "sel" || state === "line")){
     m.emissive = colour.clone();
-    m.emissiveIntensity = state === "sel" ? .35 : spec.glow;
+    m.emissiveIntensity = state === "sel" ? .35 : state === "line" ? .3 : spec.glow;
   }
-  const opacity = spec.opacity;
+  /* A track drawn at a fascia's .55 would be lost against the dimmed body it
+     is meant to stand out from, so a line-highlighted mesh is opaque whatever
+     its look normally is. Selection is left exactly as it was. */
+  const opacity = state === "line" ? null : spec.opacity;
   if(opacity != null){ m.transparent = true; m.opacity = opacity; m.depthWrite = false; }
   m.name = key;
   V3.mats[key] = m;
@@ -7345,6 +7452,13 @@ function v3Pointer(el){
   });
   el.addEventListener("pointercancel", ()=>{ down = null; });
 }
+/* Whether a pickable is really on screen. Its own flag is not enough: the
+   landmark markers are held in a Group and the layer is switched by hiding
+   that Group, so every marker keeps visible === true while the layer is off.
+   Testing the mesh alone made a hidden landmark intercept the click in front
+   of the muscle a hand was going for — barely noticeable with a region's
+   handful of markers, constant in the whole body's seventy-eight. */
+const v3Visible = o => { for(let p = o; p; p = p.parent){ if(!p.visible) return false; } return true; };
 function v3PickAt(cx, cy){
   if(!V3.ok || !V3.root) return;
   const r = V3.renderer.domElement.getBoundingClientRect();
@@ -7360,7 +7474,7 @@ function v3PickAt(cx, cy){
      stopping at the nearest hit made all of those unclickable. Only when
      nothing along the ray maps does the click report the frontmost unmapped
      mesh by name. */
-  const hits = V3.ray.intersectObjects(V3.pickable.filter(o=>o.visible), false);
+  const hits = V3.ray.intersectObjects(V3.pickable.filter(v3Visible), false);
   let unmapped = null;
   for(const h of hits){
     const tag = h.object.userData.v3 || {};
@@ -7392,12 +7506,20 @@ function v3Resolve(ids){
 }
 
 /* ---- regions ---- */
-function v3Info(k){ return V3.regions ? V3.regions.regions.find(r=>r.id === k) : null; }
+/* The overview is keyed like a region so everything downstream — the loader,
+   the progress overlay, the chip's size hint — takes it unchanged. It carries
+   no insertionLayer, and that absence is the signal that the whole body has no
+   insertion patches to show: they are exported per region. */
+function v3Info(k){
+  if(!V3.regions) return null;
+  if(k === V3_WHOLE) return V3.regions.overview || null;
+  return V3.regions.regions.find(r=>r.id === k);
+}
 
 function v3Chips(){
   const el = $("#v3Region");
   const current = V3.loading || V3.pending || V3.region;
-  el.innerHTML = REGIONS.map(r=>{
+  el.innerHTML = V3_REGIONS.map(r=>{
     const info = v3Info(r.k);
     const off = V3.regions && !info;
     return `<button type="button" class="chip" data-k="${esc(r.k)}" aria-pressed="${current === r.k}"
@@ -7429,7 +7551,11 @@ function v3DisposeObject(obj){
 function v3DisposeRegion(){
   [V3.root, V3.ins, V3.lm].forEach(g=>{ if(g){ V3.scene.remove(g); v3DisposeObject(g); } });
   V3.root = V3.ins = V3.lm = null; V3.region = null; V3.box = null;
-  V3.meshes = new Map(); V3.pickable = [];
+  /* A fascial line is a whole-body thing and does not survive the model it was
+     drawn on. The checkbox's own state does, so coming back to the whole body
+     puts the picker where it was left. */
+  V3.line = null;
+  V3.meshes = new Map(); V3.drawn = []; V3.pickable = [];
   V3.sel = null; V3.selMesh = null;
   if(V3.renderer) V3.renderer.renderLists.dispose();
 }
@@ -7473,8 +7599,26 @@ function v3MuscleLayerOf(mesh){
   return d == null ? null : (d >= 2 ? 2 : 1);
 }
 
-/* Registers a mesh for picking and lookup after its material is set. */
+/* Registers a mesh for picking and lookup after its material is set.
+
+   GLTFLoader splits a node whose mesh has more than one primitive into a Group
+   with the node's extras and unnamed Mesh children that carry none — "Body of
+   sternum" arrives as bake|Body_of_sternum and bake|Body_of_sternum_1 under a
+   Group that holds the sourceName. Two objects in the export are like this and
+   they are in six of the ten files, so without this the sternum's body was
+   drawn as muscle, answered to the wrong toggle and could not be selected.
+   The extras are taken from the nearest ancestor that has them. */
 function v3Adopt(mesh, kind){
+  if(!mesh.userData.sourceName){
+    for(let p = mesh.parent; p; p = p.parent){
+      if(p.userData && p.userData.sourceName){
+        mesh.userData.sourceName = p.userData.sourceName;
+        mesh.userData.system = p.userData.system;
+        mesh.userData.context = p.userData.context;
+        break;
+      }
+    }
+  }
   const name = mesh.userData.sourceName || mesh.name;
   mesh.userData.v3 = {kind:kind, name:name, look:v3Look(mesh),
     sys:v3SystemOf(mesh), layer:v3MuscleLayerOf(mesh)};
@@ -7486,19 +7630,20 @@ function v3Adopt(mesh, kind){
   /* Identity transforms throughout, so the geometry's box is the world box. */
   if(mesh.geometry){ mesh.geometry.computeBoundingBox(); mesh.userData.box = mesh.geometry.boundingBox; }
   V3.meshes.set(name, mesh);
+  V3.drawn.push(mesh);
   V3.pickable.push(mesh);
 }
 
 async function v3Load(k){
   const info = v3Info(k);
-  if(!info){ v3Fail("No model for this region", "The region list has no file for “" + regionLabel(k) + "”."); return; }
+  if(!info){ v3Fail("No model for this region", "The region list has no file for “" + v3RegionLabel(k) + "”."); return; }
   const token = ++V3.token;
   V3.loading = k; V3.pending = null;
   v3Chips();
-  $("#v3Status").textContent = regionLabel(k);
-  v3Overlay("Loading " + regionLabel(k), "0 of " + v3Mb(info.bytes), 0);
+  $("#v3Status").textContent = v3RegionLabel(k);
+  v3Overlay("Loading " + v3RegionLabel(k), "0 of " + v3Mb(info.bytes), 0);
   try{
-    const gltf = await v3Gltf(info.file, token, "Loading " + regionLabel(k), info.bytes);
+    const gltf = await v3Gltf(info.file, token, "Loading " + v3RegionLabel(k), info.bytes);
     if(!gltf) return;   /* superseded — freed, nothing landed */
 
     v3DisposeRegion();
@@ -7516,7 +7661,10 @@ async function v3Load(k){
     V3.root = gltf.scene; V3.region = k; V3.box = box;
     V3.scene.add(V3.root);
     v3Frame(box);
-    $("#v3Status").textContent = regionLabel(k) + " · " + own + " meshes, " + ctx + " dimmed as context";
+    /* The whole body is the subject, so it ships with no context meshes at
+       all — saying "0 dimmed as context" would be noise. */
+    $("#v3Status").textContent = v3RegionLabel(k) + " · " + own + " meshes"
+      + (ctx ? ", " + ctx + " dimmed as context" : "");
     v3Overlay(null);
     /* The on-demand layers the practitioner had on come back on for the new
        region. Which ones those are is V3_SYSTEMS' business, not this one's. */
@@ -7526,7 +7674,7 @@ async function v3Load(k){
   }catch(err){
     if(token !== V3.token) return;
     console.error("3D: could not load " + info.file, err);
-    v3Fail("Couldn't load " + regionLabel(k),
+    v3Fail("Couldn't load " + v3RegionLabel(k),
       "The model file didn't arrive or didn't decode. The rest of the app is unaffected.",
       ()=>v3Load(k));
   }finally{
@@ -7580,9 +7728,19 @@ function v3Frame(box){
 async function v3Insertions(on){
   V3.sys.insertion = on;
   if(!V3.region){ v3ApplyState(); return; }
+  /* Insertion patches are exported as per-region layers and the overview has
+     none, so there is nothing to fetch for the whole body. An expected
+     absence, reported as a plain note rather than an error — and never as a
+     spinner that never finishes. */
+  const info = v3Info(V3.region);
+  if(!info || !info.insertionLayer){
+    if(on) v3LayerNote("Insertions are exported per region — the whole-body model carries none. Open a region to see them.", true);
+    v3ApplyState();
+    return;
+  }
   if(V3.ins){ V3.ins.visible = on; v3ApplyState(); return; }
   if(!on || V3.insLoading === V3.region) return;
-  const info = v3Info(V3.region), region = V3.region, token = V3.token;
+  const region = V3.region, token = V3.token;
   V3.insLoading = region;
   try{
     const gltf = await v3Gltf(info.insertionLayer.file, token, null);
@@ -7596,7 +7754,7 @@ async function v3Insertions(on){
   }catch(err){
     if(token !== V3.token) return;
     console.error("3D: could not load " + info.insertionLayer.file, err);
-    v3LayerNote("The insertion layer for " + regionLabel(region) + " didn't load.");
+    v3LayerNote("The insertion layer for " + v3RegionLabel(region) + " didn't load.");
   }finally{
     if(V3.insLoading === region) V3.insLoading = null;
   }
@@ -7616,7 +7774,9 @@ function v3Landmarks(on){
     const radius = V3.box ? Math.max(0.004, Math.min(0.012, V3.box.getSize(new T.Vector3()).length() * 0.012)) : 0.006;
     V3.landmarks.landmarks.forEach(l=>{
       const s = v3Struct(l.id);
-      if(!s || regionsOf(s).indexOf(V3.region) < 0) return;
+      /* The whole body holds all nine regions, so every landmark is at home
+         in it; the region filter only means something in a region. */
+      if(!s || (!v3IsWhole() && regionsOf(s).indexOf(V3.region) < 0)) return;
       Object.keys(l.resolved || {}).forEach(side=>{
         const p = l.resolved[side];
         const m = new T.Mesh(V3.lmGeom, v3Material("landmark", ""));
@@ -7629,6 +7789,13 @@ function v3Landmarks(on){
         V3.pickable.push(m);
       });
     });
+    /* Composed here rather than left to the next render, exactly as the
+       region, the insertion layer and the nerves all do. The markers carry
+       matrixAutoUpdate = false, so until something composes their world
+       matrices they raycast as unit spheres at the origin — a click landing
+       between building them and the next frame hit all seventy-eight and
+       selected a landmark from wherever it was aimed. */
+    g.updateMatrixWorld(true);
     V3.lm = g;
     V3.scene.add(g);
   }
@@ -7697,6 +7864,9 @@ function v3ShowNerves(){
   const own = V3.pickable.filter(m=>m.userData.v3 && m.userData.v3.kind === "mesh" && m.userData.box);
   const T = V3.lib.THREE, p = new T.Vector3();
   const here = o=>{
+    /* nerves.glb is whole-body geometry to begin with, so in the whole body
+       every nerve is in place and the containment test has nothing to decide. */
+    if(v3IsWhole()) return true;
     if(o.userData.hereFor === V3.region) return o.userData.here;
     const s = v3Struct(o.userData.v3.id);
     let ok = !!(s && regionsOf(s).indexOf(V3.region) >= 0);
@@ -7742,12 +7912,29 @@ function v3ApplyState(){
   V3_SYSTEMS.forEach(x=>{ counts[x.k] = 0; });
   if(V3.root){
     const selNames = v3SelNames();
-    V3.meshes.forEach((mesh, name)=>{
-      const t = mesh.userData.v3;
+    const lineNames = v3LineNames();   /* null unless a line is picked */
+    /* Walked over every adopted mesh rather than the by-name map: a node the
+       loader split into primitives owns two meshes under one name, and both
+       have to be lit, dimmed and hidden together. */
+    V3.drawn.forEach(mesh=>{
+      const t = mesh.userData.v3, name = t.name;
       const sel = !!(selNames && selNames.has(name));
+      const onLine = !!(lineNames && lineNames.has(name));
       if(counts[t.sys] != null) counts[t.sys]++;
-      mesh.visible = sel || v3Shows(t);
-      mesh.material = v3Material(t.look, sel ? "sel" : "");
+      /* A picked line is what was asked for, so its tracks are drawn whatever
+         the toggles say — the same rule the selected structure has always
+         had. The toggles themselves are never touched: a practitioner who
+         turned the bones off keeps them off.
+
+         Everything else keeps its own visibility and drops to the context
+         look, which is already the viewer's word for "there, but not the
+         subject". A track that is also the selection stays on --accent, so
+         the line colour and the selection colour never collide. */
+      mesh.visible = sel || onLine || v3Shows(t);
+      mesh.material = sel ? v3Material(t.look, "sel")
+        : onLine ? v3Material(t.look, "line")
+        : lineNames ? v3Material("context", "")
+        : v3Material(t.look, "");
     });
   }
   if(V3.lm){
@@ -7760,6 +7947,7 @@ function v3ApplyState(){
     o.material = v3Material("nerve", V3.sel === o.userData.v3.id ? "sel" : "");
   });
   v3RenderSystems(counts);
+  v3RenderLines();
   /* The label whenever a nerve is on screen or selected. Never a tooltip,
      never dismissible. */
   const s = V3.sel ? v3Struct(V3.sel) : null;
@@ -7774,6 +7962,19 @@ function v3Shows(t){
   if(!V3.sys[t.sys]) return false;
   if(t.sys !== "muscular" || !V3.muscle || t.layer == null) return true;
   return t.layer === V3.muscle;
+}
+/* The mesh names every track of the picked line owns, or null when no line is
+   picked. Insertions are included for the same reason the selection includes
+   them, though the whole body carries none today. */
+function v3LineNames(){
+  const line = V3.line && v3LineData(V3.line);
+  if(!line) return null;
+  const out = new Set();
+  line.structures.forEach(id=>{
+    const j = V3.byId[id];
+    if(j) (j.meshes || []).concat(j.insertions || []).forEach(n=>out.add(n));
+  });
+  return out;
 }
 /* The mesh names the selected structure owns in this scene, or null. */
 function v3SelNames(){
@@ -7837,9 +8038,13 @@ function v3RenderSel(){
     ${parent ? `<div class="anat-parent">Part of
       <button type="button" class="alink" data-goto="${esc(parent.id)}">${esc(parent.name)}</button></div>` : ""}
     ${s.system !== "landmark" && s.system !== "nervous" ? `<p class="v3-note">${here
-        ? here + " of " + names.length + " mesh" + (names.length === 1 ? "" : "es") + " in this region's model"
-          + (j.insertions && j.insertions.length && !V3.ins ? " — turn on Insertions for its attachments" : "") + "."
-        : (names.length ? "Its geometry is in another region's model." : "No geometry in the model — described here only.")}</p>` : ""}
+        ? here + " of " + names.length + " mesh" + (names.length === 1 ? "" : "es") + " in this model"
+          + (j.insertions && j.insertions.length && !V3.ins && !v3IsWhole() ? " — turn on Insertions for its attachments" : "") + "."
+        : (names.length
+            ? (v3IsWhole()
+                ? "Only attachment patches, and the whole-body model carries none — open its region to see them."
+                : "Its geometry is in another region's model.")
+            : "No geometry in the model — described here only.")}</p>` : ""}
     ${anatDetailBody(s)}
     ${others.length ? `
     <div class="anat-sec">
@@ -7902,7 +8107,8 @@ function v3FrameSel(){
   const T = V3.lib.THREE;
   const box = new T.Box3();
   let n = 0;
-  names.forEach(name=>{ const m = V3.meshes.get(name); if(m && m.visible && m.userData.box){ box.union(m.userData.box); n++; } });
+  V3.drawn.forEach(m=>{ const t = m.userData.v3;
+    if(names.has(t.name) && m.visible && m.userData.box){ box.union(m.userData.box); n++; } });
   if(V3.sel && V3.lm && V3.lm.visible) V3.lm.children.forEach(m=>{ if(m.userData.v3.id === V3.sel){ box.expandByPoint(m.position); n++; } });
   if(V3.sel && V3.nerves && V3.nerves.visible) V3.nerves.traverse(o=>{ if(o.isMesh && o.visible && o.userData.v3 && o.userData.v3.id === V3.sel){ box.union(o.userData.box); n++; } });
   if(!n || box.isEmpty()) return;
@@ -7962,6 +8168,86 @@ function v3RenderSystems(counts){
     b.setAttribute("aria-pressed", String(Number(b.dataset.m) === V3.muscle));
   });
 }
+/* ---- fascial lines ---- */
+/* The picker, and the toggle that reveals it. Hidden outside the whole body
+   rather than disabled: a fascial line is a head-to-toe continuity, and a
+   fragment of one in a regional model is not a smaller version of the thing —
+   it is the thing with what makes it a line removed. There is nothing partial
+   worth offering, so there is no control. */
+function v3RenderLines(){
+  const tog = $("#v3LineTog"), ctl = $("#v3LineCtl");
+  const whole = v3IsWhole();
+  tog.hidden = !whole;
+  if(!whole){ ctl.hidden = true; return; }
+  $("#v3LineOn").checked = V3.lineOn;
+  ctl.hidden = !V3.lineOn;
+  if(!V3.lineOn) return;
+  const el = $("#v3Lines");
+  if(!el.firstChild){
+    el.innerHTML = V3_LINES.map(x=>{
+      if(x.sep) return '<div class="v3-linerule"></div>';
+      const d = v3LineData(x.k);
+      return '<button type="button" data-line="' + esc(x.k) + '" aria-pressed="false">'
+        + esc(d ? d.name : x.k) + '</button>';
+    }).join("");
+    el.onclick = e=>{
+      const b = e.target.closest("[data-line]"); if(!b) return;
+      v3SetLine(b.dataset.line);
+    };
+  }
+  /* One line at a time. Two of them lit together are unreadable, and the
+     clinical value is in following one continuity end to end. */
+  el.querySelectorAll("[data-line]").forEach(b=>{
+    b.setAttribute("aria-pressed", String(b.dataset.line === V3.line));
+  });
+  v3RenderLineInfo();
+}
+/* The line in words and in order: the description, the caveat that has to
+   travel with it, and the tracks proximal to distal exactly as the join
+   stores them. Each track is a way into the structure it names — the same
+   v3Show() the index and the attachment links use — so a line is a route to
+   the drills and the handout rather than a picture on its own. */
+function v3RenderLineInfo(){
+  const el = $("#v3LineInfo");
+  if(!V3.line){
+    el.innerHTML = '<p class="v3-note">Pick a line to trace it through the body.</p>';
+    el.onclick = null;
+    return;
+  }
+  const spec = V3_LINES.find(x=>x.k === V3.line), data = v3LineData(V3.line);
+  if(!spec || !data){ el.innerHTML = ""; el.onclick = null; return; }
+  const tracks = data.structures.map(id=>{
+    const s = v3Struct(id);
+    if(!s) return "";
+    const j = V3.byId[id] || {};
+    /* Scene truth, not join truth: a track the model cannot draw is said so
+       on the row rather than left as a name that lights nothing. */
+    const drawn = (j.meshes || []).some(n=>V3.meshes.has(n));
+    return "<li><button type=\"button\" data-goto=\"" + esc(id) + "\">" + esc(s.name) + "</button>"
+      + (drawn ? "" : '<span class="v3-nogeom">not in this model</span>') + "</li>";
+  }).join("");
+  el.innerHTML = '<h3 class="v3-selname">' + esc(data.name) + "</h3>"
+    + '<p class="v3-linedesc">' + esc(spec.desc) + "</p>"
+    + '<p class="v3-note">' + esc(V3_LINE_CAVEAT) + "</p>"
+    + '<ol class="v3-tracks">' + tracks + "</ol>";
+  el.onclick = e=>{
+    const g = e.target.closest("[data-goto]");
+    if(g) v3Show(g.dataset.goto);
+  };
+}
+/* Picking the line that is already picked clears it. Nothing here touches a
+   system or the muscle depth: the toggles are the practitioner's, and a line
+   is drawn over whatever they have set rather than resetting it. */
+function v3SetLine(k){
+  V3.line = (V3.line === k) ? null : (k || null);
+  v3ApplyState();
+}
+$("#v3LineOn").onchange = e=>{
+  V3.lineOn = e.target.checked;
+  if(!V3.lineOn) V3.line = null;
+  v3ApplyState();
+};
+
 /* The one way a system is switched, from the checkbox and from v3Show alike,
    so the box, the state and the on-demand load can never disagree. */
 function v3SetSystem(k, on){

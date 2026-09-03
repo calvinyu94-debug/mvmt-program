@@ -5,8 +5,8 @@ The `.glb` models here are the runtime export of
 the pipeline, the verification renders and the full attribution chain. In
 summary:
 
-- The musculoskeletal geometry — `<region>.glb` and `<region>-insertions.glb`
-  — derives from **Z-Anatomy** (https://github.com/Z-Anatomy), licensed
+- The musculoskeletal geometry — `<region>.glb`, `<region>-insertions.glb`
+  and `overview.glb` — derives from **Z-Anatomy** (https://github.com/Z-Anatomy), licensed
   CC BY-SA 4.0, created by Gauthier Kervyn and contributors. Z-Anatomy is
   itself derived from **BodyParts3D** (Database Center for Life Science,
   Japan), licensed CC BY-SA 2.1 Japan. Structure naming follows Terminologia
@@ -24,5 +24,15 @@ summary:
   `structure-meshes.json` is the structure-to-mesh join, trimmed to ids and
   node names, and `landmarks.json` holds the resolved coordinates of the 42
   palpable landmarks. Both are records of the same pipeline.
+- `overview.glb` is the whole musculoskeletal model decimated to roughly a
+  twentieth — skeletal, muscular and articular meshes only, with no context
+  layer and no insertion patches, which stay per-region. Same source and same
+  licence as the region files: it is the same geometry, coarser.
+- The **fascial lines** in `structure-meshes.json` are a second index over
+  structures that already exist — no geometry is authored for them. The twelve
+  myofascial continuities, and the order of the tracks within each, are derived
+  from Thomas Myers, *Anatomy Trains*, 3rd edition, cross-referenced against
+  this map. They are an argued model rather than dissected structures, and the
+  viewer says so wherever one is drawn.
 
 Everything in this folder is distributed under **CC BY-SA 4.0**.
