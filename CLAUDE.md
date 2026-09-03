@@ -869,6 +869,48 @@ regions, drawn dim with depthWrite off so they never occlude the region
 itself, and are not selectable. Coordinates are baked to world space with
 identity transforms, glTF Y-up, **+Z anterior**, `.l` at +X.
 
+#### A node is not a mesh — read extras through `v3Adopt()`, never off the object
+
+The sentence above is true of **nodes**, and that is exactly what makes it
+misleading. What GLTFLoader hands back is not one `Mesh` per node:
+
+> **A node whose mesh has more than one primitive arrives as a `Group`
+> carrying the extras, with `Mesh` children that carry none.**
+
+So `mesh.userData.sourceName` is empty for those children, and everything
+downstream reads its own defaults instead. Nothing throws. The object is still
+drawn, still the right shape, still in the right place — it is simply
+attributed to nobody, so it takes the fallback colour, answers to the wrong
+system toggle, and cannot be selected or highlighted. **The failure mode is an
+object that looks slightly wrong, not one that is missing**, which is why it
+survived in the region files from e3ccd34 — the commit that first read extras
+per mesh, for selection and tissue colour — and was only found when the whole
+body put the sternum in the middle of the screen.
+
+Two objects in the export are like this — **"Body of sternum"** and **"Vertebra
+L3"** — and they are in six of the ten files (cervical, hip, lumbar, overview,
+shoulder, thoracic). Two objects, but there is nothing special about them and
+nothing stopping the next export adding more.
+
+The rule, prospectively:
+
+> **Any code reading an extra off a mesh must walk up to the parent for it.**
+> The mesh you were handed may not be the node the exporter wrote.
+
+`v3Adopt()` is where that walk lives, and it is deliberately the only place:
+it inherits `sourceName`, `system` and `context` from the nearest ancestor
+that has them, **before** anything reads them. Every extras-reader in the
+viewer — `v3Look()`, `v3SystemOf()`, `v3MuscleLayerOf()`, and `v3Load()`'s
+own context tally — runs after it, on purpose. Keep it that way: a new reader
+placed before `v3Adopt()`, or one that traverses `gltf.scene` for extras on
+its own, reintroduces this in a form nobody will notice.
+
+The other half is that **one `sourceName` can own more than one mesh**, which
+is why `V3.drawn` exists beside `V3.meshes`. The map keeps only the last mesh
+under a name, so it is for "is this here" lookups only; every pass that lights,
+dims, hides or frames walks `V3.drawn`. A new pass written against `V3.meshes`
+would silently leave half a split object behind.
+
 ### `.gitignore` negations are exactly three
 
 `*.json` stays blanket, and a patient export dropped in the repo folder must
@@ -938,15 +980,9 @@ model's ascending part and Lower Trapezius its descending part, each with a
 `sourceNote` recording why. Anyone reading the join against a textbook will
 think it is backwards. It is the model that is.
 
-**GLTFLoader splits a node whose mesh has more than one primitive**, into a
-Group carrying the extras and unnamed `Mesh` children carrying none. Two
-objects in the export are like this — "Body of sternum" and "Vertebra L3" — and
-they appear in six of the ten files, so before `v3Adopt()` inherited the
-extras from the nearest ancestor the sternum's body was coloured as muscle,
-answered to the wrong system toggle and could not be selected. That is also why
-`V3.drawn` exists alongside `V3.meshes`: one name can own more than one
-mesh, and the map keeps only the last, so every pass that lights, dims or hides
-walks `V3.drawn` and only the "is this here" lookups use the map.
+A mesh can also fail to resolve because it never carried a `sourceName` to
+resolve with — see **A node is not a mesh** above. That is a loader trap rather
+than a join problem, and it is handled once, in `v3Adopt()`.
 
 Nerve nodes carry no `sourceName`, and GLTFLoader sanitises node names on the
 way in — `nerve-femoral.l` arrives as `nerve-femorall`. They are matched by
