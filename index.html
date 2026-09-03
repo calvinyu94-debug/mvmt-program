@@ -6983,9 +6983,15 @@ function v3DisposeRegion(){
   if(V3.renderer) V3.renderer.renderLists.dispose();
 }
 
-/* How deep a mesh sits, on the slider's scale: 1 superficial, 2 deep, 3 bone.
-   The structures that claim it say so through ANATOMY's layer field, and the
-   shallowest claim wins; an unclaimed mesh falls back to its system. */
+/* How deep a mesh sits, on the slider's scale: 0 skin, 1 superficial, 2 deep,
+   3 bone. The structures that claim it say so through ANATOMY's layer field,
+   and the shallowest claim wins. An unclaimed mesh falls back to its system —
+   except one wearing the exporter's "Fascia" material, which is the layer
+   over everything else and sits at 0: Skin means fascia on, Superficial means
+   fascia peeled, which is what those words mean to a practitioner. Keyed on
+   the material rather than the name so the intermuscular septa go with it
+   and the thoracolumbar fascia, a claimed structure with its own layer, does
+   not. Read before the material is replaced. */
 function v3DepthOf(mesh){
   const ex = mesh.userData || {};
   if(ex.system === "insertion" || ex.system === "skeletal") return 3;
@@ -6995,6 +7001,7 @@ function v3DepthOf(mesh){
     if(s && s.layer && (d == null || s.layer < d)) d = s.layer;
   });
   if(d != null) return d;
+  if(mesh.material && mesh.material.name === "Fascia") return 0;
   return ex.system === "articular" ? 2 : 1;
 }
 

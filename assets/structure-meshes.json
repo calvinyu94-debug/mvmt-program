@@ -34,7 +34,12 @@
   {
    "id": "head-jaw-masseter",
    "kind": "mapped",
-   "meshes": [],
+   "meshes": [
+    "Deep part of masseter.l",
+    "Deep part of masseter.r",
+    "Superficial part of masseter.l",
+    "Superficial part of masseter.r"
+   ],
    "insertions": [
     "Masseter.el",
     "Masseter.er",
@@ -81,7 +86,12 @@
   {
    "id": "head-jaw-lateral-pterygoid",
    "kind": "mapped",
-   "meshes": [],
+   "meshes": [
+    "Inferior head of lateral pterygoid muscle.l",
+    "Inferior head of lateral pterygoid muscle.r",
+    "Superior head of lateral pterygoid muscle.l",
+    "Superior head of lateral pterygoid muscle.r"
+   ],
    "insertions": [
     "Lateral pterygoid muscle.o1l",
     "Lateral pterygoid muscle.o1r",
@@ -555,10 +565,23 @@
   {
    "id": "shoulder-deltoid",
    "kind": "mapped",
-   "meshes": [],
+   "meshes": [
+    "Acromial part of deltoid muscle.l",
+    "Acromial part of deltoid muscle.r",
+    "Clavicular part of deltoid muscle.l",
+    "Clavicular part of deltoid muscle.r",
+    "Scapular spinal part of deltoid muscle.l",
+    "Scapular spinal part of deltoid muscle.r"
+   ],
    "insertions": [
+    "Acromial part of deltoid muscle.ol",
+    "Acromial part of deltoid muscle.or",
+    "Clavicular part of deltoid muscle.ol",
+    "Clavicular part of deltoid muscle.or",
     "Deltoid muscle.el",
-    "Deltoid muscle.er"
+    "Deltoid muscle.er",
+    "Scapular spinal part of deltoid muscle.ol",
+    "Scapular spinal part of deltoid muscle.or"
    ]
   },
   {
@@ -620,12 +643,27 @@
   {
    "id": "shoulder-pec-major",
    "kind": "mapped",
-   "meshes": [],
+   "meshes": [
+    "(Abdominal part of pectoralis major muscle).l",
+    "(Abdominal part of pectoralis major muscle).r",
+    "Clavicular head of pectoralis major muscle.l",
+    "Clavicular head of pectoralis major muscle.r",
+    "Sternocostal head of pectoralis major muscle.l",
+    "Sternocostal head of pectoralis major muscle.r"
+   ],
    "insertions": [
+    "(Abdominal part of pectoralis major muscle).ol",
+    "(Abdominal part of pectoralis major muscle).or",
     "Pectoralis major muscle.el",
     "Pectoralis major muscle.er",
     "Pectoralis major muscle.ol",
-    "Pectoralis major muscle.or"
+    "Pectoralis major muscle.or",
+    "Sternocostal head of pectoralis major muscle.e1l",
+    "Sternocostal head of pectoralis major muscle.e1r",
+    "Sternocostal head of pectoralis major muscle.e2l",
+    "Sternocostal head of pectoralis major muscle.e2r",
+    "Sternocostal head of pectoralis major muscle.el",
+    "Sternocostal head of pectoralis major muscle.er"
    ]
   },
   {
@@ -950,17 +988,38 @@
   {
    "id": "elbow-biceps",
    "kind": "mapped",
-   "meshes": [],
+   "meshes": [
+    "Long head of biceps brachii.l",
+    "Long head of biceps brachii.r",
+    "Short head of biceps brachii.l",
+    "Short head of biceps brachii.r"
+   ],
    "insertions": [
     "Biceps brachii muscle.el",
-    "Biceps brachii muscle.er"
+    "Biceps brachii muscle.er",
+    "Long head of biceps brachii.ol",
+    "Long head of biceps brachii.or",
+    "Short head of biceps brachii.ol"
    ]
   },
   {
    "id": "elbow-triceps",
    "kind": "mapped",
-   "meshes": [],
+   "meshes": [
+    "Lateral head of triceps brachii.l",
+    "Lateral head of triceps brachii.r",
+    "Long head of triceps brachii.l",
+    "Long head of triceps brachii.r",
+    "Medial head of triceps brachii.l",
+    "Medial head of triceps brachii.r"
+   ],
    "insertions": [
+    "Lateral head of triceps brachii.ol",
+    "Lateral head of triceps brachii.or",
+    "Long head of triceps brachii.ol",
+    "Long head of triceps brachii.or",
+    "Medial head of triceps brachii.ol",
+    "Medial head of triceps brachii.or",
     "Triceps brachii muscle.el",
     "Triceps brachii muscle.er"
    ]
@@ -982,7 +1041,12 @@
   {
    "id": "elbow-pronator-teres",
    "kind": "mapped",
-   "meshes": [],
+   "meshes": [
+    "Deep head of pronator teres.l",
+    "Deep head of pronator teres.r",
+    "Superficial head of pronator teres.l",
+    "Superficial head of pronator teres.r"
+   ],
    "insertions": [
     "Pronator teres.el",
     "Pronator teres.er",
@@ -1040,10 +1104,17 @@
   {
    "id": "elbow-wrist-fcu",
    "kind": "mapped",
-   "meshes": [],
+   "meshes": [
+    "Humeral head of flexor carpi ulnaris.l",
+    "Humeral head of flexor carpi ulnaris.r",
+    "Ulnar head of flexor carpi ulnaris.l",
+    "Ulnar head of flexor carpi ulnaris.r"
+   ],
    "insertions": [
     "Flexor carpi ulnaris.el",
-    "Flexor carpi ulnaris.er"
+    "Flexor carpi ulnaris.er",
+    "Ulnar head of flexor carpi ulnaris.ol",
+    "Ulnar head of flexor carpi ulnaris.or"
    ]
   },
   {
@@ -1058,7 +1129,12 @@
   {
    "id": "elbow-wrist-fds",
    "kind": "mapped",
-   "meshes": [],
+   "meshes": [
+    "Humero-ulnar head of flexor digitorum superficialis.l",
+    "Humero-ulnar head of flexor digitorum superficialis.r",
+    "Radial head of flexor digitorum superficialis.l",
+    "Radial head of flexor digitorum superficialis.r"
+   ],
    "insertions": [
     "Flexor digitorum superficialis.e1l",
     "Flexor digitorum superficialis.e1r",
@@ -1184,7 +1260,12 @@
   {
    "id": "elbow-wrist-ecu",
    "kind": "mapped",
-   "meshes": [],
+   "meshes": [
+    "Humeral head of extensor carpi ulnaris.l",
+    "Humeral head of extensor carpi ulnaris.r",
+    "Ulnar head of extensor carpi ulnaris.l",
+    "Ulnar head of extensor carpi ulnaris.r"
+   ],
    "insertions": [
     "Extensor carpi ulnaris.el",
     "Extensor carpi ulnaris.er",
@@ -1289,7 +1370,12 @@
   {
    "id": "elbow-wrist-adductor-pollicis",
    "kind": "mapped",
-   "meshes": [],
+   "meshes": [
+    "Oblique head of adductor pollicis.l",
+    "Oblique head of adductor pollicis.r",
+    "Transverse head of adductor pollicis.l",
+    "Transverse head of adductor pollicis.r"
+   ],
    "insertions": [
     "Adductor pollicis.e1l",
     "Adductor pollicis.e1r",
@@ -1814,10 +1900,87 @@
   {
    "id": "spine-erector-spinae",
    "kind": "mapped",
-   "meshes": [],
+   "meshes": [
+    "Iliocostalis colli muscle",
+    "Iliocostalis colli muscle.r",
+    "Iliocostalis lumborum muscle.l",
+    "Iliocostalis lumborum muscle.r",
+    "Iliocostalis thoracis muscle.l",
+    "Iliocostalis thoracis muscle.r",
+    "Longissimus capitis muscle.l",
+    "Longissimus capitis muscle.r",
+    "Longissimus colli muscle.l",
+    "Longissimus colli muscle.r",
+    "Longissimus thoracis muscle.l",
+    "Longissimus thoracis muscle.r",
+    "Spinalis capitis muscle.l",
+    "Spinalis capitis muscle.r",
+    "Spinalis colli muscle.l",
+    "Spinalis colli muscle.r",
+    "Spinalis thoracis muscle.l",
+    "Spinalis thoracis muscle.r"
+   ],
    "insertions": [
     "Erector spinae.ol",
-    "Erector spinae.or"
+    "Erector spinae.or",
+    "Iliocostalis colli muscle.el",
+    "Iliocostalis colli muscle.er",
+    "Longissimus thoracis muscle.e1l",
+    "Longissimus thoracis muscle.e1r",
+    "Longissimus thoracis muscle.e2l",
+    "Longissimus thoracis muscle.e2r",
+    "Longissimus thoracis muscle.e3l",
+    "Longissimus thoracis muscle.e3r",
+    "Longissimus thoracis muscle.e4l",
+    "Longissimus thoracis muscle.e4r",
+    "Longissimus thoracis muscle.e5l",
+    "Longissimus thoracis muscle.e5r",
+    "Longissimus thoracis muscle.e6l",
+    "Longissimus thoracis muscle.e6r",
+    "Longissimus thoracis muscle.e7l",
+    "Longissimus thoracis muscle.e7r",
+    "Longissimus thoracis muscle.e8l",
+    "Longissimus thoracis muscle.e8r",
+    "Longissimus thoracis muscle.e9l",
+    "Longissimus thoracis muscle.e9r",
+    "Longissimus thoracis muscle.e10l",
+    "Longissimus thoracis muscle.e10r",
+    "Longissimus thoracis muscle.e11l",
+    "Longissimus thoracis muscle.e11r",
+    "Longissimus thoracis muscle.e12l",
+    "Longissimus thoracis muscle.e12r",
+    "Longissimus thoracis muscle.e13l",
+    "Longissimus thoracis muscle.e13r",
+    "Longissimus thoracis muscle.e14l",
+    "Longissimus thoracis muscle.e14r",
+    "Longissimus thoracis muscle.e15l",
+    "Longissimus thoracis muscle.e15r",
+    "Longissimus thoracis muscle.e16l",
+    "Longissimus thoracis muscle.e16r",
+    "Longissimus thoracis muscle.e17l",
+    "Longissimus thoracis muscle.e17r",
+    "Longissimus thoracis muscle.e18l",
+    "Longissimus thoracis muscle.e18r",
+    "Longissimus thoracis muscle.e19l",
+    "Longissimus thoracis muscle.e19r",
+    "Longissimus thoracis muscle.e20l",
+    "Longissimus thoracis muscle.e20r",
+    "Longissimus thoracis muscle.e21l",
+    "Longissimus thoracis muscle.e21r",
+    "Longissimus thoracis muscle.e22l",
+    "Longissimus thoracis muscle.e22r",
+    "Longissimus thoracis muscle.e23l",
+    "Longissimus thoracis muscle.e23r",
+    "Longissimus thoracis muscle.e24l",
+    "Longissimus thoracis muscle.e24r",
+    "Longissimus thoracis muscle.e25l",
+    "Longissimus thoracis muscle.e25r",
+    "Longissimus thoracis muscle.e26l",
+    "Longissimus thoracis muscle.e26r",
+    "Longissimus thoracis muscle.el",
+    "Longissimus thoracis muscle.er",
+    "Spinalis capitis muscle.el",
+    "Spinalis capitis muscle.er"
    ]
   },
   {

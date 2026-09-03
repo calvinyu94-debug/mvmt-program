@@ -823,6 +823,20 @@ maps does the click say *Not in the index* and name the frontmost unmapped
 mesh. That is ordinary, not an error, and it must never be turned into
 silence.
 
+**A structure that resolves only to insertion patches usually means the model
+carries the muscle's name on its attachments while the belly sits in unmapped
+parts or heads.** "Deltoid muscle" exists in the export only as `.el`/`.er`;
+the geometry is the acromial, clavicular and scapular spinal parts. Twelve
+structures were caught that way — deltoid, pectoralis major, biceps and
+triceps, pronator teres, the two carpi ulnares, flexor digitorum
+superficialis, adductor pollicis, masseter, lateral pterygoid and erector
+spinae — and the pass-through raycast is what exposed them: a click on the
+pec was landing on pec minor. **Check for parts and heads before concluding a
+structure has no geometry.** The four that remain insertion-only are correct
+as they are and are not to be "fixed": Common Extensor Origin, Common Flexor
+Origin, Patellar Tendon and Quadriceps Tendon *are* attachments, so an
+insertion patch is the right geometry, not a missing belly.
+
 The join maps to the model's geometry, not its labels, and one entry says
 so: Z-Anatomy names the trapezius parts inverted — its "Ascending part" sits
 highest and its "Descending part" lowest — so Upper Trapezius claims the
@@ -840,10 +854,16 @@ back. If the loader's rule changes, that one function changes with it.
 Four stops: Skin, Superficial, Deep, Bone. A mesh's depth is the shallowest
 `layer` of any structure that claims it — 1 superficial, 2 deep, 3 skeletal —
 and an unclaimed mesh falls back to its `system`: skeletal and insertions
-are 3, articular 2, everything else 1. Skin is the model as exported. At each
-later stop the layers above are hidden, the layer at it is drawn as normal,
-and the layers beneath stay visible faded, so a deep muscle is still seen
-against the bone it works on. The selected structure is always shown and
+are 3, articular 2, everything else 1, except that an unclaimed mesh wearing
+the exporter's `Fascia` material is 0. Skin is the model as exported, fascia
+on; Superficial is the fascia peeled, which is what the word means to a
+practitioner. The fascia vanishes at that stop rather than fading, because the
+peel hides the layers above, and that is the right picture. It is keyed on
+the material, not the name, so the intermuscular septa go with it and the
+thoracolumbar fascia — a claimed structure with its own layer — does not. At
+each later stop the layers above are hidden, the layer at it is drawn as
+normal, and the layers beneath stay visible faded, so a deep muscle is still
+seen against the bone it works on. The selected structure is always shown and
 always full whatever the slider says: it is what was asked for. Context,
 landmarks and nerves stand outside the depth system.
 
