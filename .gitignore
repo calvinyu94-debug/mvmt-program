@@ -1,5 +1,9 @@
 # Patient data must never enter this repo — it is public.
 *.json
+# Viewer runtime data — explicitly permitted. Exactly these three; nothing broader.
+!assets/regions.json
+!assets/landmarks.json
+!assets/structure-meshes.json
 
 # Editor / OS noise
 .DS_Store

@@ -1,0 +1,198 @@
+{
+ "version": 1,
+ "generatedFrom": "mvmt-anatomy manifest.json",
+ "units": "metres",
+ "up": "Y (glTF; Blender +Z became +Y on export)",
+ "sideConvention": {
+  "l": "+X",
+  "r": "-X"
+ },
+ "regions": [
+  {
+   "id": "head-jaw",
+   "file": "head-jaw.glb",
+   "triangles": 211061,
+   "ownTriangles": 171949,
+   "contextTriangles": 39112,
+   "bytes": 1055112,
+   "meshCount": 161,
+   "contextMeshCount": 132,
+   "contextRegions": [
+    "cervical"
+   ],
+   "insertionLayer": {
+    "file": "head-jaw-insertions.glb",
+    "triangles": 3517,
+    "bytes": 78472,
+    "meshCount": 59
+   }
+  },
+  {
+   "id": "cervical",
+   "file": "cervical.glb",
+   "triangles": 341318,
+   "ownTriangles": 156525,
+   "contextTriangles": 184793,
+   "bytes": 1742652,
+   "meshCount": 132,
+   "contextMeshCount": 399,
+   "contextRegions": [
+    "head-jaw",
+    "shoulder",
+    "thoracic"
+   ],
+   "insertionLayer": {
+    "file": "cervical-insertions.glb",
+    "triangles": 4822,
+    "bytes": 107740,
+    "meshCount": 82
+   }
+  },
+  {
+   "id": "shoulder",
+   "file": "shoulder.glb",
+   "triangles": 345402,
+   "ownTriangles": 159730,
+   "contextTriangles": 185672,
+   "bytes": 1880420,
+   "meshCount": 110,
+   "contextMeshCount": 540,
+   "contextRegions": [
+    "cervical",
+    "thoracic",
+    "elbow-wrist"
+   ],
+   "insertionLayer": {
+    "file": "shoulder-insertions.glb",
+    "triangles": 23877,
+    "bytes": 177316,
+    "meshCount": 84
+   }
+  },
+  {
+   "id": "thoracic",
+   "file": "thoracic.glb",
+   "triangles": 526180,
+   "ownTriangles": 393253,
+   "contextTriangles": 132927,
+   "bytes": 2221936,
+   "meshCount": 128,
+   "contextMeshCount": 338,
+   "contextRegions": [
+    "cervical",
+    "shoulder",
+    "lumbar"
+   ],
+   "insertionLayer": {
+    "file": "thoracic-insertions.glb",
+    "triangles": 7772,
+    "bytes": 141672,
+    "meshCount": 100
+   }
+  },
+  {
+   "id": "lumbar",
+   "file": "lumbar.glb",
+   "triangles": 358495,
+   "ownTriangles": 205026,
+   "contextTriangles": 153469,
+   "bytes": 1557028,
+   "meshCount": 96,
+   "contextMeshCount": 232,
+   "contextRegions": [
+    "thoracic",
+    "hip"
+   ],
+   "insertionLayer": {
+    "file": "lumbar-insertions.glb",
+    "triangles": 5382,
+    "bytes": 56976,
+    "meshCount": 32
+   }
+  },
+  {
+   "id": "hip",
+   "file": "hip.glb",
+   "triangles": 276067,
+   "ownTriangles": 207500,
+   "contextTriangles": 68567,
+   "bytes": 1255360,
+   "meshCount": 104,
+   "contextMeshCount": 184,
+   "contextRegions": [
+    "lumbar",
+    "knee"
+   ],
+   "insertionLayer": {
+    "file": "hip-insertions.glb",
+    "triangles": 4524,
+    "bytes": 88932,
+    "meshCount": 71
+   }
+  },
+  {
+   "id": "knee",
+   "file": "knee.glb",
+   "triangles": 143352,
+   "ownTriangles": 56490,
+   "contextTriangles": 86862,
+   "bytes": 1018308,
+   "meshCount": 88,
+   "contextMeshCount": 354,
+   "contextRegions": [
+    "hip",
+    "ankle-foot"
+   ],
+   "insertionLayer": {
+    "file": "knee-insertions.glb",
+    "triangles": 794,
+    "bytes": 21020,
+    "meshCount": 18
+   }
+  },
+  {
+   "id": "elbow-wrist",
+   "file": "elbow-wrist.glb",
+   "triangles": 215018,
+   "ownTriangles": 174914,
+   "contextTriangles": 40104,
+   "bytes": 1197652,
+   "meshCount": 280,
+   "contextMeshCount": 110,
+   "contextRegions": [
+    "shoulder"
+   ],
+   "insertionLayer": {
+    "file": "elbow-wrist-insertions.glb",
+    "triangles": 5733,
+    "bytes": 164968,
+    "meshCount": 137
+   }
+  },
+  {
+   "id": "ankle-foot",
+   "file": "ankle-foot.glb",
+   "triangles": 151100,
+   "ownTriangles": 136244,
+   "contextTriangles": 14856,
+   "bytes": 921884,
+   "meshCount": 250,
+   "contextMeshCount": 88,
+   "contextRegions": [
+    "knee"
+   ],
+   "insertionLayer": {
+    "file": "ankle-foot-insertions.glb",
+    "triangles": 7422,
+    "bytes": 148904,
+    "meshCount": 122
+   }
+  }
+ ],
+ "nerves": {
+  "file": "nerves.glb",
+  "bytes": 146712,
+  "authored": true,
+  "source": "schematic"
+ }
+}
