@@ -511,7 +511,7 @@ and skipped, so re-importing your own export does not breed duplicates.
 
 ## The anatomy index
 
-`ANATOMY` is a flat array of 418 structures — muscles, joints, ligaments, fascia
+`ANATOMY` is a flat array of 435 structures — muscles, joints, ligaments, fascia
 and nerves — each resolving to the library drills that load it. It backs the
 Anatomy view, and a separate 3D viewer project consumes the same dataset and
 treats this file as its source. **Keep it liftable:** plain data, one top-level
@@ -610,9 +610,10 @@ Both are optional, and both are now in use.
 - `noExercises` — one entry, `nerve-facial`. Facial retraining is specialist
   work, so the map says so rather than inventing a drill for it.
 
-Batch M used `inherits` the other way round: the ten named ankle ligaments
-(three lateral, three deltoid, four talocalcaneal) are **new** children under
-the groups that already existed, so nothing left the default browse list.
+Batches L and M used `inherits` the other way round: the two rhomboids and
+the ten named ankle ligaments (three lateral, three deltoid, four
+talocalcaneal) are **new** children under the groups that already existed, so
+nothing left the default browse list.
 The split is there because which ligament is the whole clinical question at
 the ankle — ATFL alone, ATFL plus CFL and PTFL involvement are three different
 injuries — and a group answers none of it. The interosseous talocalcaneal
@@ -775,8 +776,8 @@ it does **not** carry, each of which the viewer handles rather than hides:
   no whole-body one. The absence of `insertionLayer` in its `regions.json`
   entry is the signal; `v3Insertions()` reads it and says so as a **plain
   note, not an error**, which is why `v3LayerNote()` takes a second argument.
-  The four insertion-only structures (Common Extensor Origin, Common Flexor
-  Origin, Patellar Tendon, Quadriceps Tendon) therefore have no geometry here,
+  The five insertion-only structures (Common Extensor Origin, Common Flexor
+  Origin, Patellar Tendon, Quadriceps Tendon, Articularis Genus) therefore have no geometry here,
   and the selection panel says that instead of the region's answer.
 - **No nerves of its own.** `nerves.glb` is already whole-body geometry, so
   in the whole body every nerve is at home and the sampling containment test in
@@ -784,7 +785,7 @@ it does **not** carry, each of which the viewer handles rather than hides:
   78 markers, because the region filter only means something in a region.
 
 Everything else behaves as it does in a region — selection, systems, muscle
-depth and parts all read the same code and the same join, and 328 of the 332
+depth and parts all read the same code and the same join, and 344 of the 349
 mapped structures have every one of their meshes in it. Differences a click
 shows are occlusion, not resolution: the whole body simply has more anatomy in
 front of the ray.
@@ -947,15 +948,27 @@ A click raycasts against the region's own meshes only — context is never in
 the list — and walks every hit along the ray, nearest first, reading each
 `sourceName` back through the join. **The first hit the join claims wins;
 unmapped geometry is transparent to selection, never a selection result.**
-580 of the 2,054 exported objects map to nothing — it was 746 before Batch K
-named 42 ligaments and fasciae, and 590 before Batch M named the short
-ligaments of the foot — and dozens of them are
+556 of the 2,054 exported objects map to nothing — it was 746 before Batch K
+named 42 ligaments and fasciae, and 590 before Batches L and M named the
+bursae and the short ligaments of the foot — and dozens of them are
 fasciae and tendon sheaths lying directly over the muscles a hand goes for —
 stopping at the nearest hit made the deltoid, the pecs and every thigh and
 forearm muscle unclickable. A mesh can be claimed by several structures
 (Piriformis is its own entry and part of the deep rotators), so among the
 claims on the winning hit the most specific wins, the one with the fewest
-meshes, and the rest are offered under *Also part of*. Selecting a structure
+meshes, and the rest are offered under *Also part of*. **A tie goes to the
+named structure over the container.** Eleven joint and space entries hold
+meshes that named structures also own — Tibiofemoral Joint holds the ACL,
+Patellofemoral Joint the patella, Talocrural Joint the ATFL — and a joint
+entry can hold exactly the meshes of the ligament group it is made of, so
+array order was deciding between Talocrural Joint and Lateral Ankle Ligaments
+with parts off. The join marks those entries `container: true` with a
+`members` list; `v3Rank()` is the one comparator (claims and *Also part of*
+both use it), and the panel lists the members under *Contains*, each a link
+through `v3Show()`. Members are asserted at 3D setup beside the fascial lines:
+every id must resolve in the join and in `ANATOMY`, a container must name
+members, and members on a non-container is reported. The index cannot show
+*Contains*, because it must fetch nothing 3D and `members` lives in the join. Selecting a structure
 highlights every mesh it claims, both sides. **Show named parts governs this
 resolution too**, and it is the same variable the index uses:
 with it off a click on the middle deltoid gives Deltoid and lights six meshes,
@@ -977,10 +990,11 @@ triceps, pronator teres, the two carpi ulnares, flexor digitorum
 superficialis, adductor pollicis, masseter, lateral pterygoid and erector
 spinae — and the pass-through raycast is what exposed them: a click on the
 pec was landing on pec minor. **Check for parts and heads before concluding a
-structure has no geometry.** The four that remain insertion-only are correct
+structure has no geometry.** The five that remain insertion-only are correct
 as they are and are not to be "fixed": Common Extensor Origin, Common Flexor
 Origin, Patellar Tendon and Quadriceps Tendon *are* attachments, so an
-insertion patch is the right geometry, not a missing belly.
+insertion patch is the right geometry, not a missing belly; Articularis Genus
+(Batch L) is a muscle the model carries only as its attachment patches.
 
 The join maps to the model's geometry, not its labels, and one entry says
 so: Z-Anatomy names the trapezius parts inverted — its "Ascending part" sits
@@ -1081,8 +1095,8 @@ already holds some of its geometry**. `v3Show()` reads it and falls back to
 
 The check that this is complete: for every `mapped` structure, load the region
 `v3Show()` would load and confirm at least one of its meshes is in the scene.
-All 332 pass — the four insertion-only ones (Common Extensor Origin, Common
-Flexor Origin, Patellar Tendon, Quadriceps Tendon) through the insertion layer,
+All 349 pass — the five insertion-only ones (Common Extensor Origin, Common
+Flexor Origin, Patellar Tendon, Quadriceps Tendon, Articularis Genus) through the insertion layer,
 which `v3Show()` turns on for them.
 
 ### Landmarks: coordinates from one file, everything else from the other

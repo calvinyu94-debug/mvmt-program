@@ -3789,7 +3789,7 @@ const ANATOMY = [
  clinical:"Restriction here alters every step and drives compensation up the whole chain. One of the most commonly missed causes of foot, knee and hip complaints.",
  ex:["Big Toe Extension Mobilization","Toe Flexion and Extension","Toe Yoga","Plantar Fascia Stretch"]},
 
-{id:"ankle-lateral-ligaments", name:"Lateral Ankle Ligaments", latin:"ligg. talofibulare anterius et calcaneofibulare", region:"ankle-foot", system:"articular", layer:3,
+{id:"ankle-lateral-ligaments", name:"Lateral Ankle Ligaments", latin:"ligg. talofibulare anterius, talofibulare posterius et calcaneofibulare", region:"ankle-foot", system:"articular", layer:3,
  action:"Resist the ankle rolling outward at the outside of the joint.",
  clinical:"The classic sprain. Roughly a third of people develop ongoing instability, almost always because balance and eversion work was stopped once the pain settled.",
  ex:["Band Eversion","Foot Tripod Balance","Lateral Hop and Stick","Single Leg Balance Progression"]},
@@ -4189,6 +4189,97 @@ const ANATOMY = [
  action:"Envelops psoas and iliacus from the lumbar spine to the lesser trochanter.",
  clinical:"The femoral nerve runs within it. A tight or thickened sheath is one explanation for anterior thigh symptoms with a normal-looking hip.",
  ex:["Femoral Nerve Slider","Half-Kneeling Hip Flexor Series","Dead Bug"]},
+
+/* -- Batch L: verified against Netter. The bursae the map had none of
+   beyond two, seven ligaments, and three muscles — two rhomboid parts under
+   the existing group, and articularis genus, which the model carries only as
+   insertion patches: no belly mesh, attachments only, the same as the two
+   common origins and the two knee tendons. Written before Batch M, shipped
+   after it. -- */
+{id:"bursa-anserine", name:"Anserine Bursa", latin:"bursa anserina", region:"knee", system:"fascial", layer:2,
+ action:"Sits between the pes anserinus tendons and the tibia, about four fingers below the inner knee joint line.",
+ clinical:"Pes anserine bursitis — inner knee pain below the joint line, worse on stairs and getting out of a car, and common in runners and in knee osteoarthritis. Tenderness below the joint line rather than on it is what separates it from a medial meniscus problem.",
+ ex:["Hamstring Stretch","Adductor Rock Back","Step Up","Standing Banded Abduction"]},
+
+{id:"bursa-semimembranosus", name:"Semimembranosus Bursa", latin:"bursa m. semimembranosi", region:"knee", system:"fascial", layer:2,
+ action:"Lies between the semimembranosus tendon and the medial head of gastrocnemius at the back of the knee.",
+ clinical:"This is where a Baker's cyst forms — it communicates with the joint, so the cyst is usually a symptom of something inside the knee rather than a problem in itself. Treating the cyst without asking why the knee is producing fluid misses the point.",
+ ex:["Hamstring Bridge","Heel Slides","Prone Hang","Calf Stretch, Knee Bent"]},
+
+{id:"bursa-prepatellar", name:"Prepatellar Bursae", latin:"bursae prepatellares", region:"knee", system:"fascial", layer:1,
+ action:"Three bursae in front of the kneecap — subcutaneous, subfascial and subtendinous.",
+ clinical:"Housemaid's knee. Swelling sits in front of the kneecap and the joint itself moves freely, which distinguishes it from an effusion. Caused by kneeling, so the intervention is a kneeling pad before anything else.",
+ ex:["Kneecap Mobilization","Quad Set","Heel Slides"]},
+
+{id:"bursa-infrapatellar", name:"Infrapatellar Bursae", latin:"bursae infrapatellares", region:"knee", system:"fascial", layer:2,
+ action:"Superficial and deep bursae either side of the patellar tendon below the kneecap.",
+ clinical:"The deep one is implicated in jumper's knee alongside the tendon. Tenderness either side of the tendon rather than on it points at the bursa.",
+ ex:["Isometric Wall Sit at 60 Degrees","Decline Squat","Kneecap Mobilization"]},
+
+{id:"bursa-subdeltoid", name:"Subdeltoid Bursa", latin:"bursa subdeltoidea", region:"shoulder", system:"fascial", layer:2,
+ action:"Continuous with the subacromial bursa, extending beneath the deltoid.",
+ clinical:"Usually one continuous space with the subacromial bursa, which is why pain referred into the outer arm is so common with impingement. Tenderness extending well below the acromion is this part.",
+ ex:["Side-lying External Rotation","Full Can Raise","Wall Walk","Prone Trap Raise"]},
+
+{id:"bursa-iliopectineal", name:"Iliopectineal Bursa", latin:"bursa iliopectinea", region:"hip", system:"fascial", layer:2,
+ action:"The largest bursa in the body, between the iliopsoas tendon and the front of the hip.",
+ clinical:"Communicates with the hip joint in around one person in seven. Deep groin pain with an audible or palpable snap on moving from flexion to extension is internal snapping hip, and this bursa is why it hurts.",
+ ex:["Half-Kneeling Hip Flexor Series","Wall Press March","Hip CARs (Controlled Rotations)","Dead Bug"]},
+
+{id:"bursa-calcaneal", name:"Subcutaneous Calcaneal Bursa", latin:"bursa subcutanea calcanea", region:"ankle-foot", system:"fascial", layer:1,
+ action:"Sits between the skin and the Achilles tendon at the back of the heel.",
+ clinical:"The superficial one, distinct from the retrocalcaneal bursa in front of the tendon. Caused by shoe pressure, so it responds to footwear rather than to loading. Tender on pinching the skin over the tendon.",
+ ex:["Calf Stretch, Knee Bent","Isometric Calf Hold","Heel Bone Mobilization"]},
+
+{id:"shoulder-coracohumeral", name:"Coracohumeral Ligament", latin:"lig. coracohumerale", region:"shoulder", system:"articular", layer:3,
+ action:"Runs from the coracoid to both humeral tubercles, roofing the rotator interval.",
+ clinical:"The primary restraint against inferior translation with the arm at the side, and it thickens and contracts in frozen shoulder. Loss of external rotation with the arm at the side is its signature — earlier and more specific than loss of abduction.",
+ ex:["Dowel-Assisted External Rotation","Shoulder CARs","Supine 90/90 Rotation Arcs"]},
+
+{id:"hip-pubofemoral", name:"Pubofemoral Ligament", latin:"lig. pubofemorale", region:"hip", system:"articular", layer:3,
+ action:"Runs from the pubic part of the acetabular rim to the front of the femoral neck.",
+ clinical:"Limits abduction and extension. Tight, it caps the hip abduction a wide stance or a Cossack squat needs, and the compensation shows up at the low back.",
+ ex:["Frog Rock","Cossack Squat","Banded Hip Distraction","Adductor Rock Back"]},
+
+{id:"hip-transverse-acetabular", name:"Transverse Acetabular Ligament", latin:"lig. transversum acetabuli", region:"hip", system:"articular", layer:3,
+ action:"Bridges the notch at the bottom of the socket, completing the labral ring.",
+ clinical:"Turns the labrum from a horseshoe into a closed ring, which is what lets the joint hold a vacuum seal. Loss of that seal is part of why labral tears produce a feeling of instability rather than only pain.",
+ ex:["Hip CARs (Controlled Rotations)","Banded Hip Distraction","90/90 Hip Switch"]},
+
+{id:"thoracic-radiate-rib", name:"Radiate Ligament of the Head of the Rib", latin:"lig. capitis costae radiatum", region:"thoracic", system:"articular", layer:3,
+ action:"Fans from the head of each rib onto the two vertebral bodies it spans and the disc between them.",
+ clinical:"Each rib is anchored to two vertebrae and the disc between, which is why a single rib cannot move without loading two spinal segments. The anatomy behind sharp, well-localised mid-back pain that catches on a breath.",
+ ex:["Rib Roll Breathing","Open Book","Foam Roller Thoracic Extension"]},
+
+{id:"knee-patellar-retinacula", name:"Patellar Retinacula", latin:"retinacula patellae", region:"knee", system:"articular", layer:2,
+ action:"Fibrous expansions either side of the kneecap from the vastus muscles.",
+ clinical:"A tight lateral retinaculum tips the kneecap outward and is a genuine contributor to patellofemoral pain — one of the few structures around the kneecap you can actually change by hand.",
+ ex:["Kneecap Mobilization","Lateral Step Down","Spanish Squat","Short Arc Quad"]},
+
+{id:"elbow-dorsal-radiocarpal", name:"Dorsal Radiocarpal Ligament", latin:"lig. radiocarpale dorsale", region:"elbow-wrist", system:"articular", layer:3,
+ action:"Runs obliquely across the back of the wrist from the radius to the triquetrum.",
+ clinical:"Resists the carpal bones sliding forward. Injured in a fall onto a bent wrist, and a contributor to dorsal wrist pain that persists after the fracture question is settled.",
+ ex:["Wrist Circles","Quadruped Wrist Rocks","Wrist Weight-Bearing Progression"]},
+
+{id:"elbow-pisohamate", name:"Pisohamate & Pisometacarpal Ligaments", latin:"ligg. pisohamatum et pisometacarpale", region:"elbow-wrist", system:"articular", layer:3,
+ action:"Extend forward from the pisiform to the hook of the hamate and the fifth metacarpal.",
+ clinical:"Effectively the continuation of the flexor carpi ulnaris tendon, and they form the floor and ulnar wall of Guyon's canal. That is why handlebar pressure on the pisiform compresses the ulnar nerve.",
+ ex:["Ulnar Nerve Slider","Finger Spread and Squeeze","Wrist Circles"]},
+
+{id:"shoulder-rhomboid-major", name:"Rhomboid Major", latin:"m. rhomboideus major", region:"shoulder", system:"muscular", layer:2, inherits:"shoulder-rhomboids",
+ action:"The larger, lower rhomboid, from T2–T5 to the medial scapular border below the spine.",
+ clinical:"The bulk of what people feel as the ache between the shoulder blades. Its length, not its strength, is usually the problem.",
+ ex:["Band Pull-Apart","Prone Y-T-W-I"]},
+
+{id:"shoulder-rhomboid-minor", name:"Rhomboid Minor", latin:"m. rhomboideus minor", region:"shoulder", system:"muscular", layer:2, inherits:"shoulder-rhomboids",
+ action:"The smaller, upper rhomboid, from C7–T1 to the medial border at the scapular spine.",
+ clinical:"Sits under the upper trapezius and blends with the nuchal ligament above. Frequently part of what feels like a stubborn upper trapezius that will not release.",
+ ex:["Band Pull-Apart","Scapular Circles"]},
+
+{id:"knee-articularis-genus", name:"Articularis Genus", latin:"m. articularis genus", region:"knee", system:"muscular", layer:2,
+ action:"A few slips of muscle from the deep quadriceps to the top of the knee joint capsule.",
+ clinical:"Pulls the capsule clear of the joint as the knee straightens, so it does not get pinched. Its failure after immobilisation contributes to the loss of terminal extension that quad work alone does not restore.",
+ ex:["Quad Set","Short Arc Quad","Prone Hang","Terminal Knee Extension"]},
 
 /* ---- Bones and joints ---- */
 /* Lower priority for prescription, higher for explaining something to a patient
@@ -7125,8 +7216,13 @@ const V3_HAS_GEOMETRY = new Set([
   "head-jaw-sphenomandibular", "head-jaw-stylohyoid-lig", "fascia-deltoid", "fascia-pectoral",
   "fascia-clavipectoral", "fascia-brachial", "fascia-antebrachial", "fascia-lata",
   "fascia-crural", "fascia-popliteal", "fascia-masseteric", "fascia-temporal",
-  "fascia-transversalis", "fascia-iliopsoas", "ankle-atfl", "ankle-cfl", "ankle-ptfl",
-  "ankle-deltoid-post-tibiotalar", "ankle-deltoid-tibiocalcaneal",
+  "fascia-transversalis", "fascia-iliopsoas", "bursa-anserine", "bursa-subdeltoid",
+  "bursa-semimembranosus", "bursa-prepatellar", "bursa-infrapatellar", "bursa-calcaneal",
+  "bursa-iliopectineal", "shoulder-coracohumeral", "hip-pubofemoral",
+  "hip-transverse-acetabular", "thoracic-radiate-rib", "knee-patellar-retinacula",
+  "elbow-dorsal-radiocarpal", "elbow-pisohamate", "shoulder-rhomboid-major",
+  "shoulder-rhomboid-minor", "knee-articularis-genus", "ankle-atfl", "ankle-cfl",
+  "ankle-ptfl", "ankle-deltoid-post-tibiotalar", "ankle-deltoid-tibiocalcaneal",
   "ankle-deltoid-tibionavicular", "ankle-tc-anterior", "ankle-tc-lateral", "ankle-tc-medial",
   "ankle-tc-posterior", "ankle-syndesmosis", "ankle-bifurcate", "ankle-dorsal-talonavicular",
   "ankle-short-plantar", "ankle-dorsal-calcaneocuboid"
@@ -7329,6 +7425,23 @@ function v3Data(){
     if(bad.length){
       console.error("3D: fascial line tracks that do not resolve:", bad);
       v3LayerNote("A fascial line names " + bad.length + " structure" + (bad.length === 1 ? "" : "s") + " that don't resolve. See the console.");
+    }
+    /* Containers are asserted on the same terms: every member must resolve in
+       the join and in ANATOMY, a container must name members, and members on
+       a non-container is a mark that went on the wrong entry. A Contains list
+       quietly short of a ligament is the same wrong-answer-that-looks-right. */
+    const cbad = [];
+    V3.join.structures.forEach(s=>{
+      if(s.container && !(Array.isArray(s.members) && s.members.length)) cbad.push(s.id + " — container with no members");
+      if(!s.container && s.members) cbad.push(s.id + " — members on a non-container");
+      (s.members || []).forEach(id=>{
+        if(!V3.byId[id]) cbad.push(s.id + " ⊃ " + id + " (not in the join)");
+        else if(!v3Struct(id)) cbad.push(s.id + " ⊃ " + id + " (not in ANATOMY)");
+      });
+    });
+    if(cbad.length){
+      console.error("3D: container members that do not resolve:", cbad);
+      v3LayerNote("A container names " + cbad.length + " structure" + (cbad.length === 1 ? "" : "s") + " that don't resolve. See the console.");
     }
   });
 }
@@ -7574,9 +7687,19 @@ function v3PickAt(cx, cy){
   v3Select(null, unmapped);
 }
 const v3Claim = id => { const s = V3.byId[id]; return (s.meshes || []).length + (s.insertions || []).length; };
+const v3IsContainer = id => (V3.byId[id] && V3.byId[id].container) ? 1 : 0;
+/* The one order in which claims on a mesh are ranked: fewest meshes first,
+   and on a tie a named structure over a container. The tie is not rare — a
+   joint entry and the ligament group it is made of can hold exactly the same
+   six meshes, and array order was deciding between Talocrural Joint and
+   Lateral Ankle Ligaments. Twelve joint and space structures own meshes that
+   named structures also own; the join marks them container:true so they lose
+   the tie everywhere, not only where someone happened to look. */
+const v3Rank = (a, b)=>(v3Claim(a) - v3Claim(b)) || (v3IsContainer(a) - v3IsContainer(b));
 /* Which of the structures claiming a mesh a click resolves to. The most
-   specific wins — Piriformis over the deep rotators that include it — and the
-   rest are offered under "Also part of" in the panel.
+   specific wins — Piriformis over the deep rotators that include it, the ACL
+   over the tibiofemoral joint that holds it — and the rest are offered under
+   "Also part of" in the panel.
 
    "Show named parts" governs this as it governs the index, and it is the same
    variable: with it off a click on the middle deltoid gives Deltoid, with it
@@ -7585,7 +7708,7 @@ const v3Claim = id => { const s = V3.byId[id]; return (s.meshes || []).length + 
    parts claim still resolves to a part whatever the toggle says, because the
    alternative is a click that selects nothing. */
 function v3Resolve(ids){
-  const rank = ids.slice().sort((a, b)=>v3Claim(a) - v3Claim(b));
+  const rank = ids.slice().sort(v3Rank);
   if(!anatParts){
     const whole = rank.filter(id=>{ const st = v3Struct(id); return st && !st.inherits; });
     if(whole.length) return whole[0];
@@ -8112,8 +8235,12 @@ function v3RenderSel(){
   /* Every other structure that claims any of these meshes, most specific first. */
   const others = [];
   names.forEach(n=>((V3.byMesh && V3.byMesh[n]) || []).forEach(o=>{ if(o !== s.id && others.indexOf(o) < 0) others.push(o); }));
-  others.sort((a, b)=>v3Claim(a) - v3Claim(b));
+  others.sort(v3Rank);
   const parent = s.inherits ? v3Struct(s.inherits) : null;
+  /* A container's members, from the join: the named structures a joint or
+     space is made of, so Tibiofemoral Joint offers its five ligaments. Ids
+     that do not resolve were reported at setup and are skipped here. */
+  const members = (j.container && Array.isArray(j.members) ? j.members : []).map(v3Struct).filter(Boolean);
   el.innerHTML = `
     <span class="lbl">Selected</span>
     <h3 class="v3-selname">${esc(s.name)}</h3>
@@ -8125,6 +8252,13 @@ function v3RenderSel(){
     ${s.system === "nervous" ? `<p class="v3-schem-inline">${esc(V3_SCHEMATIC)}</p>` : ""}
     ${parent ? `<div class="anat-parent">Part of
       <button type="button" class="alink" data-goto="${esc(parent.id)}">${esc(parent.name)}</button></div>` : ""}
+    ${members.length ? `
+    <div class="anat-sec">
+      <span class="lbl">Contains</span>
+      <div class="anat-kids">
+        ${members.map(m=>`<button type="button" data-goto="${esc(m.id)}">${esc(m.name)}</button>`).join("")}
+      </div>
+    </div>` : ""}
     ${s.system !== "landmark" && s.system !== "nervous" ? `<p class="v3-note">${here
         ? here + " of " + names.length + " mesh" + (names.length === 1 ? "" : "es") + " in this model"
           + (j.insertions && j.insertions.length && !V3.ins && !v3IsWhole() ? " — turn on Insertions for its attachments" : "") + "."
