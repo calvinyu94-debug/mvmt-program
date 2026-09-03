@@ -533,6 +533,7 @@ array, no reference to anything that renders it.
   inherits: "hip-hamstrings",    // show the parent's drills, then this one's own
   noExercises: "Specialist work" // why this structure legitimately has none
   attachments: ["Masseter", …]   // landmarks only — STRUCTURE names, not exercise
+  modelNote: "…"                 // where the 3D model is wrong about it — see below
 }
 ```
 
@@ -710,6 +711,48 @@ Three things keep `clinical` off paper, and all three have to stay true:
 The Patient view toggle hides `clinical` and nothing else. It is **module state,
 never storage** — the safe state is practitioner, so that has to be the state a
 reload lands in. Do not make it sticky.
+
+### `modelNote` says where the model is wrong, and it is not a warning
+
+Some structures are mislabelled or misplaced **in Z-Anatomy itself**. The
+trapezius part names are inverted at source — its "ascending part" is
+anatomically the upper trapezius — and the iliolumbar ligament's iliac end is
+drawn about 10 mm above the crest it attaches to, so it appears to float. There
+was nowhere to say so: the trapezius correction was a `sourceNote` in the join
+that nothing displayed.
+
+`modelNote` is that place. Optional, plain prose, unresolved by anything, and
+rendered by `anatDetailBody()` under the clinical block as
+**About this model — …**. Four entries carry one today: `shoulder-trapezius`,
+`cervical-upper-trap` and `shoulder-lower-trap` (the inversion) and
+`lumbar-iliolumbar-ligament` (the overshoot); `ankle-talocrural` carries the
+fifth, saying the joint has no capsule mesh of its own.
+
+Same principle as the schematic-nerve label: **where the model is less
+trustworthy than it looks, say so on screen.** Nobody but CYU can see the
+discrepancy, so nobody else can report it.
+
+Three rules it has to keep:
+
+- **Not a warning colour and not dismissible.** `.anat-model` is `--ink-3` under
+  a hairline rule. `--warn` would say the structure is dangerous; what is
+  imperfect is the drawing. Do not reach for `.anat-sec.clin` either — that
+  ground means *practitioner-only*, which this is not.
+- **It shows in patient view.** It is the one thing in the detail body outside
+  the `anatPatient` gate, deliberately: a patient looking at a floating ligament
+  is better served knowing the drawing is imperfect than wondering what they are
+  seeing. It is about the tool, not about them.
+- **It must never print**, by the same three guards `clinical` has — the two
+  views carry `no-print`, nothing copies anatomy text into a program, and
+  `renderPatient()` never reads `ANATOMY`. It describes the 3D model, and the
+  model is not on the handout.
+
+**Do not correct the geometry to remove the need for one.** The meshes are CC
+BY-SA data from upstream; editing them is an `mvmt-anatomy` job, it sets a
+precedent that the atlas is ours to fix, and there is no way to audit 2,054
+objects for the same class of error. A note is honest, costs nothing and scales.
+If specific structures are ever to be corrected, that is a separate decision
+with its own brief.
 
 ## Storage
 
@@ -1181,7 +1224,73 @@ whenever the join changes**; never hand-edit it.
 and from *Also part of*: it loads the region that holds the structure if the
 current one does not, turns on whichever layer the structure lives in
 (landmarks, nerves, or insertions for a structure that has patches and no
-belly), selects it and frames it. Framing is the viewer's single camera
-animation, half a second eased, and it is a jump under
-`prefers-reduced-motion`. A request made before the viewer has finished
-setting up is kept in `V3.pendingShow` and replayed, never dropped.
+belly), selects it and frames it. Framing goes through `v3CamTo()`, half a
+second eased, and it is a jump under `prefers-reduced-motion`. A request made
+before the viewer has finished setting up is kept in `V3.pendingShow` and
+replayed, never dropped.
+
+### The camera pans, and framing is why it rarely has to
+
+The viewer shipped with `enablePan = false`, which tied the camera to the
+centre of the model: zoom in on the pelvis and the shoulder was unreachable
+without zooming out and orbiting back. Close inspection is where a 3D atlas
+earns its place, so that was the wrong thing to be missing.
+
+Almost all of it is OrbitControls configuration rather than code, and the
+configuration is worth stating because it is easy to reimplement by hand:
+
+| Input | Action | How |
+|---|---|---|
+| Left drag | Orbit | default |
+| Right drag | Pan | `mouseButtons.RIGHT` — already the default |
+| Middle drag | Pan | `mouseButtons.MIDDLE`, moved off dolly |
+| Shift + left drag | Pan | OrbitControls' own — `MOUSE.ROTATE` with a modifier is pan |
+| Wheel | Zoom **to the cursor** | `zoomToCursor = true` |
+| One finger | Orbit | `touches.ONE` default |
+| Two fingers | Pinch zoom **and** drag pan | `touches.TWO = DOLLY_PAN` default |
+
+Three bindings because mice differ and nobody should have to learn which one
+this app picked. **Pan speed scales with distance for free** — the perspective
+branch of `_pan()` works in the target's own plane — so do not add a speed
+constant. Zoom-to-cursor respects `minDistance`/`maxDistance` because
+`_clampDistance()` is on that path too; it was verified by slamming the wheel
+to both stops.
+
+Four things around it are ours:
+
+- **The context menu is suppressed on the canvas only.** Right-drag is pan, so
+  the menu would open on top of it. Nowhere else in the app.
+- **A click selects; it must never move the camera.** Framing is on
+  double-click and on selection from a panel — *View in 3D*, an attachment
+  link, *Also part of*, *Contains*, a fascial line track. Framing on every
+  click would be disorienting, and the pick already happens on the second
+  click's `pointerup`, so `dblclick` only has to call `v3FrameSel()`.
+  Picking is left-button only now: a right- or middle-drag that happens to end
+  where it started is not a selection.
+- **Pan is clamped to the model's box** plus a quarter-radius of air, both
+  target and camera moved together so a clamp never turns the view. A move the
+  app makes widens the bound to its destination first — a nerve selected inside
+  a region is whole-body geometry and its centre can sit outside that region's
+  box, and framing must never fight the clamp. The clamp runs in `v3Loop()`
+  after `controls.update()` and is skipped while a move is in flight.
+- **`v3StopInertia()` before every programmatic move.** Damping keeps a drag
+  coasting for about half a second, and the loop calls `controls.update()`
+  after the animation has placed the camera — so Reset view clicked straight
+  after a drag landed somewhere neither chose. OrbitControls has no "stop", but
+  one undamped `update()` spends the residue and zeroes it.
+
+**Reset view** returns to `V3.home`, and **five preset angles** — anterior,
+posterior, left, right, superior — turn the model without changing the target
+or the distance. Both are drawn from `V3_VIEWS`, both animate over 400 ms
+through `v3CamTo()`, and both are instant under `prefers-reduced-motion`.
+`V3.home` and the pan box are set in `v3Frame()`, the one place the default
+view for a loaded model is decided.
+
+Two details in `V3_VIEWS` that look like fussiness and are not. Superior is
+`[0, 1, -0.001]`, because a camera exactly over its target has no defined
+azimuth and `makeSafe()` would pick one for us; the thousandth also puts
+anterior at the top of the screen. And `v3Preset()` measures from
+`v3CamNow()` — the destination of a move already in flight, not the live
+camera — because a point part-way along the chord between two views sits
+inside the orbit sphere, so clicking round the five would otherwise walk the
+camera into the model.
