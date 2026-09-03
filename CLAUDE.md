@@ -794,3 +794,81 @@ line-ending normalised.
 
 Two smaller things the viewer keeps: it respects `prefers-reduced-motion` by
 turning orbit damping off, and it caps the device pixel ratio at 2.
+
+### Selection resolves through the join, and a mesh may belong to nobody
+
+`assets/structure-meshes.json` is the structure-to-mesh join from
+mvmt-anatomy, trimmed to `id`, `kind`, `meshes` and `insertions` — names,
+regions and triangle counts are not repeated because `ANATOMY` has them.
+`kind` is one of `mapped`, `absent`, `unresolved`, `anchor` (a landmark),
+`authored` (a schematic nerve) or `text-only`; only `mapped` and `authored`
+carry geometry. It was transcribed by hand and checked three ways: every
+mesh and insertion name exists in the export manifest, every id matches
+`ANATOMY` in both directions, and per-structure triangle sums reproduce the
+join's own figures. **Do not edit it by hand without re-running that check.**
+
+A click raycasts against the region's own meshes only — context is never in
+the list — and reads the hit's `sourceName` back through the join. A mesh
+can be claimed by several structures (Piriformis is its own entry and part of
+the deep rotators), so the most specific claim wins, the one with the fewest
+meshes, and the rest are offered under *Also part of*. Selecting a structure
+highlights every mesh it claims, both sides. Roughly a third of the exported
+objects are claimed by nothing; a click landing on one says *Not in the
+index* and names the mesh. That is ordinary, not an error, and it must never
+be turned into silence.
+
+Nerve nodes carry no `sourceName`, and GLTFLoader sanitises node names on the
+way in — `nerve-femoral.l` arrives as `nerve-femorall`. They are matched by
+sanitising the join's names the same way, never by parsing the loaded name
+back. If the loader's rule changes, that one function changes with it.
+
+### The depth slider peels; it never deletes
+
+Four stops: Skin, Superficial, Deep, Bone. A mesh's depth is the shallowest
+`layer` of any structure that claims it — 1 superficial, 2 deep, 3 skeletal —
+and an unclaimed mesh falls back to its `system`: skeletal and insertions
+are 3, articular 2, everything else 1. Skin is the model as exported. At each
+later stop the layers above are hidden, the layer at it is drawn as normal,
+and the layers beneath stay visible faded, so a deep muscle is still seen
+against the bone it works on. The selected structure is always shown and
+always full whatever the slider says: it is what was asked for. Context,
+landmarks and nerves stand outside the depth system.
+
+### Landmarks: coordinates from one file, everything else from the other
+
+`landmarks.json` is the only source of a marker's position and is read for
+nothing else — its region keys (`head-neck`, `pelvis`, `foot` …) are not the
+app's, so which region a landmark belongs to, and what it is called, come
+from `ANATOMY`. The file is Blender Z-up in metres; the export turned +Z into
++Y and −Y into +Z, so a point `(x, y, z)` lands at `(x, z, −y)`. Paired
+landmarks have `l` and `r`, midline ones `m`; every side gets a marker.
+Selecting a marker shows *What attaches here* from `anatAttach`, and each
+attachment goes through `v3Show()`, which loads the region that holds the
+structure if this one does not.
+
+### The schematic treatment is the debt to mvmt-anatomy, and it is not optional
+
+The authored nerves in `nerves.glb` were written from a specification; the
+muscles and bones come from cadaveric and imaging data. Drawn the same way
+they would look equally authoritative, and they are not. mvmt-anatomy's
+`CLAUDE.md`, `README.md` and `ATTRIBUTION.md` all record the viewer-side
+treatment as owed. It is paid here, in two parts that both have to stay:
+
+- a **distinct material** — the nerves are drawn unlit and flat, no shading
+  and no roughness, so they read as an overlay on the model rather than a
+  part of it (`V3_LOOKS.nerve`, `flat:true`);
+- the label **"Schematic — indicative path only"** (`V3_SCHEMATIC`), shown
+  over the model whenever the nerve layer is on or a nerve is selected, and
+  again in the selection panel beside the nerve's name. It has no close
+  control. It is not a tooltip. **Do not soften it for visual tidiness** —
+  that is exactly the failure the requirement names.
+
+Only the ten authored nerves have geometry; the other nineteen are text-only
+by design and the viewer shows nothing for them. Which nerves appear in a
+region is a heuristic: a nerve is shown if `ANATOMY` files it under the
+region, or if at least a third of its sampled vertices lie inside the boxes of
+the region's own meshes. Bounds alone were too coarse — the arms hang through
+the hip's box, and the rotatores are one mesh from neck to sacrum.
+
+The debt is closed in mvmt-anatomy's three files only once the integration
+PR lands, with a pointer to where it was paid — not before.

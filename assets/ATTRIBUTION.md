@@ -21,5 +21,8 @@ summary:
   source and neither should be cited as it.
 - `regions.json` is a trimmed record of what was exported — file names, sizes
   and triangle counts — produced from the pipeline's manifest.
+  `structure-meshes.json` is the structure-to-mesh join, trimmed to ids and
+  node names, and `landmarks.json` holds the resolved coordinates of the 42
+  palpable landmarks. Both are records of the same pipeline.
 
 Everything in this folder is distributed under **CC BY-SA 4.0**.
