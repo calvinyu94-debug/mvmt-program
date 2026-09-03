@@ -569,10 +569,16 @@ button{cursor:pointer}
 }
 .v3-ctl{margin-top:16px}
 .v3-ctl .lbl{display:block;margin-bottom:6px}
-.v3-ctl input[type=range]{width:100%;margin:0;accent-color:var(--accent)}
-.v3-stops{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-3);font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
 .v3-toggles label{display:flex;align-items:center;gap:8px;font-size:13.5px;padding:3px 0;cursor:pointer}
+.v3-toggles label.off{color:var(--ink-3)}
 .v3-toggles input{margin:0;width:15px;height:15px;accent-color:var(--accent)}
+.v3-toggles .n{margin-left:auto;font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.v3-seg{display:flex;border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden}
+.v3-seg button{flex:1;border:0;border-left:1px solid var(--line);background:var(--panel);color:var(--ink-2);font-family:var(--font-ui);font-size:11.5px;padding:6px 4px;cursor:pointer}
+.v3-seg button:first-child{border-left:0}
+.v3-seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.v3-seg button:disabled{color:var(--ink-3);cursor:default}
+#v3MuscleCtl[aria-disabled="true"] .v3-seg button[aria-pressed="true"]{background:var(--line);color:var(--ink-3)}
 .v3-sel{margin-top:16px;padding-top:14px;border-top:1px solid var(--line-2)}
 .v3-sel .lbl{display:block;margin-bottom:5px}
 .v3-selname{font-family:var(--font-ui);font-size:17px;font-weight:600;margin:0;letter-spacing:-.01em}
@@ -925,17 +931,16 @@ button{cursor:pointer}
         </div>
         <div class="v3-side">
           <div class="chips" id="v3Region"></div>
-          <div class="v3-ctl">
-            <span class="lbl">Depth · <span id="v3DepthLbl">Skin</span></span>
-            <input type="range" id="v3Depth" min="0" max="3" step="1" value="0" aria-label="Layer depth">
-            <div class="v3-stops" aria-hidden="true"><span>Skin</span><span>Superficial</span><span>Deep</span><span>Bone</span></div>
-          </div>
+          <!-- Both of these are rendered from V3_SYSTEMS and nothing else, so
+               a further system is an entry in that array rather than markup. -->
           <div class="v3-ctl v3-toggles">
-            <span class="lbl">Layers</span>
-            <label><input type="checkbox" id="v3Ins"> Insertions</label>
-            <label><input type="checkbox" id="v3Lm"> Landmarks</label>
-            <label><input type="checkbox" id="v3Nrv"> Nerves</label>
+            <span class="lbl">Systems</span>
+            <div id="v3Systems"></div>
             <p class="v3-note v3-err" id="v3LayerNote" hidden></p>
+          </div>
+          <div class="v3-ctl" id="v3MuscleCtl">
+            <span class="lbl">Muscle depth</span>
+            <div class="v3-seg" id="v3Muscle" role="radiogroup" aria-label="Muscle depth"></div>
           </div>
           <div class="v3-sel" id="v3Sel"></div>
           <p class="v3-hint">Drag to turn. Scroll or pinch to zoom. Click a structure to name it.</p>
@@ -2449,6 +2454,18 @@ const ANATOMY = [
  clinical:"The most commonly treated jaw muscle and the most reliably tender. Visible hypertrophy at the jaw angle is a strong clue to night clenching.",
  ex:["Masseter Self-Release","Isometric Closing","Resting Tongue Position","Nasal Breathing with Jaw at Rest"]},
 
+{id:"head-jaw-masseter-superficial", name:"Masseter, Superficial Part", latin:"pars superficialis m. masseteris", region:"head-jaw", system:"muscular", layer:1,
+ inherits:"head-jaw-masseter",
+ action:"The outer, larger portion running down and back to the jaw angle.",
+ clinical:"What you feel when someone clenches, and the part that visibly hypertrophies in night grinders.",
+ ex:["Masseter Self-Release"]},
+
+{id:"head-jaw-masseter-deep", name:"Masseter, Deep Part", latin:"pars profunda m. masseteris", region:"head-jaw", system:"muscular", layer:2,
+ inherits:"head-jaw-masseter",
+ action:"The smaller inner portion, running more vertically.",
+ clinical:"Sits closer to the joint and refers into the ear. Deep ear pain with no ear findings is often this.",
+ ex:["Masseter Self-Release","Isometric Closing"]},
+
 {id:"head-jaw-temporalis", name:"Temporalis", latin:"m. temporalis", region:"head-jaw", system:"muscular", layer:1,
  action:"Fan-shaped muscle over the temple. Closes the jaw and draws it backward.",
  clinical:"Refers pain into the temple, the eyebrow and the upper teeth convincingly enough to be mistaken for a headache or a dental problem.",
@@ -2464,10 +2481,34 @@ const ANATOMY = [
  clinical:"The only jaw muscle attaching to the disc, which makes it central to clicking and deviation. Provoked by resisted forward movement rather than by clenching.",
  ex:["Jaw Protrusion and Retrusion","Isometric Protrusion","Lateral Jaw Glide","Jaw CARs"]},
 
+{id:"head-jaw-lat-pterygoid-superior", name:"Lateral Pterygoid, Superior Head", latin:"caput superius m. pterygoidei lateralis", region:"head-jaw", system:"muscular", layer:2,
+ inherits:"head-jaw-lateral-pterygoid",
+ action:"The smaller upper head, attaching to the joint disc and capsule.",
+ clinical:"The only muscle attaching to the disc, which places it at the centre of clicking. Active during closing, not opening — the opposite of its lower partner.",
+ ex:["Jaw Protrusion and Retrusion","Partial Opening with Joint Contact"]},
+
+{id:"head-jaw-lat-pterygoid-inferior", name:"Lateral Pterygoid, Inferior Head", latin:"caput inferius m. pterygoidei lateralis", region:"head-jaw", system:"muscular", layer:2,
+ inherits:"head-jaw-lateral-pterygoid",
+ action:"The larger lower head, to the neck of the mandible.",
+ clinical:"Pulls the jaw forward and to the opposite side. Its side-to-side imbalance produces deviation on opening.",
+ ex:["Lateral Jaw Glide","Isometric Protrusion"]},
+
 {id:"head-jaw-digastric", name:"Digastric", latin:"m. digastricus", region:"head-jaw", system:"muscular", layer:2,
  action:"Two bellies joined by a tendon at the hyoid bone. Opens the jaw and lifts the hyoid.",
  clinical:"Palpable under the jaw and along the front of the throat. Often tender in clenchers and in anyone with a long-standing forward head position.",
  ex:["Under-Chin Stretch","Isometric Opening","Tongue Press Hold","Chin Tuck with Jaw Rest"]},
+
+{id:"head-jaw-digastric-anterior", name:"Digastric, Anterior Belly", latin:"venter anterior m. digastrici", region:"head-jaw", system:"muscular", layer:2,
+ inherits:"head-jaw-digastric",
+ action:"From the inner surface of the chin back to the hyoid.",
+ clinical:"Trigeminal supplied. Palpable under the chin and commonly tender in clenchers.",
+ ex:["Under-Chin Stretch","Tongue Press Hold"]},
+
+{id:"head-jaw-digastric-posterior", name:"Digastric, Posterior Belly", latin:"venter posterior m. digastrici", region:"head-jaw", system:"muscular", layer:2,
+ inherits:"head-jaw-digastric",
+ action:"From behind the ear forward to the hyoid.",
+ clinical:"Facial nerve supplied — two bellies of one muscle with different nerve supplies, because they develop from different pharyngeal arches.",
+ ex:["Under-Chin Stretch","Chin Tuck with Jaw Rest"]},
 
 {id:"head-jaw-mylohyoid", name:"Mylohyoid", latin:"m. mylohyoideus", region:"head-jaw", system:"muscular", layer:2,
  action:"Forms the floor of the mouth. Lifts the hyoid and helps open the jaw.",
@@ -2639,6 +2680,24 @@ const ANATOMY = [
  clinical:"Takes over when the cuff cannot centre the joint. A shrugging, deltoid-dominant raise is the visible sign.",
  ex:["Full Can Raise","Landmine Press","Half-Kneeling Single Arm Press","Shoulder CARs"]},
 
+{id:"shoulder-deltoid-anterior", name:"Anterior Deltoid", latin:"pars clavicularis m. deltoidei", region:"shoulder", system:"muscular", layer:1,
+ inherits:"shoulder-deltoid",
+ action:"The front fibres, from the collarbone. Lift the arm forward.",
+ clinical:"Dominant in anyone who presses and trains little else. Its tightness feeds the forward shoulder posture usually blamed on the pecs.",
+ ex:["Doorway Pec Stretch","Shoulder CARs"]},
+
+{id:"shoulder-deltoid-middle", name:"Middle Deltoid", latin:"pars acromialis m. deltoidei", region:"shoulder", system:"muscular", layer:1,
+ inherits:"shoulder-deltoid",
+ action:"The side fibres, from the acromion. Lift the arm out sideways.",
+ clinical:"The part that takes over when supraspinatus fails. A shrugging raise is this working alone.",
+ ex:["Full Can Raise","Side-lying External Rotation"]},
+
+{id:"shoulder-deltoid-posterior", name:"Posterior Deltoid", latin:"pars spinalis m. deltoidei", region:"shoulder", system:"muscular", layer:1,
+ inherits:"shoulder-deltoid",
+ action:"The rear fibres, from the scapular spine. Draw the arm back and rotate it outward.",
+ clinical:"Weakest of the three in almost everyone, and the one that holds the shoulder back. Trains with rowing and face pulls, never with pressing.",
+ ex:["Face Pull","Band Pull-Apart","Ring or Inverted Row"]},
+
 {id:"shoulder-supraspinatus", name:"Supraspinatus", latin:"m. supraspinatus", region:"shoulder", system:"muscular", layer:2,
  action:"Starts the arm moving away from the body and holds the humeral head down in the socket.",
  clinical:"The most commonly injured cuff tendon. Loads heavily in the first 30 degrees, which is why the full can raise stops at shoulder height.",
@@ -2663,6 +2722,24 @@ const ANATOMY = [
  action:"Draws the arm forward and across the body.",
  clinical:"Shortens with desk posture, pulls the shoulders forward and caps overhead reach. Each of its three parts shortens differently — stretch at three heights.",
  ex:["Doorway Pec Stretch","Push-Up Plus","Dowel Pass-Throughs","Band Pull-Apart"]},
+
+{id:"shoulder-pec-clavicular", name:"Pectoralis Major, Clavicular Head", latin:"pars clavicularis m. pectoralis majoris", region:"shoulder", system:"muscular", layer:1,
+ inherits:"shoulder-pec-major",
+ action:"The upper fibres, from the collarbone.",
+ clinical:"Reached with the elbow below shoulder height — the lowest of the three doorway positions.",
+ ex:["Doorway Pec Stretch"]},
+
+{id:"shoulder-pec-sternocostal", name:"Pectoralis Major, Sternocostal Head", latin:"pars sternocostalis m. pectoralis majoris", region:"shoulder", system:"muscular", layer:1,
+ inherits:"shoulder-pec-major",
+ action:"The bulk of the muscle, from the breastbone and rib cartilages.",
+ clinical:"What most people mean by pec. Reached with the elbow at shoulder height.",
+ ex:["Doorway Pec Stretch","Push-Up Plus"]},
+
+{id:"shoulder-pec-abdominal", name:"Pectoralis Major, Abdominal Part", latin:"pars abdominalis m. pectoralis majoris", region:"shoulder", system:"muscular", layer:1,
+ inherits:"shoulder-pec-major",
+ action:"The lowest fibres, from the abdominal fascia.",
+ clinical:"Smallest and most often missed. Reached only with the elbow above shoulder height — which is why one doorway position leaves part of the muscle untouched.",
+ ex:["Doorway Pec Stretch","Kneeling Lat Stretch"]},
 
 {id:"shoulder-pec-minor", name:"Pectoralis Minor", latin:"m. pectoralis minor", region:"shoulder", system:"muscular", layer:2,
  action:"Pulls the shoulder blade forward and down over the ribs.",
@@ -2700,6 +2777,7 @@ const ANATOMY = [
  ex:["Push-Up Plus","Serratus Wall Slide","Wall Plank Protraction Hold","Quadruped Protraction Rock"]},
 
 {id:"shoulder-biceps-long-head", name:"Biceps Long Head", latin:"caput longum m. bicipitis brachii", region:"shoulder", system:"muscular", layer:2,
+ inherits:"elbow-biceps",
  action:"Runs through the shoulder joint in a groove at the front of the humerus.",
  clinical:"Pain at the front of the shoulder in overhead athletes often traces here rather than to the cuff. Provoked by resisted forward reach.",
  ex:["Doorframe Isometrics","Side-lying External Rotation","Prone Extension Reach","Dowel-Assisted External Rotation"]},
@@ -2787,10 +2865,34 @@ const ANATOMY = [
  clinical:"The strongest forearm supinator. Loss of full elbow straightening after injury is often biceps guarding rather than a joint block.",
  ex:["Elbow Flexion and Extension","Elbow Extension Hold","Forearm Rotation","Hammer Rotation"]},
 
+{id:"elbow-biceps-short", name:"Biceps, Short Head", latin:"caput breve m. bicipitis brachii", region:"elbow-wrist", alsoRegion:"shoulder", system:"muscular", layer:1,
+ inherits:"elbow-biceps",
+ action:"Arises from the coracoid alongside coracobrachialis.",
+ clinical:"Unlike the long head it does not pass through the joint, so it is not a source of front-of-shoulder pain. That is the point of separating them.",
+ ex:["Doorway Pec Stretch","Elbow Flexion and Extension"]},
+
 {id:"elbow-triceps", name:"Triceps Brachii", latin:"m. triceps brachii", region:"elbow-wrist", system:"muscular", layer:1,
  action:"Straightens the elbow; its long head also crosses the shoulder.",
  clinical:"Because the long head crosses both joints, a tight triceps limits overhead reach as well as elbow bend.",
  ex:["Elbow Flexion and Extension","Kneeling Lat Stretch","Half-Kneeling Overhead Reach","Landmine Press"]},
+
+{id:"elbow-triceps-long", name:"Triceps, Long Head", latin:"caput longum m. tricipitis brachii", region:"elbow-wrist", alsoRegion:"shoulder", system:"muscular", layer:1,
+ inherits:"elbow-triceps",
+ action:"Arises from the scapula, crossing both shoulder and elbow.",
+ clinical:"The only head crossing the shoulder, so it limits overhead reach when tight and must be tested with the arm overhead.",
+ ex:["Kneeling Lat Stretch","Half-Kneeling Overhead Reach"]},
+
+{id:"elbow-triceps-lateral", name:"Triceps, Lateral Head", latin:"caput laterale m. tricipitis brachii", region:"elbow-wrist", system:"muscular", layer:1,
+ inherits:"elbow-triceps",
+ action:"The outer head, from the humerus above the radial groove.",
+ clinical:"Most visible and strongest in extension. Sits directly over the radial nerve's spiral course.",
+ ex:["Elbow Flexion and Extension"]},
+
+{id:"elbow-triceps-medial", name:"Triceps, Medial Head", latin:"caput mediale m. tricipitis brachii", region:"elbow-wrist", system:"muscular", layer:2,
+ inherits:"elbow-triceps",
+ action:"The deep head, beneath the other two.",
+ clinical:"Active through every degree of extension where the others assist at higher loads. The workhorse, and unpalpable through the others.",
+ ex:["Elbow Extension Hold","Elbow Flexion and Extension"]},
 
 {id:"elbow-brachioradialis", name:"Brachioradialis", latin:"m. brachioradialis", region:"elbow-wrist", system:"muscular", layer:1,
  action:"Bends the elbow, strongest with the thumb pointing up.",
@@ -2801,6 +2903,18 @@ const ANATOMY = [
  action:"Turns the palm downward.",
  clinical:"The median nerve passes between its two heads — a compression site that mimics carpal tunnel but with forearm symptoms too.",
  ex:["Forearm Rotation","Median Nerve Slider","Hammer Rotation","Wrist Flexor Stretch"]},
+
+{id:"elbow-pronator-teres-humeral", name:"Pronator Teres, Humeral Head", latin:"caput humerale m. pronatoris teretis", region:"elbow-wrist", system:"muscular", layer:1,
+ inherits:"elbow-pronator-teres",
+ action:"The larger superficial head, from the medial epicondyle.",
+ clinical:"The median nerve passes between this and the deep head — the compression in pronator syndrome.",
+ ex:["Median Nerve Slider","Forearm Rotation"]},
+
+{id:"elbow-pronator-teres-ulnar", name:"Pronator Teres, Ulnar Head", latin:"caput ulnare m. pronatoris teretis", region:"elbow-wrist", system:"muscular", layer:2,
+ inherits:"elbow-pronator-teres",
+ action:"The smaller deep head, from the coronoid process.",
+ clinical:"Forms the deep wall of the median nerve's passage. Absent in a small number of people.",
+ ex:["Median Nerve Slider"]},
 
 {id:"elbow-carpal-tunnel", name:"Carpal Tunnel", latin:"canalis carpi", region:"elbow-wrist", system:"fascial", layer:2,
  action:"Passage at the front of the wrist carrying the median nerve and finger flexor tendons.",
@@ -2832,6 +2946,18 @@ const ANATOMY = [
  clinical:"The ulnar nerve runs between its two heads at the elbow, so a tight or overworked FCU is a genuine compression site. Treating the elbow flexor mass matters as much as treating the nerve.",
  ex:["Ulnar Nerve Slider"]},
 
+{id:"elbow-wrist-fcu-humeral", name:"Flexor Carpi Ulnaris, Humeral Head", latin:"caput humerale m. flexoris carpi ulnaris", region:"elbow-wrist", system:"muscular", layer:1,
+ inherits:"elbow-wrist-fcu",
+ action:"From the medial epicondyle, part of the common flexor origin.",
+ clinical:"The ulnar nerve enters the forearm between this and the ulnar head. That arch is the cubital tunnel's distal edge.",
+ ex:["Ulnar Nerve Slider"]},
+
+{id:"elbow-wrist-fcu-ulnar", name:"Flexor Carpi Ulnaris, Ulnar Head", latin:"caput ulnare m. flexoris carpi ulnaris", region:"elbow-wrist", system:"muscular", layer:2,
+ inherits:"elbow-wrist-fcu",
+ action:"From the olecranon and the border of the ulna.",
+ clinical:"The other wall of the nerve's entry. Tightness narrows the tunnel with elbow flexion.",
+ ex:["Ulnar Nerve Slider","Elbow Extension Hold"]},
+
 {id:"elbow-wrist-palmaris-longus", name:"Palmaris Longus", latin:"m. palmaris longus", region:"elbow-wrist", system:"muscular", layer:1,
  inherits:"elbow-wrist-flexors",
  action:"A thin muscle running to the palm, tensioning the palmar fascia.",
@@ -2843,6 +2969,18 @@ const ANATOMY = [
  action:"Bends the middle joint of the fingers.",
  clinical:"Each finger carries two flexor tendons; this is the superficial one and it splits to let the deep tendon pass through. That crossing point is where trigger finger catches.",
  ex:["Tendon Glides","Intrinsic Plus Hold"]},
+
+{id:"elbow-wrist-fds-humeroulnar", name:"Flexor Digitorum Superficialis, Humero-ulnar Head", latin:"caput humero-ulnare m. flexoris digitorum superficialis", region:"elbow-wrist", system:"muscular", layer:2,
+ inherits:"elbow-wrist-fds",
+ action:"The larger head, from the medial epicondyle and coronoid process.",
+ clinical:"With the radial head it forms a fibrous arch the median nerve passes under — a further compression site distal to pronator teres.",
+ ex:["Median Nerve Slider","Tendon Glides"]},
+
+{id:"elbow-wrist-fds-radial", name:"Flexor Digitorum Superficialis, Radial Head", latin:"caput radiale m. flexoris digitorum superficialis", region:"elbow-wrist", system:"muscular", layer:2,
+ inherits:"elbow-wrist-fds",
+ action:"The smaller head, from the anterior border of the radius.",
+ clinical:"Completes the arch over the median nerve. The two heads together define that passage.",
+ ex:["Median Nerve Slider","Grip Squeeze"]},
 
 {id:"elbow-wrist-fdp", name:"Flexor Digitorum Profundus", latin:"m. flexor digitorum profundus", region:"elbow-wrist", system:"muscular", layer:2,
  inherits:"elbow-wrist-flexors",
@@ -2887,6 +3025,18 @@ const ANATOMY = [
  action:"Straightens the wrist and tilts the hand toward the little-finger side.",
  clinical:"Its tendon sits in a groove that can snap in and out as the forearm rotates — a painful click on the little-finger side of the wrist with supination. Common in racquet sports and a frequent cause of ulnar wrist pain.",
  ex:["Wrist Extensor Isometric","Forearm Rotation","Radial and Ulnar Deviation","Wrist Circles"]},
+
+{id:"elbow-wrist-ecu-humeral", name:"Extensor Carpi Ulnaris, Humeral Head", latin:"caput humerale m. extensoris carpi ulnaris", region:"elbow-wrist", system:"muscular", layer:1,
+ inherits:"elbow-wrist-ecu",
+ action:"From the lateral epicondyle, part of the common extensor origin.",
+ clinical:"Contributes to lateral elbow pain alongside the more commonly blamed ECRB.",
+ ex:["Wrist Extensor Isometric"]},
+
+{id:"elbow-wrist-ecu-ulnar", name:"Extensor Carpi Ulnaris, Ulnar Head", latin:"caput ulnare m. extensoris carpi ulnaris", region:"elbow-wrist", system:"muscular", layer:2,
+ inherits:"elbow-wrist-ecu",
+ action:"From the posterior border of the ulna.",
+ clinical:"Its tendon runs in the groove where subluxation produces the painful click on the little-finger side of the wrist.",
+ ex:["Forearm Rotation","Radial and Ulnar Deviation"]},
 
 {id:"elbow-wrist-ei", name:"Extensor Indicis", latin:"m. extensor indicis", region:"elbow-wrist", system:"muscular", layer:2,
  action:"Independently straightens the index finger.",
@@ -3541,6 +3691,18 @@ const ANATOMY = [
  clinical:"Because it crosses the knee, it must be tested with the knee straight. Restriction here caps ankle bending and pushes the problem up to the knee and hip.",
  ex:["Calf Stretch, Knee Straight","Calf Raise","Eccentric Heel Drop","Knee-to-Wall Dorsiflexion"]},
 
+{id:"ankle-gastroc-medial", name:"Gastrocnemius, Medial Head", latin:"caput mediale m. gastrocnemii", region:"ankle-foot", alsoRegion:"knee", system:"muscular", layer:1,
+ inherits:"ankle-gastrocnemius",
+ action:"The larger inner head, from the medial femoral condyle.",
+ clinical:"Where tennis leg happens — a sudden tear at the musculotendinous junction, felt as a blow to the calf. Larger and more often injured than the lateral.",
+ ex:["Calf Stretch, Knee Straight","Eccentric Heel Drop"]},
+
+{id:"ankle-gastroc-lateral", name:"Gastrocnemius, Lateral Head", latin:"caput laterale m. gastrocnemii", region:"ankle-foot", alsoRegion:"knee", system:"muscular", layer:1,
+ inherits:"ankle-gastrocnemius",
+ action:"The smaller outer head, from the lateral femoral condyle.",
+ clinical:"Sits over the popliteal artery, which matters in the rare popliteal entrapment presentation in young athletes.",
+ ex:["Calf Stretch, Knee Straight","Calf Raise"]},
+
 {id:"ankle-soleus", name:"Soleus", latin:"m. soleus", region:"ankle-foot", system:"muscular", layer:2,
  action:"The deep calf, lying under gastrocnemius and not crossing the knee.",
  clinical:"The real workhorse of walking and standing, and it limits ankle bending more than the upper calf does. Almost never trained directly — the seated calf raise is how you reach it.",
@@ -3689,6 +3851,229 @@ const ANATOMY = [
  action:"A funnel-shaped space on the outside of the foot between the heel bone and the talus.",
  clinical:"Persistent tenderness in the soft dimple in front of the outer ankle bone after a sprain, worse on uneven ground. Dense with position sensors, which is part of why balance is disrupted long after a sprain has stopped hurting.",
  ex:["Subtalar Inversion and Eversion","Heel Bone Mobilization","Foot Tripod Balance","Single Leg Balance Progression"]},
+
+/* ---- Ligaments and membranes ----
+   Filed here rather than under each region because they are the passive
+   restraints as a class: what fails, what buckles, and what a nerve passes
+   under. Each still carries its own region, so the Anatomy filter and the
+   3D viewer put it where a hand would look for it. Layering follows the
+   tissue rather than the name — retinacula and membranes sit at 2, deep
+   capsular ligaments at 3. */
+{id:"spine-all", name:"Anterior Longitudinal Ligament", latin:"lig. longitudinale anterius", region:"lumbar", alsoRegion:["thoracic","cervical"], system:"articular", layer:3,
+ action:"A broad band down the front of the vertebral bodies, the full length of the spine.",
+ clinical:"The main passive brake on extension. Injured in hyperextension and in whiplash, and it is why an extension-based programme needs a screen first.",
+ ex:["Prone Press-Up","Dead Bug","Pelvic Tilts"]},
+
+{id:"spine-pll", name:"Posterior Longitudinal Ligament", latin:"lig. longitudinale posterius", region:"lumbar", alsoRegion:["thoracic","cervical"], system:"articular", layer:3,
+ action:"Runs down the back of the vertebral bodies, inside the spinal canal.",
+ clinical:"Narrows as it descends, leaving the lower lumbar discs least supported posterolaterally. That is precisely where herniations go, and why they press on the nerve root rather than straight back.",
+ ex:["Prone Press-Up","Dead Bug","Bird Dog"]},
+
+{id:"spine-ligamentum-flavum", name:"Ligamentum Flavum", latin:"ligamenta flava", region:"lumbar", alsoRegion:["thoracic","cervical"], system:"articular", layer:3,
+ action:"Elastic bands joining adjacent vertebral arches, forming the back wall of the canal.",
+ clinical:"The most elastic tissue in the body, and it thickens and buckles inward with age. A major contributor to spinal stenosis, which is why those patients feel better bent forward.",
+ ex:["Quadruped Rock Back","Child's Pose Lateral Reach","Dead Bug"]},
+
+{id:"spine-supraspinous", name:"Supraspinous Ligament", latin:"lig. supraspinale", region:"lumbar", alsoRegion:"thoracic", system:"articular", layer:2,
+ action:"Runs along the tips of the spinous processes.",
+ clinical:"Directly palpable in the midline furrow. Tenderness on the tips rather than either side points here rather than at the facets.",
+ ex:["Cat-Cow","Quadruped Rock Back","Segmental Bridge"]},
+
+{id:"spine-interspinous", name:"Interspinous Ligaments", latin:"ligg. interspinalia", region:"lumbar", alsoRegion:"thoracic", system:"articular", layer:3,
+ action:"Fill the gaps between adjacent spinous processes.",
+ clinical:"Loaded in flexion. A recognised source of midline low back pain in people who sit or bend for long periods.",
+ ex:["Prone Press-Up","Segmental Bridge","Bird Dog"]},
+
+{id:"cervical-nuchal-ligament", name:"Nuchal Ligament", latin:"lig. nuchae", region:"cervical", system:"articular", layer:2,
+ action:"The upward continuation of the supraspinous ligament, a sheet from the skull to C7.",
+ clinical:"Trapezius, rhomboid minor and splenius all attach to it, so it is a shared anchor rather than a passive band. Palpable as the firm midline ridge at the back of the neck.",
+ ex:["Chin Nod","Sub-occipital Stretch","Axial Elongation"]},
+
+{id:"thoracic-costotransverse", name:"Costotransverse Ligaments", latin:"ligg. costotransversaria", region:"thoracic", system:"articular", layer:3,
+ action:"Bind each rib to the transverse process of its vertebra.",
+ clinical:"Short and strong, so rib movement at this joint is small. Sharp mid-back pain that catches on a deep breath frequently sits here.",
+ ex:["Rib Roll Breathing","Open Book","Foam Roller Thoracic Extension"]},
+
+{id:"shoulder-coracoacromial", name:"Coraco-acromial Ligament", latin:"lig. coracoacromiale", region:"shoulder", system:"articular", layer:3,
+ action:"Spans the coracoid to the acromion, completing the arch over the shoulder joint.",
+ clinical:"Forms the roof of the subacromial space with the acromion. The cuff passes beneath it, so this ligament defines the space impingement happens in.",
+ ex:["Full Can Raise","Side-lying External Rotation","Prone Trap Raise"]},
+
+{id:"shoulder-acromioclavicular-lig", name:"Acromioclavicular Ligament", latin:"lig. acromioclaviculare", region:"shoulder", system:"articular", layer:3,
+ action:"Reinforces the top of the joint between collarbone and acromion.",
+ clinical:"The first structure to fail in a fall onto the point of the shoulder. Isolated injury gives tenderness without a step deformity.",
+ ex:["Scapular Circles","Cross-Body Stretch","Band Pull-Apart"]},
+
+{id:"shoulder-coracoclavicular", name:"Coracoclavicular Ligament", latin:"ligg. conoideum et trapezoideum", region:"shoulder", system:"articular", layer:3,
+ action:"Two bands — conoid and trapezoid — slinging the collarbone to the coracoid.",
+ clinical:"What actually suspends the arm from the collarbone. Its rupture is what produces the visible step of a higher-grade separation, not the AC ligament alone.",
+ ex:["Scapular Circles","Prone Trap Raise","Band Pull-Apart"]},
+
+{id:"shoulder-transverse-humeral", name:"Transverse Humeral Ligament", latin:"lig. transversum humeri", region:"shoulder", system:"articular", layer:3,
+ action:"Bridges the two tubercles, roofing the bicipital groove.",
+ clinical:"Holds the long head of biceps in its groove. When it fails the tendon subluxes, producing a painful snap with rotation.",
+ ex:["Shoulder CARs","Side-lying External Rotation","Supine 90/90 Rotation Arcs"]},
+
+{id:"shoulder-sternoclavicular-lig", name:"Sternoclavicular Ligaments", latin:"ligg. sternoclavicularia", region:"shoulder", system:"articular", layer:3,
+ action:"Anterior and posterior bands plus the interclavicular band across the top.",
+ clinical:"This joint almost never dislocates because of them. Anterior chest pain reproduced by pressing here is joint, not cardiac.",
+ ex:["Scapular Circles","Band Pull-Apart","Doorway Pec Stretch"]},
+
+{id:"shoulder-costoclavicular", name:"Costoclavicular Ligament", latin:"lig. costoclaviculare", region:"shoulder", system:"articular", layer:3,
+ action:"Binds the collarbone down to the first rib.",
+ clinical:"Defines the costoclavicular space the nerve bundle passes through. A depressed shoulder narrows it — the reason a heavy bag reproduces arm symptoms.",
+ ex:["First Rib Self-Mobilization","Brachial Plexus Opener","Prone Trap Raise"]},
+
+{id:"shoulder-transverse-scapular", name:"Superior Transverse Scapular Ligament", latin:"lig. transversum scapulae superius", region:"shoulder", system:"articular", layer:3,
+ action:"Bridges the notch at the top of the scapula, turning it into a foramen.",
+ clinical:"The suprascapular nerve passes under it while the vessels pass over. That makes this small ligament the roof of the first suprascapular entrapment site.",
+ ex:["Side-lying External Rotation","Cross-Body Stretch","Full Can Raise"]},
+
+{id:"elbow-ucl", name:"Ulnar Collateral Ligament of the Elbow", latin:"lig. collaterale ulnare", region:"elbow-wrist", system:"articular", layer:3,
+ action:"A triangular band on the inner elbow resisting valgus force.",
+ clinical:"The Tommy John ligament. Its anterior band takes the load of a throw, and repetitive valgus stress is what fails it. Medial elbow pain in a thrower is this until proven otherwise.",
+ ex:["Wrist Flexor Isometric","Elbow Extension Hold","Grip Squeeze"]},
+
+{id:"elbow-rcl", name:"Radial Collateral Ligament of the Elbow", latin:"lig. collaterale radiale", region:"elbow-wrist", system:"articular", layer:3,
+ action:"Fans from the lateral epicondyle to the annular ligament, resisting varus force.",
+ clinical:"Its posterolateral portion resists rotatory instability. Injured in elbow dislocation, and blends with the common extensor origin — which is why tennis elbow and ligament pain overlap.",
+ ex:["Wrist Extensor Isometric","Elbow Flexion and Extension"]},
+
+{id:"hip-ligamentum-teres", name:"Ligament of the Head of the Femur", latin:"lig. capitis femoris", region:"hip", system:"articular", layer:3,
+ action:"Runs from the acetabular notch to a pit on the femoral head, carrying a small artery.",
+ clinical:"Contributes little to stability in adults but its artery matters in children. Tears are a recognised cause of deep hip pain and clicking in dancers and gymnasts.",
+ ex:["Hip CARs (Controlled Rotations)","Banded Hip Distraction","90/90 Hip Switch"]},
+
+{id:"hip-obturator-membrane", name:"Obturator Membrane", latin:"membrana obturatoria", region:"lumbar", alsoRegion:"hip", system:"fascial", layer:2,
+ action:"Closes the large hole in the front of the pelvis, leaving a small canal at the top.",
+ clinical:"The obturator nerve and vessels pass through that canal. It is where obturator nerve entrapment produces exercise-related groin pain.",
+ ex:["Obturator Nerve Slider","Adductor Rock Back","Frog Rock"]},
+
+{id:"knee-oblique-popliteal", name:"Oblique Popliteal Ligament", latin:"lig. popliteum obliquum", region:"knee", system:"articular", layer:3,
+ action:"An expansion of the semimembranosus tendon crossing the back of the knee.",
+ clinical:"The main restraint against hyperextension. Tenderness deep in the popliteal fossa with pain on forced straightening points here.",
+ ex:["Hamstring Bridge","Prone Hang","Hamstring Stretch"]},
+
+{id:"knee-arcuate-popliteal", name:"Arcuate Popliteal Ligament", latin:"lig. popliteum arcuatum", region:"knee", system:"articular", layer:3,
+ action:"Arches over popliteus at the back-outer corner of the knee.",
+ clinical:"Part of the posterolateral corner. Injury there is easily missed and, left untreated, is the commonest reason a cruciate reconstruction fails.",
+ ex:["Shin Rotation","Single Leg Balance Progression","Hamstring Bridge"]},
+
+{id:"knee-popliteofibular", name:"Popliteofibular Ligament", latin:"lig. popliteofibulare", region:"knee", system:"articular", layer:3,
+ action:"Runs from the popliteus tendon to the fibular head.",
+ clinical:"With the arcuate ligament and LCL it forms the posterolateral corner. Combined external rotation and varus laxity is the pattern.",
+ ex:["Shin Rotation","Knee CARs","Single Leg Balance Progression"]},
+
+{id:"knee-transverse-ligament", name:"Transverse Ligament of the Knee", latin:"lig. transversum genus", region:"knee", system:"articular", layer:3,
+ action:"Joins the front horns of the two menisci.",
+ clinical:"Links their movement, so the menisci translate together during bending. Occasionally mistaken for a tear on imaging where it meets the meniscus.",
+ ex:["Heel Slides","Knee CARs","Quad Set"]},
+
+{id:"knee-interosseous-membrane-leg", name:"Interosseous Membrane of the Leg", latin:"membrana interossea cruris", region:"knee", alsoRegion:"ankle-foot", system:"fascial", layer:2,
+ action:"A fibrous sheet between tibia and fibula along their length.",
+ clinical:"Transfers load between the two bones and separates the front and back compartments. Its upper opening carries the anterior tibial vessels — relevant in anterior compartment syndrome.",
+ ex:["Knee-to-Wall Dorsiflexion","Shin Rotation","Band Dorsiflexion"]},
+
+{id:"ankle-long-plantar", name:"Long Plantar Ligament", latin:"lig. plantare longum", region:"ankle-foot", system:"articular", layer:3,
+ action:"The longest ligament in the foot, from the heel bone forward to the metatarsal bases.",
+ clinical:"The deepest passive support of the lateral arch, and it forms a tunnel for the fibularis longus tendon. Relevant in lateral midfoot pain that plantar fascia work does not touch.",
+ ex:["Short Foot","Plantar Ball Roll","Foot Tripod Balance"]},
+
+{id:"ankle-fibular-retinacula", name:"Fibular Retinacula", latin:"retinacula mm. fibularium", region:"ankle-foot", system:"fascial", layer:2,
+ action:"Bands holding the fibularis tendons behind and below the outer ankle.",
+ clinical:"When the superior band fails the tendons snap forward over the bone — a painful click on the outside of the ankle, often after a sprain and frequently misdiagnosed as instability.",
+ ex:["Band Eversion","Ankle CARs","Foot Tripod Balance"]},
+
+{id:"ankle-transverse-metatarsal", name:"Deep Transverse Metatarsal Ligament", latin:"lig. metatarsale transversum profundum", region:"ankle-foot", system:"articular", layer:3,
+ action:"Joins the heads of the metatarsals across the front of the foot.",
+ clinical:"The digital nerves pass beneath it. Compression there is Morton's neuroma — burning between the third and fourth toes, eased by removing the shoe.",
+ ex:["Toe Splay","Short Foot","Big Toe Extension Mobilization"]},
+
+{id:"ankle-intersesamoid", name:"Intersesamoid Ligament", latin:"lig. intersesamoideum", region:"ankle-foot", system:"articular", layer:3,
+ action:"Joins the two small bones beneath the big toe joint.",
+ clinical:"Part of the plantar plate complex. Turf toe is a tear of this complex from forced big toe extension, and it needs protection from that range rather than mobilisation into it.",
+ ex:["Big Toe Extension Mobilization","Toe Yoga","Short Foot"]},
+
+{id:"head-jaw-lateral-tmj-lig", name:"Lateral Temporomandibular Ligament", latin:"lig. laterale", region:"head-jaw", system:"articular", layer:3,
+ action:"Thickened capsule on the outer side of the jaw joint.",
+ clinical:"The only true ligament of the TMJ, and the main brake on the jaw dropping backward and down. It is what limits opening range when the joint is guarded.",
+ ex:["Tongue-Up Jaw Opening","Controlled Opening in a Mirror","Passive Opening Stretch"]},
+
+{id:"head-jaw-sphenomandibular", name:"Sphenomandibular Ligament", latin:"lig. sphenomandibulare", region:"head-jaw", system:"articular", layer:3,
+ action:"Runs from the sphenoid bone to the inner surface of the mandible.",
+ clinical:"Acts as a swinging hinge for the jaw. Considered a passive restraint rather than a treatment target, but it explains why the mandible arcs as it does on opening.",
+ ex:["Controlled Opening in a Mirror","Jaw CARs"]},
+
+{id:"head-jaw-stylohyoid-lig", name:"Stylohyoid Ligament", latin:"lig. stylohyoideum", region:"head-jaw", system:"articular", layer:3,
+ action:"From the styloid process behind the ear down to the hyoid bone.",
+ clinical:"Can calcify with age. When it does, turning the head produces throat or ear pain — Eagle syndrome, rare but real, and worth knowing before treating it as muscular.",
+ ex:["Under-Chin Stretch","Chin Tuck with Jaw Rest","Neck Rotation"]},
+
+/* ---- Fasciae ----
+   The named investing sheets. Every one of these wears the exporter's Fascia
+   material, which is what the viewer's Fascia toggle is keyed on, so this
+   batch is what turns that toggle from anonymous geometry into something
+   selectable. Thoracolumbar fascia, the plantar and palmar aponeuroses and
+   the iliotibial tract are fasciae too and sit with their regions above. */
+{id:"fascia-deltoid", name:"Deltoid Fascia", latin:"fascia deltoidea", region:"shoulder", system:"fascial", layer:1,
+ action:"Invests the deltoid, continuous with the pectoral fascia in front and the infraspinatus fascia behind.",
+ clinical:"Sends septa between the three parts of the deltoid, which is part of why they can act independently.",
+ ex:["Shoulder CARs","Cross-Body Stretch"]},
+
+{id:"fascia-pectoral", name:"Pectoral Fascia", latin:"fascia pectoralis", region:"shoulder", system:"fascial", layer:1,
+ action:"Covers pectoralis major and continues into the axilla.",
+ clinical:"Continuous with the deltoid fascia laterally and the abdominal fascia below — one reason chest tightness and abdominal bracing patterns travel together.",
+ ex:["Doorway Pec Stretch","Push-Up Plus"]},
+
+{id:"fascia-clavipectoral", name:"Clavipectoral Fascia", latin:"fascia clavipectoralis", region:"shoulder", system:"fascial", layer:2,
+ action:"A deep sheet from the collarbone enclosing subclavius and pectoralis minor.",
+ clinical:"The nerve bundle passes behind it. A short pectoralis minor tightens this sheet, which is a mechanism for arm symptoms independent of the muscle itself.",
+ ex:["Doorway Pec Stretch","Brachial Plexus Opener","Wall Plank Protraction Hold"]},
+
+{id:"fascia-brachial", name:"Brachial Fascia", latin:"fascia brachii", region:"elbow-wrist", alsoRegion:"shoulder", system:"fascial", layer:1,
+ action:"Sleeves the upper arm and sends septa dividing front from back compartments.",
+ clinical:"Those septa are where the radial and ulnar nerves cross between compartments — fixed points at which a nerve can be tethered.",
+ ex:["Radial Nerve Slider","Elbow Flexion and Extension"]},
+
+{id:"fascia-antebrachial", name:"Antebrachial Fascia", latin:"fascia antebrachii", region:"elbow-wrist", system:"fascial", layer:1,
+ action:"Sleeves the forearm, thickening at the wrist into the retinacula.",
+ clinical:"Its thickening forms the roof of the carpal tunnel, so forearm fascia and carpal tunnel are one continuous structure rather than two.",
+ ex:["Median Nerve Slider","Wrist Flexor Stretch","Prayer and Reverse Prayer"]},
+
+{id:"fascia-lata", name:"Fascia Lata", latin:"fascia lata", region:"hip", alsoRegion:"knee", system:"fascial", layer:1,
+ action:"The fascial sleeve of the thigh, thickened laterally into the iliotibial tract.",
+ clinical:"Gluteus maximus and TFL both insert into it, so it is how those muscles act on the knee at all. Treating the IT band without them is treating the rope, not the pull.",
+ ex:["Lateral Thigh Roll","Standing Banded Abduction","Half-Kneeling Hip Flexor Series"]},
+
+{id:"fascia-crural", name:"Crural Fascia", latin:"fascia cruris", region:"ankle-foot", alsoRegion:"knee", system:"fascial", layer:1,
+ action:"Sleeves the lower leg and divides it into four compartments.",
+ clinical:"It does not stretch, which is why swelling inside a compartment raises pressure rather than expanding. The anatomical basis of compartment syndrome.",
+ ex:["Calf Stretch, Knee Bent","Band Dorsiflexion","Ankle CARs"]},
+
+{id:"fascia-popliteal", name:"Popliteal Fascia", latin:"fascia poplitea", region:"knee", system:"fascial", layer:1,
+ action:"Roofs the diamond-shaped hollow behind the knee.",
+ clinical:"A Baker's cyst pushes against it, which is why the swelling is felt as firm and localised rather than diffuse.",
+ ex:["Hamstring Stretch","Prone Hang","Calf Stretch, Knee Bent"]},
+
+{id:"fascia-masseteric", name:"Masseteric Fascia", latin:"fascia masseterica", region:"head-jaw", system:"fascial", layer:1,
+ action:"Covers masseter, continuous with the fascia over temporalis above.",
+ clinical:"Continuity with the temporal fascia is one route by which jaw tension and temple headache travel together.",
+ ex:["Masseter Self-Release","Temporalis Self-Release"]},
+
+{id:"fascia-temporal", name:"Temporal Fascia", latin:"fascia temporalis", region:"head-jaw", system:"fascial", layer:1,
+ action:"A tough sheet over temporalis, from the temporal line down to the zygomatic arch.",
+ clinical:"Dense and unyielding, so temporalis has no room to swell. Part of why the muscle refers so readily into the temple.",
+ ex:["Temporalis Self-Release","Scalp and Forehead Release"]},
+
+{id:"fascia-transversalis", name:"Transversalis Fascia", latin:"fascia transversalis", region:"lumbar", system:"fascial", layer:2,
+ action:"Lines the inner surface of the abdominal wall, deep to transversus abdominis.",
+ clinical:"Forms the deep ring of the inguinal canal. Its weakness is the anatomical basis of a direct inguinal hernia.",
+ ex:["Dead Bug","Pelvic Tilts","Bird Dog"]},
+
+{id:"fascia-iliopsoas", name:"Iliopsoas Fascia", latin:"fascia iliopsoatica", region:"lumbar", alsoRegion:"hip", system:"fascial", layer:2,
+ action:"Envelops psoas and iliacus from the lumbar spine to the lesser trochanter.",
+ clinical:"The femoral nerve runs within it. A tight or thickened sheath is one explanation for anterior thigh symptoms with a normal-looking hip.",
+ ex:["Femoral Nerve Slider","Half-Kneeling Hip Flexor Series","Dead Bug"]},
 
 /* ---- Bones and joints ---- */
 /* Lower priority for prescription, higher for explaining something to a patient
@@ -6545,18 +6930,19 @@ const V3_HAS_GEOMETRY = new Set([
   "elbow-carpal-tunnel", "elbow-first-compartment", "elbow-joint", "elbow-wrist-fcr",
   "elbow-wrist-fcu", "elbow-wrist-palmaris-longus", "elbow-wrist-fds", "elbow-wrist-fdp",
   "elbow-wrist-fpl", "elbow-wrist-pronator-quadratus", "elbow-wrist-brachialis",
-  "elbow-wrist-ecrl", "elbow-wrist-ed", "elbow-wrist-edm", "elbow-wrist-ecu", "elbow-wrist-ei",
-  "elbow-wrist-epl", "elbow-wrist-anconeus", "elbow-wrist-supinator", "elbow-wrist-thenar",
-  "elbow-wrist-hypothenar", "elbow-wrist-adductor-pollicis", "elbow-wrist-lumbricals",
-  "elbow-wrist-interossei", "elbow-wrist-proximal-ru-joint", "elbow-wrist-distal-ru-joint",
-  "elbow-wrist-interosseous-membrane", "elbow-wrist-flexor-retinaculum",
-  "elbow-wrist-extensor-retinaculum", "elbow-wrist-palmar-aponeurosis", "elbow-wrist-joint",
-  "thoracic-multifidus", "thoracic-costovertebral", "thoracic-ribs", "thoracic-diaphragm",
-  "thoracic-intercostals", "thoracic-vertebrae", "thoracic-serratus-posterior",
-  "thoracic-serratus-post-superior", "thoracic-serratus-post-inferior", "thoracic-sternum",
-  "thoracic-costal-cartilage", "lumbar-multifidus", "lumbar-ql", "lumbar-psoas", "lumbar-tva",
-  "lumbar-obliques", "lumbar-rectus-abdominis", "lumbar-tl-fascia", "lumbar-discs",
-  "lumbar-sij", "lumbar-pelvic-floor", "lumbar-external-oblique", "lumbar-internal-oblique",
+  "elbow-wrist-ecrl", "elbow-wrist-ed", "elbow-wrist-edm", "elbow-wrist-ecu",
+  "elbow-wrist-ei", "elbow-wrist-epl", "elbow-wrist-anconeus", "elbow-wrist-supinator",
+  "elbow-wrist-thenar", "elbow-wrist-hypothenar", "elbow-wrist-adductor-pollicis",
+  "elbow-wrist-lumbricals", "elbow-wrist-interossei", "elbow-wrist-proximal-ru-joint",
+  "elbow-wrist-distal-ru-joint", "elbow-wrist-interosseous-membrane",
+  "elbow-wrist-flexor-retinaculum", "elbow-wrist-extensor-retinaculum",
+  "elbow-wrist-palmar-aponeurosis", "elbow-wrist-joint", "thoracic-multifidus",
+  "thoracic-costovertebral", "thoracic-ribs", "thoracic-diaphragm", "thoracic-intercostals",
+  "thoracic-vertebrae", "thoracic-serratus-posterior", "thoracic-serratus-post-superior",
+  "thoracic-serratus-post-inferior", "thoracic-sternum", "thoracic-costal-cartilage",
+  "lumbar-multifidus", "lumbar-ql", "lumbar-psoas", "lumbar-tva", "lumbar-obliques",
+  "lumbar-rectus-abdominis", "lumbar-tl-fascia", "lumbar-discs", "lumbar-sij",
+  "lumbar-pelvic-floor", "lumbar-external-oblique", "lumbar-internal-oblique",
   "lumbar-linea-alba", "lumbar-iliolumbar-ligament", "spine-erector-spinae",
   "spine-iliocostalis", "spine-longissimus", "spine-spinalis", "spine-iliocostalis-lumborum",
   "spine-iliocostalis-thoracis", "spine-iliocostalis-cervicis", "spine-longissimus-thoracis",
@@ -6586,27 +6972,76 @@ const V3_HAS_GEOMETRY = new Set([
   "ankle-edl", "ankle-fibularis-tertius", "ankle-edb", "ankle-deltoid-ligament",
   "ankle-spring-ligament", "ankle-tarsal-tunnel", "ankle-extensor-retinaculum",
   "ankle-sinus-tarsi", "bone-cranium", "bone-clavicle", "bone-humerus", "bone-radius",
-  "bone-ulna", "bone-carpals", "bone-hand", "bone-hip-bone", "bone-sacrum-coccyx", "bone-femur",
-  "bone-tibia", "bone-fibula", "bone-tarsals", "bone-foot", "joint-sternocostal",
-  "joint-sacrococcygeal", "joint-intercarpal", "joint-hand-joints", "joint-mtp",
-  "lm-mastoid-process", "lm-occipital-protuberance", "lm-superior-nuchal-line",
+  "bone-ulna", "bone-carpals", "bone-hand", "bone-hip-bone", "bone-sacrum-coccyx",
+  "bone-femur", "bone-tibia", "bone-fibula", "bone-tarsals", "bone-foot",
+  "joint-sternocostal", "joint-sacrococcygeal", "joint-intercarpal", "joint-hand-joints",
+  "joint-mtp", "lm-mastoid-process", "lm-occipital-protuberance", "lm-superior-nuchal-line",
   "lm-c1-transverse", "lm-c2-spinous", "lm-c7-spinous", "lm-mandible-angle",
   "lm-zygomatic-arch", "lm-acromion", "lm-coracoid", "lm-scapular-spine", "lm-inferior-angle",
-  "lm-scapular-medial-border", "lm-greater-tubercle", "lm-bicipital-groove", "lm-jugular-notch",
-  "lm-sternal-angle", "lm-costal-margin", "lm-medial-epicondyle", "lm-lateral-epicondyle",
-  "lm-olecranon", "lm-radial-styloid", "lm-ulnar-styloid", "lm-anatomical-snuffbox",
-  "lm-pisiform", "lm-iliac-crest", "lm-asis", "lm-psis", "lm-ischial-tuberosity",
-  "lm-greater-trochanter", "lm-pubic-tubercle", "lm-sacral-base", "lm-tibial-tuberosity",
-  "lm-gerdys-tubercle", "lm-knee-joint-line", "lm-fibular-head", "lm-adductor-tubercle",
-  "lm-medial-malleolus", "lm-lateral-malleolus", "lm-navicular-tuberosity",
-  "lm-fifth-metatarsal-base", "lm-sustentaculum-tali", "nerve-cervical-roots",
-  "nerve-brachial-plexus", "nerve-median", "nerve-ulnar", "nerve-radial",
-  "nerve-lumbosacral-plexus", "nerve-sciatic", "nerve-femoral", "nerve-common-fibular",
-  "nerve-tibial"
+  "lm-scapular-medial-border", "lm-greater-tubercle", "lm-bicipital-groove",
+  "lm-jugular-notch", "lm-sternal-angle", "lm-costal-margin", "lm-medial-epicondyle",
+  "lm-lateral-epicondyle", "lm-olecranon", "lm-radial-styloid", "lm-ulnar-styloid",
+  "lm-anatomical-snuffbox", "lm-pisiform", "lm-iliac-crest", "lm-asis", "lm-psis",
+  "lm-ischial-tuberosity", "lm-greater-trochanter", "lm-pubic-tubercle", "lm-sacral-base",
+  "lm-tibial-tuberosity", "lm-gerdys-tubercle", "lm-knee-joint-line", "lm-fibular-head",
+  "lm-adductor-tubercle", "lm-medial-malleolus", "lm-lateral-malleolus",
+  "lm-navicular-tuberosity", "lm-fifth-metatarsal-base", "lm-sustentaculum-tali",
+  "nerve-cervical-roots", "nerve-brachial-plexus", "nerve-median", "nerve-ulnar",
+  "nerve-radial", "nerve-lumbosacral-plexus", "nerve-sciatic", "nerve-femoral",
+  "nerve-common-fibular", "nerve-tibial", "shoulder-deltoid-anterior",
+  "shoulder-deltoid-middle", "shoulder-deltoid-posterior", "elbow-triceps-long",
+  "elbow-triceps-lateral", "elbow-triceps-medial", "elbow-biceps-short",
+  "shoulder-pec-clavicular", "shoulder-pec-sternocostal", "shoulder-pec-abdominal",
+  "ankle-gastroc-medial", "ankle-gastroc-lateral", "head-jaw-masseter-superficial",
+  "head-jaw-masseter-deep", "head-jaw-lat-pterygoid-superior",
+  "head-jaw-lat-pterygoid-inferior", "head-jaw-digastric-anterior",
+  "head-jaw-digastric-posterior", "elbow-pronator-teres-humeral",
+  "elbow-pronator-teres-ulnar", "elbow-wrist-fcu-humeral", "elbow-wrist-fcu-ulnar",
+  "elbow-wrist-ecu-humeral", "elbow-wrist-ecu-ulnar", "elbow-wrist-fds-humeroulnar",
+  "elbow-wrist-fds-radial", "spine-all", "spine-pll", "spine-ligamentum-flavum",
+  "spine-supraspinous", "spine-interspinous", "cervical-nuchal-ligament",
+  "thoracic-costotransverse", "shoulder-coracoacromial", "shoulder-acromioclavicular-lig",
+  "shoulder-coracoclavicular", "shoulder-transverse-humeral", "shoulder-sternoclavicular-lig",
+  "shoulder-costoclavicular", "shoulder-transverse-scapular", "elbow-ucl", "elbow-rcl",
+  "hip-ligamentum-teres", "hip-obturator-membrane", "knee-oblique-popliteal",
+  "knee-arcuate-popliteal", "knee-popliteofibular", "knee-transverse-ligament",
+  "knee-interosseous-membrane-leg", "ankle-long-plantar", "ankle-fibular-retinacula",
+  "ankle-transverse-metatarsal", "ankle-intersesamoid", "head-jaw-lateral-tmj-lig",
+  "head-jaw-sphenomandibular", "head-jaw-stylohyoid-lig", "fascia-deltoid", "fascia-pectoral",
+  "fascia-clavipectoral", "fascia-brachial", "fascia-antebrachial", "fascia-lata",
+  "fascia-crural", "fascia-popliteal", "fascia-masseteric", "fascia-temporal",
+  "fascia-transversalis", "fascia-iliopsoas"
 ]);
-/* The four stops of the depth slider. Skin is the model as exported; each
-   stop past it peels the layers above it away and fades the ones beneath. */
-const V3_STOPS = ["Skin", "Superficial", "Deep", "Bone"];
+/* The systems the model can be shown by, and the whole of the toggle list:
+   the checkboxes, their order, their defaults and the visibility test all
+   read this array, so adding a system is an entry here rather than a change
+   anywhere else. The first four are the region's own meshes, classified by
+   v3SystemOf(); the last three are separate layers that load on demand, and
+   `load` is what marks them as such.
+
+   This replaced a four-stop depth slider — Skin, Superficial, Deep, Bone —
+   which was conflating two different questions. Which system you are looking
+   at and how deep into the muscle you are are separate decisions, and forcing
+   them onto one axis meant turning fascia off to see muscle and bone off to
+   see it clearly could not be done independently. "Skin" and "Bone" were
+   never depths; they were systems wearing a depth's clothing.
+
+   Arteries, veins and viscera are not here because they are not in the
+   exported assets: the mvmt-anatomy pipeline scoped to musculoskeletal and
+   dropped both collections. Adding them is an export, not a viewer change,
+   which is why they are absent rather than present and disabled. */
+const V3_SYSTEMS = [
+  {k:"fascia",    label:"Fascia",             on:true},
+  {k:"muscular",  label:"Muscles",            on:true},
+  {k:"skeletal",  label:"Bones",              on:true},
+  {k:"articular", label:"Joints & ligaments", on:true},
+  {k:"nerve",     label:"Nerves",             on:false, load:on=>v3Nerves(on)},
+  {k:"insertion", label:"Insertions",         on:false, load:on=>v3Insertions(on)},
+  {k:"landmark",  label:"Landmarks",          on:false, load:on=>v3Landmarks(on)}
+];
+/* The muscle sub-control: 0 both, 1 superficial only, 2 deep only, read off
+   ANATOMY's layer. Only meaningful while Muscles is on. */
+const V3_MUSCLE = [{v:0, label:"All"}, {v:1, label:"Superficial"}, {v:2, label:"Deep"}];
 /* The schematic label. Not a tooltip, not dismissible: the authored nerves
    were written from a specification, the rest of the model comes from imaging,
    and drawn side by side they would look equally authoritative. They are not. */
@@ -6633,8 +7068,8 @@ const V3 = {
   size:{w:1, h:1},
   meshes:new Map(),            /* sourceName -> mesh, for what is in the scene now */
   pickable:[],                 /* everything a click may land on */
-  depth:0,                     /* slider stop */
-  layers:{ins:false, lm:false, nrv:false},
+  sys:null,                    /* system key -> on, seeded from V3_SYSTEMS */
+  muscle:0,                    /* muscle depth: 0 all, 1 superficial, 2 deep */
   ins:null, insLoading:null,   /* the region's insertion layer, once loaded */
   lm:null,                     /* the region's landmark markers */
   nerves:null, nervesPromise:null, /* nerves.glb, loaded once and kept */
@@ -6644,6 +7079,8 @@ const V3 = {
   anim:null,                   /* a camera move in progress: {from, to, t0, dur} */
   lmGeom:null
 };
+V3.sys = {};
+V3_SYSTEMS.forEach(x=>{ V3.sys[x.k] = x.on; });
 
 /* Colour lives in :root. The viewer asks for a token by name and never holds a
    literal of its own. */
@@ -6768,7 +7205,8 @@ const V3_LOOKS = {
   nerve:     {tok:"--v3-nerve",     flat:true},
   context:   {tok:"--v3-context",   rough:.9,  both:true, opacity:.2}
 };
-/* state: "" as drawn, "dim" faded beneath the current depth, "sel" selected. */
+/* state: "" as drawn, "sel" selected. There is no faded state: a system is
+   either on or off, which is what replaced the depth peel. */
 function v3Material(look, state){
   const key = look + "|" + (state || "");
   if(V3.mats[key]) return V3.mats[key];
@@ -6781,7 +7219,7 @@ function v3Material(look, state){
     m.emissive = colour.clone();
     m.emissiveIntensity = state === "sel" ? .35 : spec.glow;
   }
-  const opacity = state === "dim" ? .22 : spec.opacity;
+  const opacity = spec.opacity;
   if(opacity != null){ m.transparent = true; m.opacity = opacity; m.depthWrite = false; }
   m.name = key;
   V3.mats[key] = m;
@@ -6916,7 +7354,7 @@ function v3PickAt(cx, cy){
   /* Hidden layers are not hit. Context is never in the list at all. Every
      hit along the ray is walked, nearest first, and the first one the join
      claims wins: unmapped geometry is transparent to selection, never a
-     result in itself. 746 of the exported objects map to nothing, and
+     result in itself. 590 of the exported objects map to nothing, and
      several dozen of them are fasciae and sheaths lying directly over the
      muscles a hand would go for — the deltoid, the pecs, the thigh — so
      stopping at the nearest hit made all of those unclickable. Only when
@@ -6928,17 +7366,30 @@ function v3PickAt(cx, cy){
     const tag = h.object.userData.v3 || {};
     if(tag.kind === "landmark" || tag.kind === "nerve"){ v3Select(tag.id); return; }
     const ids = V3.byMesh[tag.name] || [];
-    if(ids.length){
-      /* The most specific claim wins — Piriformis over the deep rotators that
-         include it — and the others are offered in the panel. */
-      v3Select(ids.slice().sort((a, b)=>v3Claim(a) - v3Claim(b))[0]);
-      return;
-    }
+    if(ids.length){ v3Select(v3Resolve(ids)); return; }
     if(unmapped == null) unmapped = tag.name;
   }
   v3Select(null, unmapped);
 }
 const v3Claim = id => { const s = V3.byId[id]; return (s.meshes || []).length + (s.insertions || []).length; };
+/* Which of the structures claiming a mesh a click resolves to. The most
+   specific wins — Piriformis over the deep rotators that include it — and the
+   rest are offered under "Also part of" in the panel.
+
+   "Show named parts" governs this as it governs the index, and it is the same
+   variable: with it off a click on the middle deltoid gives Deltoid, with it
+   on it gives Middle Deltoid and links the parent. One toggle, both views —
+   a second control here would be a way for them to disagree. A mesh that only
+   parts claim still resolves to a part whatever the toggle says, because the
+   alternative is a click that selects nothing. */
+function v3Resolve(ids){
+  const rank = ids.slice().sort((a, b)=>v3Claim(a) - v3Claim(b));
+  if(!anatParts){
+    const whole = rank.filter(id=>{ const st = v3Struct(id); return st && !st.inherits; });
+    if(whole.length) return whole[0];
+  }
+  return rank[0];
+}
 
 /* ---- regions ---- */
 function v3Info(k){ return V3.regions ? V3.regions.regions.find(r=>r.id === k) : null; }
@@ -6983,32 +7434,50 @@ function v3DisposeRegion(){
   if(V3.renderer) V3.renderer.renderLists.dispose();
 }
 
-/* How deep a mesh sits, on the slider's scale: 0 skin, 1 superficial, 2 deep,
-   3 bone. The structures that claim it say so through ANATOMY's layer field,
-   and the shallowest claim wins. An unclaimed mesh falls back to its system —
-   except one wearing the exporter's "Fascia" material, which is the layer
-   over everything else and sits at 0: Skin means fascia on, Superficial means
-   fascia peeled, which is what those words mean to a practitioner. Keyed on
-   the material rather than the name so the intermuscular septa go with it
-   and the thoracolumbar fascia, a claimed structure with its own layer, does
-   not. Read before the material is replaced. */
-function v3DepthOf(mesh){
+/* Which system toggle a mesh answers to.
+
+   Fascia is not a system the exporter records — every fascia in the model
+   arrives tagged "muscular" — so it is read from the exporter's "Fascia"
+   material, which is what the old depth peel keyed on for the same reason.
+   Keyed on the material rather than the name, so the intermuscular septa go
+   with it. Read before v3Adopt() replaces the material.
+
+   Everything else prefers the structures that claim the mesh, most specific
+   first, because ANATOMY's system is the considered answer and the extras
+   are the exporter's: it is what puts the iliotibial tract and the bursae
+   with the fasciae rather than with the muscle they were exported beside.
+   An unclaimed mesh falls back to its own extras. */
+function v3SystemOf(mesh){
   const ex = mesh.userData || {};
-  if(ex.system === "insertion" || ex.system === "skeletal") return 3;
+  if(ex.system === "insertion") return "insertion";
+  if(mesh.material && mesh.material.name === "Fascia") return "fascia";
+  const claims = (V3.byMesh[ex.sourceName] || []).slice().sort((a, b)=>v3Claim(a) - v3Claim(b));
+  for(const id of claims){
+    const st = v3Struct(id);
+    if(!st) continue;
+    if(st.system === "fascial") return "fascia";
+    if(st.system === "skeletal" || st.system === "articular" || st.system === "muscular") return st.system;
+  }
+  return ex.system === "skeletal" ? "skeletal" : ex.system === "articular" ? "articular" : "muscular";
+}
+/* How deep a muscle mesh sits: 1 superficial, 2 deep, from ANATOMY's layer
+   through the structures that claim it, shallowest claim winning — the same
+   rule the peel used. Null for a mesh nothing claims, and null shows at
+   every setting rather than at none: an unclassified belly must not vanish. */
+function v3MuscleLayerOf(mesh){
   let d = null;
-  (V3.byMesh[ex.sourceName] || []).forEach(id=>{
+  (V3.byMesh[(mesh.userData || {}).sourceName] || []).forEach(id=>{
     const s = v3Struct(id);
     if(s && s.layer && (d == null || s.layer < d)) d = s.layer;
   });
-  if(d != null) return d;
-  if(mesh.material && mesh.material.name === "Fascia") return 0;
-  return ex.system === "articular" ? 2 : 1;
+  return d == null ? null : (d >= 2 ? 2 : 1);
 }
 
 /* Registers a mesh for picking and lookup after its material is set. */
 function v3Adopt(mesh, kind){
   const name = mesh.userData.sourceName || mesh.name;
-  mesh.userData.v3 = {kind:kind, name:name, look:v3Look(mesh), depth:v3DepthOf(mesh)};
+  mesh.userData.v3 = {kind:kind, name:name, look:v3Look(mesh),
+    sys:v3SystemOf(mesh), layer:v3MuscleLayerOf(mesh)};
   mesh.matrixAutoUpdate = false;
   const orig = mesh.material;
   mesh.material = v3Material(mesh.userData.v3.look, "");
@@ -7049,10 +7518,9 @@ async function v3Load(k){
     v3Frame(box);
     $("#v3Status").textContent = regionLabel(k) + " · " + own + " meshes, " + ctx + " dimmed as context";
     v3Overlay(null);
-    /* The layers the practitioner had on come back on for the new region. */
-    if(V3.layers.ins) v3Insertions(true);
-    if(V3.layers.lm) v3Landmarks(true);
-    if(V3.layers.nrv) v3Nerves(true);
+    /* The on-demand layers the practitioner had on come back on for the new
+       region. Which ones those are is V3_SYSTEMS' business, not this one's. */
+    V3_SYSTEMS.forEach(x=>{ if(x.load && V3.sys[x.k]) x.load(true); });
     v3ApplyState();
     v3RenderSel();
   }catch(err){
@@ -7110,8 +7578,8 @@ function v3Frame(box){
    file, loaded the first time the toggle goes on for this region and then
    kept with it. */
 async function v3Insertions(on){
-  V3.layers.ins = on;
-  if(!V3.region) return;
+  V3.sys.insertion = on;
+  if(!V3.region){ v3ApplyState(); return; }
   if(V3.ins){ V3.ins.visible = on; v3ApplyState(); return; }
   if(!on || V3.insLoading === V3.region) return;
   const info = v3Info(V3.region), region = V3.region, token = V3.token;
@@ -7122,7 +7590,7 @@ async function v3Insertions(on){
     gltf.scene.updateMatrixWorld(true);
     gltf.scene.traverse(o=>{ if(o.isMesh) v3Adopt(o, "insertion"); });
     V3.ins = gltf.scene;
-    V3.ins.visible = V3.layers.ins;
+    V3.ins.visible = V3.sys.insertion;
     V3.scene.add(V3.ins);
     v3ApplyState();
   }catch(err){
@@ -7140,8 +7608,8 @@ async function v3Insertions(on){
    structure map. landmarks.json is Blender Z-up; the export turned +Z into +Y
    and -Y into +Z, so a point (x, y, z) lands at (x, z, -y). */
 function v3Landmarks(on){
-  V3.layers.lm = on;
-  if(!V3.region) return;
+  V3.sys.landmark = on;
+  if(!V3.region){ v3ApplyState(); return; }
   if(!V3.lm){
     const T = V3.lib.THREE;
     const g = new T.Group();
@@ -7173,8 +7641,8 @@ function v3Landmarks(on){
    their bounds against the region's. The unlit material and the label are
    both applied here and nowhere else — see V3_SCHEMATIC. */
 function v3Nerves(on){
-  V3.layers.nrv = on;
-  if(!V3.region) return;
+  V3.sys.nerve = on;
+  if(!V3.region){ v3ApplyState(); return; }
   if(V3.nerves){ v3ShowNerves(); return; }
   if(!on) return;
   if(!V3.nervesPromise){
@@ -7248,46 +7716,64 @@ function v3ShowNerves(){
   const shown = [];
   V3.nerves.traverse(o=>{
     if(!o.isMesh || !o.userData.v3) return;
-    o.visible = !!(V3.layers.nrv && here(o));
+    o.visible = !!(V3.sys.nerve && here(o));
     if(o.visible) shown.push(o);
   });
-  V3.nerves.visible = V3.layers.nrv;
+  V3.nerves.visible = V3.sys.nerve;
   /* Pickable only while shown — and re-registered per region, since the
      region's own list was rebuilt. */
   V3.pickable = V3.pickable.filter(o=>!(o.userData.v3 && o.userData.v3.kind === "nerve")).concat(shown);
   v3ApplyState();
 }
 
-/* Applies the depth slider and the selection to every mesh in one pass.
-   Depth: at Skin the model is as exported; at each later stop the layers
-   above it are hidden, the layer at it is drawn as normal, and the layers
-   beneath stay visible faded, so a deep muscle is still seen against the bone
-   it works on. The selected structure's meshes are always shown and always
-   full, whatever the slider says — they are what was asked for. Context,
-   landmarks and nerves stand outside the depth system. */
+/* Applies the system toggles, the muscle sub-control and the selection to
+   every mesh in one pass, and counts what each system holds while it is
+   there. The number beside a toggle is what the region has of that system,
+   not what is drawn: it stays put when the system is switched off or the
+   muscle sub-control narrows the view, which is the useful thing for it to
+   say — it is how much there is to turn on.
+
+   The selected structure's meshes are always shown and always full, whatever
+   the toggles say: they are what was asked for. Context stands outside the
+   system list entirely, and so do landmarks and nerves, which are their own
+   toggles and carry no muscle depth. */
 function v3ApplyState(){
-  if(!V3.root) return;
-  const selNames = v3SelNames();
-  const d = V3.depth;
-  V3.meshes.forEach((mesh, name)=>{
-    const t = mesh.userData.v3;
-    const sel = selNames && selNames.has(name);
-    let state = "", visible = true;
-    if(!sel && d > 0){
-      if(t.depth < d) visible = false;
-      else if(t.depth > d) state = "dim";
-    }
-    if(sel) state = "sel";
-    mesh.visible = visible;
-    mesh.material = v3Material(t.look, state);
+  const counts = {};
+  V3_SYSTEMS.forEach(x=>{ counts[x.k] = 0; });
+  if(V3.root){
+    const selNames = v3SelNames();
+    V3.meshes.forEach((mesh, name)=>{
+      const t = mesh.userData.v3;
+      const sel = !!(selNames && selNames.has(name));
+      if(counts[t.sys] != null) counts[t.sys]++;
+      mesh.visible = sel || v3Shows(t);
+      mesh.material = v3Material(t.look, sel ? "sel" : "");
+    });
+  }
+  if(V3.lm){
+    counts.landmark = V3.lm.children.length;
+    V3.lm.children.forEach(m=>{ m.material = v3Material("landmark", V3.sel === m.userData.v3.id ? "sel" : ""); });
+  }
+  if(V3.nerves) V3.nerves.traverse(o=>{
+    if(!o.isMesh || !o.userData.v3) return;
+    if(o.visible) counts.nerve++;
+    o.material = v3Material("nerve", V3.sel === o.userData.v3.id ? "sel" : "");
   });
-  if(V3.lm) V3.lm.children.forEach(m=>{ m.material = v3Material("landmark", V3.sel === m.userData.v3.id ? "sel" : ""); });
-  if(V3.nerves) V3.nerves.traverse(o=>{ if(o.isMesh && o.userData.v3) o.material = v3Material("nerve", V3.sel === o.userData.v3.id ? "sel" : ""); });
+  v3RenderSystems(counts);
   /* The label whenever a nerve is on screen or selected. Never a tooltip,
      never dismissible. */
   const s = V3.sel ? v3Struct(V3.sel) : null;
-  $("#v3Schem").hidden = !((V3.layers.nrv && V3.nerves && V3.nerves.visible) || (s && s.system === "nervous"));
+  $("#v3Schem").hidden = !((V3.sys.nerve && V3.nerves && V3.nerves.visible) || (s && s.system === "nervous"));
   V3.dirty = true;
+}
+/* Whether a mesh is drawn: its system is on, and — for muscle only — its
+   layer matches the sub-control. A muscle no structure claims has no layer
+   and is drawn at every setting; hiding it would lose real geometry to a
+   gap in the index, which is the wrong way round. */
+function v3Shows(t){
+  if(!V3.sys[t.sys]) return false;
+  if(t.sys !== "muscular" || !V3.muscle || t.layer == null) return true;
+  return t.layer === V3.muscle;
 }
 /* The mesh names the selected structure owns in this scene, or null. */
 function v3SelNames(){
@@ -7381,16 +7867,26 @@ async function v3Show(id){
   const j = V3.byId[id];
   const names = j ? (j.meshes || []).concat(j.insertions || []) : [];
   const here = names.some(n=>V3.meshes.has(n)) || j && j.kind === "authored" || s.system === "landmark";
-  if(!here && V3.region !== s.region){
-    await v3Load(s.region);
-    if(V3.region !== s.region) return;
+  /* Where the geometry actually is, which is not always where the structure
+     is filed. Quadriceps is a knee structure and every vastus is exported in
+     hip.glb; the hyoid muscles are head-jaw and are exported with the neck.
+     Thirty-nine structures are like this, and loading s.region for them
+     landed on "its geometry is in another region's model" — a dead end from
+     the one button that is meant to be the way in. The join carries the
+     answer as viewRegion, generated from the export rather than guessed, and
+     absent wherever the structure's own region already holds it. */
+  const home = (j && j.viewRegion) || s.region;
+  if(!here && V3.region !== home){
+    await v3Load(home);
+    if(V3.region !== home) return;
   }
-  if(s.system === "landmark" && !V3.layers.lm){ $("#v3Lm").checked = true; v3Landmarks(true); }
-  if(j && j.kind === "authored" && !V3.layers.nrv){ $("#v3Nrv").checked = true; v3Nerves(true); }
-  if(j && !(j.meshes || []).length && (j.insertions || []).length && !V3.layers.ins){
-    $("#v3Ins").checked = true;
-    await v3Insertions(true);
-  }
+  if(s.system === "landmark") v3SetSystem("landmark", true);
+  if(j && j.kind === "authored") v3SetSystem("nerve", true);
+  if(j && !(j.meshes || []).length && (j.insertions || []).length) await v3SetSystem("insertion", true);
+  /* A structure whose system is switched off is still what was asked for, so
+     the systems its meshes belong to come back on rather than the selection
+     landing on an empty screen. */
+  names.forEach(nm=>{ const m = V3.meshes.get(nm); if(m && m.userData.v3) v3SetSystem(m.userData.v3.sys, true); });
   v3Select(id);
   v3FrameSel();
 }
@@ -7430,14 +7926,51 @@ function v3FrameSel(){
 }
 
 /* ---- controls ---- */
-$("#v3Depth").oninput = e=>{
-  V3.depth = Number(e.target.value) || 0;
-  $("#v3DepthLbl").textContent = V3_STOPS[V3.depth];
+/* Both controls are drawn from V3_SYSTEMS and V3_MUSCLE, so the markup holds
+   two empty containers and a system added to those arrays appears with its
+   count, its default and its handler already wired. */
+function v3RenderSystems(counts){
+  const el = $("#v3Systems");
+  if(!el.firstChild){
+    el.innerHTML = V3_SYSTEMS.map(x=>`<label data-k="${esc(x.k)}"><input type="checkbox" data-sys="${esc(x.k)}"${V3.sys[x.k] ? " checked" : ""}> ${esc(x.label)}<span class="n"></span></label>`).join("");
+    el.onchange = e=>{
+      const b = e.target.closest("[data-sys]"); if(!b) return;
+      v3SetSystem(b.dataset.sys, b.checked);
+    };
+    const seg = $("#v3Muscle");
+    seg.innerHTML = V3_MUSCLE.map(m=>`<button type="button" data-m="${m.v}" aria-pressed="${V3.muscle === m.v}">${esc(m.label)}</button>`).join("");
+    seg.onclick = e=>{
+      const b = e.target.closest("[data-m]"); if(!b || b.disabled) return;
+      V3.muscle = Number(b.dataset.m) || 0;
+      v3ApplyState();
+    };
+  }
+  V3_SYSTEMS.forEach(x=>{
+    const lab = el.querySelector('[data-k="' + x.k + '"]');
+    if(!lab) return;
+    lab.querySelector("input").checked = !!V3.sys[x.k];
+    lab.classList.toggle("off", !V3.sys[x.k]);
+    const c = counts && counts[x.k];
+    lab.querySelector(".n").textContent = c ? String(c) : "";
+  });
+  /* The sub-control means nothing with the muscles off, and says so rather
+     than sitting there looking live. */
+  const on = !!V3.sys.muscular;
+  $("#v3MuscleCtl").setAttribute("aria-disabled", String(!on));
+  $("#v3Muscle").querySelectorAll("button").forEach(b=>{
+    b.disabled = !on;
+    b.setAttribute("aria-pressed", String(Number(b.dataset.m) === V3.muscle));
+  });
+}
+/* The one way a system is switched, from the checkbox and from v3Show alike,
+   so the box, the state and the on-demand load can never disagree. */
+function v3SetSystem(k, on){
+  if(V3.sys[k] === on) return;
+  V3.sys[k] = on;
+  const spec = V3_SYSTEMS.find(x=>x.k === k);
+  if(spec && spec.load) return spec.load(on);
   v3ApplyState();
-};
-$("#v3Ins").onchange = e=>v3Insertions(e.target.checked);
-$("#v3Lm").onchange  = e=>v3Landmarks(e.target.checked);
-$("#v3Nrv").onchange = e=>v3Nerves(e.target.checked);
+}
 /* The Anatomy index's toggle, from here. Same variable; the index's own
    button reads it back the next time that view renders. */
 $("#v3Mode").onclick = ()=>{ anatPatient = !anatPatient; v3RenderSel(); };
@@ -7450,6 +7983,7 @@ function v3Enter(){
   v3Setup().then(()=>{
     v3Chips();
     v3RenderSel();
+    v3ApplyState();
     if(V3.pendingShow){ const id = V3.pendingShow; V3.pendingShow = null; v3Show(id); }
     else if(V3.pending) v3Load(V3.pending);
     else if(!V3.region) v3Overlay("Choose a region", "Nothing has been downloaded yet. Each region is a separate file and loads when you pick it.");
