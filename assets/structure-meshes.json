@@ -1,9 +1,9 @@
 {
  "version": 1,
  "generatedFrom": "mvmt-anatomy structure-mesh-join.json v1, trimmed to id/kind/meshes/insertions",
- "note": "meshes and insertions are glTF node names (sourceName) inside the region files; authored nerves are node names inside nerves.glb. Names, regions and triangle counts are not repeated here — ANATOMY in index.html has them.",
+ "note": "meshes and insertions are glTF node names (sourceName) inside the region files; authored nerves are node names inside nerves.glb. Names, regions and triangle counts are not repeated here — ANATOMY in index.html has them. viewRegion is present only where the export puts a structure’s geometry in a region file other than its own: it is the region to load to see it.",
  "counts": {
-  "mapped": 249,
+  "mapped": 317,
   "absent": 14,
   "unresolved": 1,
   "anchor": 42,
@@ -113,7 +113,8 @@
    "insertions": [
     "Anterior belly of digastric muscle.el",
     "Anterior belly of digastric muscle.er"
-   ]
+   ],
+   "viewRegion": "cervical"
   },
   {
    "id": "head-jaw-mylohyoid",
@@ -125,7 +126,8 @@
    "insertions": [
     "Mylohyoid muscle.ol",
     "Mylohyoid muscle.or"
-   ]
+   ],
+   "viewRegion": "cervical"
   },
   {
    "id": "head-jaw-geniohyoid",
@@ -139,7 +141,8 @@
     "Geniohyoid muscle.er",
     "Geniohyoid muscle.ol",
     "Geniohyoid muscle.or"
-   ]
+   ],
+   "viewRegion": "cervical"
   },
   {
    "id": "head-jaw-stylohyoid",
@@ -148,7 +151,8 @@
     "Stylohyoid muscle.l",
     "Stylohyoid muscle.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "viewRegion": "cervical"
   },
   {
    "id": "head-jaw-sternohyoid",
@@ -162,7 +166,8 @@
     "Sternohyoid muscle.er",
     "Sternohyoid muscle.ol",
     "Sternohyoid muscle.or"
-   ]
+   ],
+   "viewRegion": "cervical"
   },
   {
    "id": "head-jaw-omohyoid",
@@ -176,7 +181,8 @@
     "Omohyoid muscle.er",
     "Omohyoid muscle.ol",
     "Omohyoid muscle.or"
-   ]
+   ],
+   "viewRegion": "cervical"
   },
   {
    "id": "head-jaw-sternothyroid",
@@ -185,7 +191,8 @@
     "Sternothyroid muscle.l",
     "Sternothyroid muscle.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "viewRegion": "cervical"
   },
   {
    "id": "head-jaw-thyrohyoid",
@@ -199,7 +206,8 @@
     "Thyrohyoid muscle.er",
     "Thyrohyoid muscle.ol",
     "Thyrohyoid muscle.or"
-   ]
+   ],
+   "viewRegion": "cervical"
   },
   {
    "id": "head-jaw-hyoid",
@@ -207,7 +215,8 @@
    "meshes": [
     "Hyoid bone"
    ],
-   "insertions": []
+   "insertions": [],
+   "viewRegion": "cervical"
   },
   {
    "id": "head-jaw-mandible",
@@ -242,7 +251,8 @@
     "Platysma.l",
     "Platysma.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "viewRegion": "cervical"
   },
   {
    "id": "cervical-scm",
@@ -303,7 +313,8 @@
     "Ascending part of trapezius muscle.ol",
     "Ascending part of trapezius muscle.or"
    ],
-   "sourceNote": "Z-Anatomy inverts the trapezius part names: its 'Ascending part' is anatomically the UPPER trapezius (centroid z 1.495) and its 'Descending part' is the LOWER (z 1.267). Mapped to the model's geometry, not its labels."
+   "sourceNote": "Z-Anatomy inverts the trapezius part names: its 'Ascending part' is anatomically the UPPER trapezius (centroid z 1.495) and its 'Descending part' is the LOWER (z 1.267). Mapped to the model's geometry, not its labels.",
+   "viewRegion": "shoulder"
   },
   {
    "id": "cervical-levator",
@@ -437,7 +448,8 @@
     "First rib.l",
     "First rib.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "viewRegion": "thoracic"
   },
   {
    "id": "cervical-rcp-major",
@@ -789,7 +801,8 @@
    "insertions": [
     "Long head of biceps brachii.ol",
     "Long head of biceps brachii.or"
-   ]
+   ],
+   "viewRegion": "elbow-wrist"
   },
   {
    "id": "shoulder-gh-joint",
@@ -2302,7 +2315,8 @@
     "Rotatores.l",
     "Rotatores.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "viewRegion": "cervical"
   },
   {
    "id": "spine-interspinales",
@@ -2580,7 +2594,8 @@
    "meshes": [
     "Pubic symphysis"
    ],
-   "insertions": []
+   "insertions": [],
+   "viewRegion": "lumbar"
   },
   {
    "id": "hip-obturator-internus",
@@ -2745,7 +2760,8 @@
     "Inguinal ligament.l",
     "Inguinal ligament.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "viewRegion": "lumbar"
   },
   {
    "id": "hip-adductor-canal",
@@ -2773,7 +2789,8 @@
     "Vastus lateralis muscle.or",
     "Vastus medialis muscle.ol",
     "Vastus medialis muscle.or"
-   ]
+   ],
+   "viewRegion": "hip"
   },
   {
    "id": "knee-vmo",
@@ -2785,7 +2802,8 @@
    "insertions": [
     "Vastus medialis muscle.ol",
     "Vastus medialis muscle.or"
-   ]
+   ],
+   "viewRegion": "hip"
   },
   {
    "id": "knee-hamstrings",
@@ -2926,7 +2944,8 @@
     "Semitendinosus muscle.er",
     "Semitendinosus muscle.ol",
     "Semitendinosus muscle.or"
-   ]
+   ],
+   "viewRegion": "hip"
   },
   {
    "id": "knee-tibiofemoral",
@@ -2987,7 +3006,8 @@
    "insertions": [
     "Vastus lateralis muscle.ol",
     "Vastus lateralis muscle.or"
-   ]
+   ],
+   "viewRegion": "hip"
   },
   {
    "id": "knee-vastus-medialis",
@@ -2999,7 +3019,8 @@
    "insertions": [
     "Vastus medialis muscle.ol",
     "Vastus medialis muscle.or"
-   ]
+   ],
+   "viewRegion": "hip"
   },
   {
    "id": "knee-vastus-intermedius",
@@ -3011,7 +3032,8 @@
    "insertions": [
     "Vastus intermedius muscle.ol",
     "Vastus intermedius muscle.or"
-   ]
+   ],
+   "viewRegion": "hip"
   },
   {
    "id": "knee-biceps-femoris-long",
@@ -3023,7 +3045,8 @@
    "insertions": [
     "Long head of biceps femoris.ol",
     "Long head of biceps femoris.or"
-   ]
+   ],
+   "viewRegion": "hip"
   },
   {
    "id": "knee-biceps-femoris-short",
@@ -3034,7 +3057,8 @@
    ],
    "insertions": [
     "Short head of biceps femoris.el"
-   ]
+   ],
+   "viewRegion": "hip"
   },
   {
    "id": "knee-semitendinosus",
@@ -3048,7 +3072,8 @@
     "Semitendinosus muscle.er",
     "Semitendinosus muscle.ol",
     "Semitendinosus muscle.or"
-   ]
+   ],
+   "viewRegion": "hip"
   },
   {
    "id": "knee-semimembranosus",
@@ -3062,7 +3087,8 @@
     "Semimembranosus muscle.er",
     "Semimembranosus muscle.ol",
     "Semimembranosus muscle.or"
-   ]
+   ],
+   "viewRegion": "hip"
   },
   {
    "id": "knee-plantaris",
@@ -3074,7 +3100,8 @@
    "insertions": [
     "Plantaris muscle.ol",
     "Plantaris muscle.or"
-   ]
+   ],
+   "viewRegion": "ankle-foot"
   },
   {
    "id": "knee-patella",
@@ -3118,7 +3145,8 @@
     "Lateral head of gastrocnemius.or",
     "Medial head of gastrocnemius.ol",
     "Medial head of gastrocnemius.or"
-   ]
+   ],
+   "viewRegion": "knee"
   },
   {
    "id": "ankle-soleus",
@@ -3696,7 +3724,8 @@
     "Hip bone.l",
     "Hip bone.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "viewRegion": "lumbar"
   },
   {
    "id": "bone-sacrum-coccyx",
@@ -3732,7 +3761,8 @@
     "Fibula.l",
     "Fibula.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "viewRegion": "knee"
   },
   {
    "id": "bone-tarsals",
@@ -4205,6 +4235,670 @@
   {
    "id": "nerve-saphenous",
    "kind": "text-only"
+  },
+  {
+   "id": "shoulder-deltoid-anterior",
+   "kind": "mapped",
+   "meshes": [
+    "Clavicular part of deltoid muscle.l",
+    "Clavicular part of deltoid muscle.r"
+   ],
+   "insertions": [
+    "Clavicular part of deltoid muscle.ol",
+    "Clavicular part of deltoid muscle.or"
+   ]
+  },
+  {
+   "id": "shoulder-deltoid-middle",
+   "kind": "mapped",
+   "meshes": [
+    "Acromial part of deltoid muscle.l",
+    "Acromial part of deltoid muscle.r"
+   ],
+   "insertions": [
+    "Acromial part of deltoid muscle.ol",
+    "Acromial part of deltoid muscle.or"
+   ]
+  },
+  {
+   "id": "shoulder-deltoid-posterior",
+   "kind": "mapped",
+   "meshes": [
+    "Scapular spinal part of deltoid muscle.l",
+    "Scapular spinal part of deltoid muscle.r"
+   ],
+   "insertions": [
+    "Scapular spinal part of deltoid muscle.ol",
+    "Scapular spinal part of deltoid muscle.or"
+   ]
+  },
+  {
+   "id": "elbow-triceps-long",
+   "kind": "mapped",
+   "meshes": [
+    "Long head of triceps brachii.l",
+    "Long head of triceps brachii.r"
+   ],
+   "insertions": [
+    "Long head of triceps brachii.ol",
+    "Long head of triceps brachii.or"
+   ]
+  },
+  {
+   "id": "elbow-triceps-lateral",
+   "kind": "mapped",
+   "meshes": [
+    "Lateral head of triceps brachii.l",
+    "Lateral head of triceps brachii.r"
+   ],
+   "insertions": [
+    "Lateral head of triceps brachii.ol",
+    "Lateral head of triceps brachii.or"
+   ]
+  },
+  {
+   "id": "elbow-triceps-medial",
+   "kind": "mapped",
+   "meshes": [
+    "Medial head of triceps brachii.l",
+    "Medial head of triceps brachii.r"
+   ],
+   "insertions": [
+    "Medial head of triceps brachii.ol",
+    "Medial head of triceps brachii.or"
+   ]
+  },
+  {
+   "id": "elbow-biceps-short",
+   "kind": "mapped",
+   "meshes": [
+    "Short head of biceps brachii.l",
+    "Short head of biceps brachii.r"
+   ],
+   "insertions": [
+    "Short head of biceps brachii.ol"
+   ]
+  },
+  {
+   "id": "shoulder-pec-clavicular",
+   "kind": "mapped",
+   "meshes": [
+    "Clavicular head of pectoralis major muscle.l",
+    "Clavicular head of pectoralis major muscle.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "shoulder-pec-sternocostal",
+   "kind": "mapped",
+   "meshes": [
+    "Sternocostal head of pectoralis major muscle.l",
+    "Sternocostal head of pectoralis major muscle.r"
+   ],
+   "insertions": [
+    "Sternocostal head of pectoralis major muscle.e1l",
+    "Sternocostal head of pectoralis major muscle.e1r",
+    "Sternocostal head of pectoralis major muscle.e2l",
+    "Sternocostal head of pectoralis major muscle.e2r",
+    "Sternocostal head of pectoralis major muscle.el",
+    "Sternocostal head of pectoralis major muscle.er"
+   ]
+  },
+  {
+   "id": "shoulder-pec-abdominal",
+   "kind": "mapped",
+   "meshes": [
+    "(Abdominal part of pectoralis major muscle).l",
+    "(Abdominal part of pectoralis major muscle).r"
+   ],
+   "insertions": [
+    "(Abdominal part of pectoralis major muscle).ol",
+    "(Abdominal part of pectoralis major muscle).or"
+   ]
+  },
+  {
+   "id": "ankle-gastroc-medial",
+   "kind": "mapped",
+   "meshes": [
+    "Medial head of gastrocnemius.l",
+    "Medial head of gastrocnemius.r"
+   ],
+   "insertions": [
+    "Medial head of gastrocnemius.ol",
+    "Medial head of gastrocnemius.or"
+   ],
+   "viewRegion": "knee"
+  },
+  {
+   "id": "ankle-gastroc-lateral",
+   "kind": "mapped",
+   "meshes": [
+    "Lateral head of gastrocnemius.l",
+    "Lateral head of gastrocnemius.r"
+   ],
+   "insertions": [
+    "Lateral head of gastrocnemius.ol",
+    "Lateral head of gastrocnemius.or"
+   ],
+   "viewRegion": "knee"
+  },
+  {
+   "id": "head-jaw-masseter-superficial",
+   "kind": "mapped",
+   "meshes": [
+    "Superficial part of masseter.l",
+    "Superficial part of masseter.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "head-jaw-masseter-deep",
+   "kind": "mapped",
+   "meshes": [
+    "Deep part of masseter.l",
+    "Deep part of masseter.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "head-jaw-lat-pterygoid-superior",
+   "kind": "mapped",
+   "meshes": [
+    "Superior head of lateral pterygoid muscle.l",
+    "Superior head of lateral pterygoid muscle.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "head-jaw-lat-pterygoid-inferior",
+   "kind": "mapped",
+   "meshes": [
+    "Inferior head of lateral pterygoid muscle.l",
+    "Inferior head of lateral pterygoid muscle.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "head-jaw-digastric-anterior",
+   "kind": "mapped",
+   "meshes": [
+    "Anterior belly of digastric muscle.l",
+    "Anterior belly of digastric muscle.r"
+   ],
+   "insertions": [
+    "Anterior belly of digastric muscle.el",
+    "Anterior belly of digastric muscle.er"
+   ],
+   "viewRegion": "cervical"
+  },
+  {
+   "id": "head-jaw-digastric-posterior",
+   "kind": "mapped",
+   "meshes": [
+    "Posterior belly of digastric muscle.l",
+    "Posterior belly of digastric muscle.r"
+   ],
+   "insertions": [],
+   "viewRegion": "cervical"
+  },
+  {
+   "id": "elbow-pronator-teres-humeral",
+   "kind": "mapped",
+   "meshes": [
+    "Superficial head of pronator teres.l",
+    "Superficial head of pronator teres.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "elbow-pronator-teres-ulnar",
+   "kind": "mapped",
+   "meshes": [
+    "Deep head of pronator teres.l",
+    "Deep head of pronator teres.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "elbow-wrist-fcu-humeral",
+   "kind": "mapped",
+   "meshes": [
+    "Humeral head of flexor carpi ulnaris.l",
+    "Humeral head of flexor carpi ulnaris.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "elbow-wrist-fcu-ulnar",
+   "kind": "mapped",
+   "meshes": [
+    "Ulnar head of flexor carpi ulnaris.l",
+    "Ulnar head of flexor carpi ulnaris.r"
+   ],
+   "insertions": [
+    "Ulnar head of flexor carpi ulnaris.ol",
+    "Ulnar head of flexor carpi ulnaris.or"
+   ]
+  },
+  {
+   "id": "elbow-wrist-ecu-humeral",
+   "kind": "mapped",
+   "meshes": [
+    "Humeral head of extensor carpi ulnaris.l",
+    "Humeral head of extensor carpi ulnaris.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "elbow-wrist-ecu-ulnar",
+   "kind": "mapped",
+   "meshes": [
+    "Ulnar head of extensor carpi ulnaris.l",
+    "Ulnar head of extensor carpi ulnaris.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "elbow-wrist-fds-humeroulnar",
+   "kind": "mapped",
+   "meshes": [
+    "Humero-ulnar head of flexor digitorum superficialis.l",
+    "Humero-ulnar head of flexor digitorum superficialis.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "elbow-wrist-fds-radial",
+   "kind": "mapped",
+   "meshes": [
+    "Radial head of flexor digitorum superficialis.l",
+    "Radial head of flexor digitorum superficialis.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "spine-all",
+   "kind": "mapped",
+   "meshes": [
+    "Anterior longitudinal ligament"
+   ],
+   "insertions": [],
+   "viewRegion": "thoracic"
+  },
+  {
+   "id": "spine-pll",
+   "kind": "mapped",
+   "meshes": [
+    "Posterior longitudinal ligament"
+   ],
+   "insertions": [],
+   "viewRegion": "thoracic"
+  },
+  {
+   "id": "spine-ligamentum-flavum",
+   "kind": "mapped",
+   "meshes": [
+    "Ligamenta flava"
+   ],
+   "insertions": [],
+   "viewRegion": "thoracic"
+  },
+  {
+   "id": "spine-supraspinous",
+   "kind": "mapped",
+   "meshes": [
+    "Supraspinous ligament"
+   ],
+   "insertions": [],
+   "viewRegion": "thoracic"
+  },
+  {
+   "id": "spine-interspinous",
+   "kind": "mapped",
+   "meshes": [
+    "Interspinous ligaments"
+   ],
+   "insertions": [],
+   "viewRegion": "thoracic"
+  },
+  {
+   "id": "cervical-nuchal-ligament",
+   "kind": "mapped",
+   "meshes": [
+    "Nuchal ligament"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "thoracic-costotransverse",
+   "kind": "mapped",
+   "meshes": [
+    "Costotransverse ligament.l",
+    "Costotransverse ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "shoulder-coracoacromial",
+   "kind": "mapped",
+   "meshes": [
+    "Coraco-acromial ligament.l",
+    "Coraco-acromial ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "shoulder-acromioclavicular-lig",
+   "kind": "mapped",
+   "meshes": [
+    "Acromioclavicular ligament.l",
+    "Acromioclavicular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "shoulder-coracoclavicular",
+   "kind": "mapped",
+   "meshes": [
+    "Conoid ligament.l",
+    "Conoid ligament.r",
+    "Trapezoid ligament.l",
+    "Trapezoid ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "shoulder-transverse-humeral",
+   "kind": "mapped",
+   "meshes": [
+    "Transverse humeral ligament.l",
+    "Transverse humeral ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "shoulder-sternoclavicular-lig",
+   "kind": "mapped",
+   "meshes": [
+    "Anterior sternoclavicular ligament.l",
+    "Anterior sternoclavicular ligament.r",
+    "Interclavicular ligament.l",
+    "Interclavicular ligament.r",
+    "Posterior sternoclavicular ligament.l",
+    "Posterior sternoclavicular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "shoulder-costoclavicular",
+   "kind": "mapped",
+   "meshes": [
+    "Costoclavicular ligament.l",
+    "Costoclavicular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "shoulder-transverse-scapular",
+   "kind": "mapped",
+   "meshes": [
+    "Superior transverse scapular ligament.l",
+    "Superior transverse scapular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "elbow-ucl",
+   "kind": "mapped",
+   "meshes": [
+    "Ulnar collateral ligament.l",
+    "Ulnar collateral ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "elbow-rcl",
+   "kind": "mapped",
+   "meshes": [
+    "Radial collateral ligament.l",
+    "Radial collateral ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "hip-ligamentum-teres",
+   "kind": "mapped",
+   "meshes": [
+    "Ligament of head of femur.l",
+    "Ligament of head of femur.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "hip-obturator-membrane",
+   "kind": "mapped",
+   "meshes": [
+    "Obturator membrane.l",
+    "Obturator membrane.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "knee-oblique-popliteal",
+   "kind": "mapped",
+   "meshes": [
+    "Oblique popliteal ligament.l",
+    "Oblique popliteal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "knee-arcuate-popliteal",
+   "kind": "mapped",
+   "meshes": [
+    "Arcuate popliteal ligament.l",
+    "Arcuate popliteal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "knee-popliteofibular",
+   "kind": "mapped",
+   "meshes": [
+    "Popliteofibular ligament.l",
+    "Popliteofibular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "knee-transverse-ligament",
+   "kind": "mapped",
+   "meshes": [
+    "Transverse ligament of knee.l",
+    "Transverse ligament of knee.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "knee-interosseous-membrane-leg",
+   "kind": "mapped",
+   "meshes": [
+    "Interosseous membrane of leg.l",
+    "Interosseous membrane of leg.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-long-plantar",
+   "kind": "mapped",
+   "meshes": [
+    "Long plantar ligament.l",
+    "Long plantar ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-fibular-retinacula",
+   "kind": "mapped",
+   "meshes": [
+    "Inferior fibular retinaculum.l",
+    "Inferior fibular retinaculum.r",
+    "Superior fibular retinaculum.l",
+    "Superior fibular retinaculum.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-transverse-metatarsal",
+   "kind": "mapped",
+   "meshes": [
+    "Deep transverse metatarsal ligament.l",
+    "Deep transverse metatarsal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-intersesamoid",
+   "kind": "mapped",
+   "meshes": [
+    "Intersesamoid ligament.l",
+    "Intersesamoid ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "head-jaw-lateral-tmj-lig",
+   "kind": "mapped",
+   "meshes": [
+    "Lateral temporomandibular ligament.l",
+    "Lateral temporomandibular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "head-jaw-sphenomandibular",
+   "kind": "mapped",
+   "meshes": [
+    "Sphenomandibular ligament.l",
+    "Sphenomandibular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "head-jaw-stylohyoid-lig",
+   "kind": "mapped",
+   "meshes": [
+    "Stylohyoid ligament.l",
+    "Stylohyoid ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "fascia-deltoid",
+   "kind": "mapped",
+   "meshes": [
+    "Deltoid fascia.l",
+    "Deltoid fascia.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "fascia-pectoral",
+   "kind": "mapped",
+   "meshes": [
+    "Pectoral fascia.l",
+    "Pectoral fascia.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "fascia-clavipectoral",
+   "kind": "mapped",
+   "meshes": [
+    "Clavipectoral fascia.l",
+    "Clavipectoral fascia.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "fascia-brachial",
+   "kind": "mapped",
+   "meshes": [
+    "Brachial fascia.l",
+    "Brachial fascia.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "fascia-antebrachial",
+   "kind": "mapped",
+   "meshes": [
+    "Antebrachial fascia.l",
+    "Antebrachial fascia.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "fascia-lata",
+   "kind": "mapped",
+   "meshes": [
+    "Fascia lata.l",
+    "Fascia lata.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "fascia-crural",
+   "kind": "mapped",
+   "meshes": [
+    "Crural fascia.l",
+    "Crural fascia.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "fascia-popliteal",
+   "kind": "mapped",
+   "meshes": [
+    "Popliteal fascia.l",
+    "Popliteal fascia.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "fascia-masseteric",
+   "kind": "mapped",
+   "meshes": [
+    "Masseteric fascia.l",
+    "Masseteric fascia.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "fascia-temporal",
+   "kind": "mapped",
+   "meshes": [
+    "Superficial layer of temporal fascia.l",
+    "Superficial layer of temporal fascia.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "fascia-transversalis",
+   "kind": "mapped",
+   "meshes": [
+    "Transversalis fascia"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "fascia-iliopsoas",
+   "kind": "mapped",
+   "meshes": [
+    "Iliopsoas fascia.l",
+    "Iliopsoas fascia.r"
+   ],
+   "insertions": []
   }
  ]
 }

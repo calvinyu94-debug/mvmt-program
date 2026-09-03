@@ -511,7 +511,7 @@ and skipped, so re-importing your own export does not breed duplicates.
 
 ## The anatomy index
 
-`ANATOMY` is a flat array of 335 structures — muscles, joints, ligaments, fascia
+`ANATOMY` is a flat array of 403 structures — muscles, joints, ligaments, fascia
 and nerves — each resolving to the library drills that load it. It backs the
 Anatomy view, and a separate 3D viewer project consumes the same dataset and
 treats this file as its source. **Keep it liftable:** plain data, one top-level
@@ -634,8 +634,11 @@ Three rules that toggle has to keep:
 **Reparenting an entry removes it from the default browse list.** That is the
 toggle working, not a bug, but it is a real cost and it lands on exactly the
 entries you reach for most: Piriformis, Upper Trapezius and Rectus Femoris all
-became parts in Batches E–G and none of them appears in the default list any
-more. Three things make that acceptable, and a fourth would not survive losing
+became parts in Batches E–G, and Batch J put twenty-six more behind their
+parents — the three deltoid parts, the three triceps heads, both gastrocnemius
+heads, both digastric bellies. Biceps Long Head, a standalone since the first
+batch, became a child of Biceps Brachii in the same pass. None of them appears
+in the default list any more. Three things make that acceptable, and a fourth would not survive losing
 any of them — search finds a part regardless of the toggle, the parent lists it
 under *Breaks down into*, and the parent is itself the thing you usually wanted.
 **Weigh that before making a well-known entry a child of something.** The test is
@@ -811,14 +814,22 @@ A click raycasts against the region's own meshes only — context is never in
 the list — and walks every hit along the ray, nearest first, reading each
 `sourceName` back through the join. **The first hit the join claims wins;
 unmapped geometry is transparent to selection, never a selection result.**
-746 of the 2,054 exported objects map to nothing, and dozens of them are
+590 of the 2,054 exported objects map to nothing — it was 746 before Batch K
+named 42 ligaments and fasciae — and dozens of them are
 fasciae and tendon sheaths lying directly over the muscles a hand goes for —
 stopping at the nearest hit made the deltoid, the pecs and every thigh and
 forearm muscle unclickable. A mesh can be claimed by several structures
 (Piriformis is its own entry and part of the deep rotators), so among the
 claims on the winning hit the most specific wins, the one with the fewest
 meshes, and the rest are offered under *Also part of*. Selecting a structure
-highlights every mesh it claims, both sides. Only when nothing along the ray
+highlights every mesh it claims, both sides. **Show named parts governs this
+resolution too**, and it is the same variable the index uses:
+with it off a click on the middle deltoid gives Deltoid and lights six meshes,
+with it on it gives Middle Deltoid, lights two and links the parent. One
+toggle, both views — a second control in the viewer would only be a way for
+them to disagree. A mesh that only parts claim still resolves to a part
+whatever the toggle says, because the alternative is a click that selects
+nothing. Only when nothing along the ray
 maps does the click say *Not in the index* and name the frontmost unmapped
 mesh. That is ordinary, not an error, and it must never be turned into
 silence.
@@ -849,23 +860,81 @@ way in — `nerve-femoral.l` arrives as `nerve-femorall`. They are matched by
 sanitising the join's names the same way, never by parsing the loaded name
 back. If the loader's rule changes, that one function changes with it.
 
-### The depth slider peels; it never deletes
+### Systems are independent; muscle depth is a sub-control
 
-Four stops: Skin, Superficial, Deep, Bone. A mesh's depth is the shallowest
-`layer` of any structure that claims it — 1 superficial, 2 deep, 3 skeletal —
-and an unclaimed mesh falls back to its `system`: skeletal and insertions
-are 3, articular 2, everything else 1, except that an unclaimed mesh wearing
-the exporter's `Fascia` material is 0. Skin is the model as exported, fascia
-on; Superficial is the fascia peeled, which is what the word means to a
-practitioner. The fascia vanishes at that stop rather than fading, because the
-peel hides the layers above, and that is the right picture. It is keyed on
-the material, not the name, so the intermuscular septa go with it and the
-thoracolumbar fascia — a claimed structure with its own layer — does not. At
-each later stop the layers above are hidden, the layer at it is drawn as
-normal, and the layers beneath stay visible faded, so a deep muscle is still
-seen against the bone it works on. The selected structure is always shown and
-always full whatever the slider says: it is what was asked for. Context,
-landmarks and nerves stand outside the depth system.
+This replaced a four-stop depth slider — Skin, Superficial, Deep, Bone — which
+was conflating two questions. **Which system you are looking at and how deep
+into the muscle you are are separate decisions**, and one axis could not carry
+both: turning fascia off to see the muscle and turning bone off to see it
+clearly are different intentions, and "Skin" and "Bone" were never depths at
+all. They were systems wearing a depth's clothing.
+
+Seven system toggles, independent, each showing how many meshes the loaded
+region has of it — Fascia, Muscles, Bones and Joints & ligaments on by
+default, Nerves, Insertions and Landmarks off. Under them, **Muscle depth**:
+All · Superficial only · Deep only, live only while Muscles is on.
+
+`V3_SYSTEMS` is the whole of that control. The checkboxes, their order, their
+defaults, the visibility test in `v3Shows()` and the on-demand loads all read
+that one array, so **adding a system is an entry in it rather than a change
+anywhere else** — which was the point of the rewrite as much as the behaviour
+was. The three lazily-loaded layers are marked by carrying a `load`; nothing
+else distinguishes them.
+
+Arteries, veins and viscera are **not in the exported assets** — the
+mvmt-anatomy pipeline scoped to musculoskeletal and dropped cardiovascular
+(67,840 tris) and visceral (83,178). They are absent from `V3_SYSTEMS` rather
+than present and disabled: adding them is an export, not a viewer change.
+
+Two things decide which toggle a mesh answers to, and the first is not
+obvious:
+
+- **The exporter has no fascial system.** Every fascia in the model arrives
+  tagged `muscular`; the only signal is the `Fascia` material, which is what
+  the old peel keyed on for the same reason. Keyed on the material and not the
+  name, so the intermuscular septa go with it. Read in `v3SystemOf()` before
+  `v3Adopt()` replaces the material.
+- **Otherwise the claiming structures win, most specific first**, because
+  `ANATOMY`'s `system` is the considered answer and the extras are the
+  exporter's. That is what files the iliotibial tract and the bursae with the
+  fasciae rather than with the muscle they were exported beside. Only an
+  unclaimed mesh falls back to its own extras.
+
+Muscle depth is the shallowest `layer` of any structure claiming the mesh, 1
+superficial and 2 deep — the same rule the peel used. **A mesh nothing claims
+has no layer and is drawn at every setting**, never at none: hiding real
+geometry because the index has a gap is the wrong way round.
+
+The selected structure is always shown and always full whatever the toggles
+say — it is what was asked for — and `v3Show()` switches a system back on
+rather than let a selection land on an empty screen. Context stands outside
+the list entirely.
+
+### A structure's region is not always where its geometry is
+
+Thirty-nine structures are filed in one region and exported in another, and
+until `viewRegion` landed every one of them was a dead end from the single
+button that is meant to be the way in: **View in 3D** loaded `s.region`, found
+nothing there and said "its geometry is in another region's model".
+
+Quadriceps is a knee structure and every vastus is in `hip.glb`. The ten hyoid
+muscles are head-jaw and are exported with the neck. Upper trapezius is
+cervical and lives in the shoulder. The four spinal ligaments added with Batch
+K are filed lumbar — clinically right, since the PLL's whole significance is
+lumbar — and exist as own geometry only in `thoracic.glb`.
+
+The filing is not the bug. `region` is the MVMT region, chosen so a structure's
+drills and the region filter agree, and psoas belongs under lumbar whatever the
+exporter thinks. So the join carries the other answer instead: `viewRegion`,
+**generated from the export and absent wherever the structure's own region
+already holds some of its geometry**. `v3Show()` reads it and falls back to
+`s.region`. Regenerate it with the join; never hand-edit it.
+
+The check that this is complete: for every `mapped` structure, load the region
+`v3Show()` would load and confirm at least one of its meshes is in the scene.
+All 317 pass — the four insertion-only ones (Common Extensor Origin, Common
+Flexor Origin, Patellar Tendon, Quadriceps Tendon) through the insertion layer,
+which `v3Show()` turns on for them.
 
 ### Landmarks: coordinates from one file, everything else from the other
 
