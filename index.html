@@ -495,6 +495,7 @@ button{cursor:pointer}
 .anat-note{margin:0 0 4px;font-size:12.5px;color:var(--ink-3);font-style:italic}
 /* Navigation between a group and its parts, both directions. */
 .anat-parent{font-size:13px;color:var(--ink-2);margin:-8px 0 16px}
+.anat-3d{margin:-6px 0 16px}
 .alink{
   border:0;background:transparent;padding:0;font:inherit;color:var(--ink);
   font-weight:600;text-decoration:underline;text-underline-offset:2px;
@@ -920,6 +921,7 @@ button{cursor:pointer}
       <section class="panel">
         <div class="panel-hd">
           <h2>Region</h2>
+          <button class="pbtn" id="v3Mode" title="Hides the practitioner-only notes so the screen can be turned toward a patient — the same switch as the Anatomy view">Patient view: off</button>
         </div>
         <div class="v3-side">
           <div class="chips" id="v3Region"></div>
@@ -6107,7 +6109,46 @@ function renderAnatDetail(){
     el.onclick = null;
     return;
   }
+  const parent = s.inherits ? ANATOMY.find(x=>x.id === s.inherits) : null;
 
+  el.innerHTML = `
+    <h3>${esc(s.name)}</h3>
+    <div class="lat">${esc(s.latin)}</div>
+    <div class="tags">
+      ${regionsOf(s).map(k=>`<span class="tag">${esc(regionLabel(k))}</span>`).join("")}
+      <span class="tag">${esc(systemName(s.system))}</span>
+    </div>
+    ${parent ? `<div class="anat-parent">Part of
+      <button type="button" class="alink" data-goto="${esc(parent.id)}">${esc(parent.name)}</button></div>` : ""}
+    ${V3_HAS_GEOMETRY.has(s.id) ? `<div class="anat-3d">
+      <button type="button" class="pbtn" data-v3="${esc(s.id)}" title="Loads the region, selects this structure and frames it">View in 3D</button></div>` : ""}
+    ${anatDetailBody(s)}
+  `;
+
+  el.onclick = e=>{
+    const go = e.target.closest("[data-goto]");
+    if(go){
+      /* Selecting a part from here works whether or not it is in the browse
+         list — that is what makes the toggle safe to default off. */
+      anatSel = go.dataset.goto;
+      renderAnat();
+      return;
+    }
+    /* Into the viewer: the region loads if it has to, the structure is
+       selected and framed. Only offered where the join has geometry. */
+    const v = e.target.closest("[data-v3]");
+    if(v){ setView("3d"); v3Show(v.dataset.v3); return; }
+    const b = e.target.closest("[data-add]"); if(!b) return;
+    anatAddToPhase(b.dataset.add);
+  };
+}
+
+/* The body of a structure's detail — what it does, why it matters, the
+   drills that load it — shared by the Anatomy index and the 3D viewer's
+   panel, so the two can never say different things about the same structure.
+   The caller supplies the head and handles the data-goto and data-add clicks;
+   anatPatient hides the clinical field here for both at once. */
+function anatDetailBody(s){
   /* byId is rebuilt in place on every library change and anatEx with it, so a
      resolved id is always live — the guard is for the ordering, not the data. */
   const drills = (anatEx[s.id] || []).map(id=>byId[id]).filter(Boolean);
@@ -6129,16 +6170,7 @@ function renderAnatDetail(){
   const ownAdded = drills.length - inherited;
   const where = S ? (isSingle() ? "this handout" : phase().name) : "";
 
-  el.innerHTML = `
-    <h3>${esc(s.name)}</h3>
-    <div class="lat">${esc(s.latin)}</div>
-    <div class="tags">
-      ${regionsOf(s).map(k=>`<span class="tag">${esc(regionLabel(k))}</span>`).join("")}
-      <span class="tag">${esc(systemName(s.system))}</span>
-    </div>
-    ${parent ? `<div class="anat-parent">Part of
-      <button type="button" class="alink" data-goto="${esc(parent.id)}">${esc(parent.name)}</button></div>` : ""}
-
+  return `
     <div class="anat-sec">
       <span class="lbl">What it does</span>
       <p>${esc(s.action)}</p>
@@ -6213,19 +6245,6 @@ function renderAnatDetail(){
         not <code>${esc(m.others.join(", "))}</code></li>`).join("")}</ul>
     </div>` : ""}
   `;
-
-  el.onclick = e=>{
-    const go = e.target.closest("[data-goto]");
-    if(go){
-      /* Selecting a part from here works whether or not it is in the browse
-         list — that is what makes the toggle safe to default off. */
-      anatSel = go.dataset.goto;
-      renderAnat();
-      return;
-    }
-    const b = e.target.closest("[data-add]"); if(!b) return;
-    anatAddToPhase(b.dataset.add);
-  };
 }
 
 /* Adds exactly what the library's own checkbox adds — an item pointing at an
@@ -6306,7 +6325,7 @@ function setView(v){
   renderSaved();
   if(v === "list") renderList();
   else if(v === "anat"){ if(S) renderAll(); else renderAnat(); }
-  else if(v === "3d"){ if(S) renderAll(); }
+  else if(v === "3d"){ if(S) renderAll(); else v3RenderSel(); }
   else renderAll();
 }
 
@@ -6326,8 +6345,10 @@ function renderAll(){
   $("#nPrac").value = ph.practitionerNote;
   if(U.view==="pat") renderPatient();
   /* Switching phase changes which drills count as already added, so the
-     anatomy detail has to follow the phase bar like everything else. */
+     anatomy detail has to follow the phase bar like everything else — and
+     the 3D panel, which shows the same drills. */
   if(U.view==="anat") renderAnat();
+  if(U.view==="3d") v3RenderSel();
 }
 
 function syncHeader(){
@@ -6496,6 +6517,93 @@ $("#fCustomFile").onchange = e=>{
 const V3_VERSION = "0.170.0";
 const V3_DRACO = "https://cdn.jsdelivr.net/npm/three@" + V3_VERSION + "/examples/jsm/libs/draco/gltf/";
 const V3_ASSETS = "assets/";
+/* Every structure id the join gives geometry — mapped, authored or a landmark.
+   Generated from assets/structure-meshes.json so the Anatomy index can offer
+   View in 3D without fetching a byte; checked against the file at 3D setup
+   and reported if it drifts. Regenerate, never hand-edit:
+     node -e "const j=require('./assets/structure-meshes.json');console.log(JSON.stringify(j.structures.filter(s=>['mapped','authored','anchor'].includes(s.kind)).map(s=>s.id)))" */
+const V3_HAS_GEOMETRY = new Set([
+  "head-jaw-tmj", "head-jaw-tmj-disc", "head-jaw-masseter", "head-jaw-temporalis",
+  "head-jaw-medial-pterygoid", "head-jaw-lateral-pterygoid", "head-jaw-digastric",
+  "head-jaw-mylohyoid", "head-jaw-geniohyoid", "head-jaw-stylohyoid", "head-jaw-sternohyoid",
+  "head-jaw-omohyoid", "head-jaw-sternothyroid", "head-jaw-thyrohyoid", "head-jaw-hyoid",
+  "head-jaw-mandible", "head-jaw-occipitofrontalis", "head-jaw-platysma", "cervical-scm",
+  "cervical-scalenes", "cervical-upper-trap", "cervical-levator", "cervical-suboccipitals",
+  "cervical-deep-flexors", "cervical-splenius", "cervical-semispinalis", "cervical-discs",
+  "cervical-vertebrae", "cervical-first-rib", "cervical-rcp-major", "cervical-rcp-minor",
+  "cervical-obliquus-superior", "cervical-obliquus-inferior", "cervical-splenius-capitis",
+  "cervical-splenius-cervicis", "cervical-scalenus-anterior", "cervical-scalenus-medius",
+  "cervical-scalenus-posterior", "shoulder-deltoid", "shoulder-supraspinatus",
+  "shoulder-infraspinatus", "shoulder-teres-minor", "shoulder-subscapularis",
+  "shoulder-pec-major", "shoulder-pec-minor", "shoulder-lats", "shoulder-teres-major",
+  "shoulder-mid-trap", "shoulder-lower-trap", "shoulder-rhomboids", "shoulder-serratus",
+  "shoulder-biceps-long-head", "shoulder-gh-joint", "shoulder-ac-joint", "shoulder-scapula",
+  "shoulder-trapezius", "shoulder-subclavius", "shoulder-coracobrachialis",
+  "shoulder-subacromial-bursa", "shoulder-glenoid-labrum", "shoulder-sternoclavicular-joint",
+  "elbow-common-extensor", "elbow-common-flexor", "elbow-ecrb", "elbow-wrist-flexors",
+  "elbow-biceps", "elbow-triceps", "elbow-brachioradialis", "elbow-pronator-teres",
+  "elbow-carpal-tunnel", "elbow-first-compartment", "elbow-joint", "elbow-wrist-fcr",
+  "elbow-wrist-fcu", "elbow-wrist-palmaris-longus", "elbow-wrist-fds", "elbow-wrist-fdp",
+  "elbow-wrist-fpl", "elbow-wrist-pronator-quadratus", "elbow-wrist-brachialis",
+  "elbow-wrist-ecrl", "elbow-wrist-ed", "elbow-wrist-edm", "elbow-wrist-ecu", "elbow-wrist-ei",
+  "elbow-wrist-epl", "elbow-wrist-anconeus", "elbow-wrist-supinator", "elbow-wrist-thenar",
+  "elbow-wrist-hypothenar", "elbow-wrist-adductor-pollicis", "elbow-wrist-lumbricals",
+  "elbow-wrist-interossei", "elbow-wrist-proximal-ru-joint", "elbow-wrist-distal-ru-joint",
+  "elbow-wrist-interosseous-membrane", "elbow-wrist-flexor-retinaculum",
+  "elbow-wrist-extensor-retinaculum", "elbow-wrist-palmar-aponeurosis", "elbow-wrist-joint",
+  "thoracic-multifidus", "thoracic-costovertebral", "thoracic-ribs", "thoracic-diaphragm",
+  "thoracic-intercostals", "thoracic-vertebrae", "thoracic-serratus-posterior",
+  "thoracic-serratus-post-superior", "thoracic-serratus-post-inferior", "thoracic-sternum",
+  "thoracic-costal-cartilage", "lumbar-multifidus", "lumbar-ql", "lumbar-psoas", "lumbar-tva",
+  "lumbar-obliques", "lumbar-rectus-abdominis", "lumbar-tl-fascia", "lumbar-discs",
+  "lumbar-sij", "lumbar-pelvic-floor", "lumbar-external-oblique", "lumbar-internal-oblique",
+  "lumbar-linea-alba", "lumbar-iliolumbar-ligament", "spine-erector-spinae",
+  "spine-iliocostalis", "spine-longissimus", "spine-spinalis", "spine-iliocostalis-lumborum",
+  "spine-iliocostalis-thoracis", "spine-iliocostalis-cervicis", "spine-longissimus-thoracis",
+  "spine-longissimus-cervicis", "spine-longissimus-capitis", "spine-spinalis-thoracis",
+  "spine-spinalis-cervicis", "spine-spinalis-capitis", "spine-transversospinalis",
+  "spine-semispinalis", "spine-semispinalis-cervicis", "spine-semispinalis-thoracis",
+  "spine-multifidus", "spine-multifidus-cervicis", "spine-rotatores", "spine-interspinales",
+  "spine-intertransversarii", "spine-levatores-costarum", "hip-glute-max", "hip-glute-med",
+  "hip-glute-min", "hip-tfl", "hip-itb", "hip-piriformis", "hip-deep-rotators",
+  "hip-adductor-longus", "hip-adductor-magnus", "hip-gracilis", "hip-iliacus",
+  "hip-rectus-femoris", "hip-hamstring-origin", "hip-joint", "hip-pubic-symphysis",
+  "hip-obturator-internus", "hip-obturator-externus", "hip-gemellus-superior",
+  "hip-gemellus-inferior", "hip-quadratus-femoris", "hip-adductor-longus-only",
+  "hip-adductor-brevis", "hip-sartorius", "hip-pectineus", "hip-trochanteric-bursa",
+  "hip-iliofemoral-ligament", "hip-sacrotuberous-ligament", "hip-sacrospinous-ligament",
+  "hip-inguinal-ligament", "knee-quadriceps", "knee-vmo", "knee-hamstrings", "knee-popliteus",
+  "knee-patellar-tendon", "knee-quad-tendon", "knee-acl", "knee-pcl", "knee-mcl", "knee-lcl",
+  "knee-menisci", "knee-pes-anserinus", "knee-tibiofemoral", "knee-patellofemoral",
+  "knee-vastus-lateralis", "knee-vastus-medialis", "knee-vastus-intermedius",
+  "knee-biceps-femoris-long", "knee-biceps-femoris-short", "knee-semitendinosus",
+  "knee-semimembranosus", "knee-plantaris", "knee-patella", "knee-proximal-tibiofibular",
+  "ankle-gastrocnemius", "ankle-soleus", "ankle-achilles", "ankle-tib-post", "ankle-tib-ant",
+  "ankle-fibularis", "ankle-fhl", "ankle-plantar-fascia", "ankle-intrinsics",
+  "ankle-talocrural", "ankle-subtalar", "ankle-first-mtp", "ankle-lateral-ligaments",
+  "ankle-fibularis-longus", "ankle-fibularis-brevis", "ankle-foot-layer-1",
+  "ankle-foot-layer-2", "ankle-foot-layer-3", "ankle-foot-layer-4", "ankle-fdl", "ankle-ehl",
+  "ankle-edl", "ankle-fibularis-tertius", "ankle-edb", "ankle-deltoid-ligament",
+  "ankle-spring-ligament", "ankle-tarsal-tunnel", "ankle-extensor-retinaculum",
+  "ankle-sinus-tarsi", "bone-cranium", "bone-clavicle", "bone-humerus", "bone-radius",
+  "bone-ulna", "bone-carpals", "bone-hand", "bone-hip-bone", "bone-sacrum-coccyx", "bone-femur",
+  "bone-tibia", "bone-fibula", "bone-tarsals", "bone-foot", "joint-sternocostal",
+  "joint-sacrococcygeal", "joint-intercarpal", "joint-hand-joints", "joint-mtp",
+  "lm-mastoid-process", "lm-occipital-protuberance", "lm-superior-nuchal-line",
+  "lm-c1-transverse", "lm-c2-spinous", "lm-c7-spinous", "lm-mandible-angle",
+  "lm-zygomatic-arch", "lm-acromion", "lm-coracoid", "lm-scapular-spine", "lm-inferior-angle",
+  "lm-scapular-medial-border", "lm-greater-tubercle", "lm-bicipital-groove", "lm-jugular-notch",
+  "lm-sternal-angle", "lm-costal-margin", "lm-medial-epicondyle", "lm-lateral-epicondyle",
+  "lm-olecranon", "lm-radial-styloid", "lm-ulnar-styloid", "lm-anatomical-snuffbox",
+  "lm-pisiform", "lm-iliac-crest", "lm-asis", "lm-psis", "lm-ischial-tuberosity",
+  "lm-greater-trochanter", "lm-pubic-tubercle", "lm-sacral-base", "lm-tibial-tuberosity",
+  "lm-gerdys-tubercle", "lm-knee-joint-line", "lm-fibular-head", "lm-adductor-tubercle",
+  "lm-medial-malleolus", "lm-lateral-malleolus", "lm-navicular-tuberosity",
+  "lm-fifth-metatarsal-base", "lm-sustentaculum-tali", "nerve-cervical-roots",
+  "nerve-brachial-plexus", "nerve-median", "nerve-ulnar", "nerve-radial",
+  "nerve-lumbosacral-plexus", "nerve-sciatic", "nerve-femoral", "nerve-common-fibular",
+  "nerve-tibial"
+]);
 /* The four stops of the depth slider. Skin is the model as exported; each
    stop past it peels the layers above it away and fades the ones beneath. */
 const V3_STOPS = ["Skin", "Superficial", "Deep", "Bone"];
@@ -6532,6 +6640,8 @@ const V3 = {
   nerves:null, nervesPromise:null, /* nerves.glb, loaded once and kept */
   sel:null,                    /* selected structure id, or null */
   selMesh:null,                /* the sourceName of a clicked mesh no structure claims */
+  pendingShow:null,            /* a View in 3D asked for before setup finished */
+  anim:null,                   /* a camera move in progress: {from, to, t0, dur} */
   lmGeom:null
 };
 
@@ -6581,6 +6691,19 @@ function v3Data(){
         (V3.byMesh[n] = V3.byMesh[n] || []).push(s.id);
       });
     });
+    /* V3_HAS_GEOMETRY is generated from this file so the Anatomy index can
+       offer View in 3D without fetching anything. If the two ever disagree,
+       say so loudly rather than let a button appear or vanish quietly. */
+    const drift = [];
+    V3.join.structures.forEach(s=>{
+      const has = s.kind === "mapped" || s.kind === "authored" || s.kind === "anchor";
+      if(has !== V3_HAS_GEOMETRY.has(s.id)) drift.push(s.id + " (" + s.kind + ")");
+    });
+    V3_HAS_GEOMETRY.forEach(id=>{ if(!V3.byId[id]) drift.push(id + " (not in join)"); });
+    if(drift.length){
+      console.error("3D: V3_HAS_GEOMETRY is out of step with structure-meshes.json — regenerate it:", drift);
+      v3LayerNote("The list of structures with geometry is out of date (" + drift.length + "). See the console.");
+    }
   });
 }
 
@@ -6750,6 +6873,17 @@ function v3Resize(){
 function v3Loop(){
   V3.raf = 0;
   if(!V3.visible || !V3.ok) return;
+  /* A framing move in progress: ease the camera and its target together.
+     Never started under prefers-reduced-motion — v3FrameSel jumps instead. */
+  const a = V3.anim;
+  if(a){
+    const k = Math.min(1, (performance.now() - a.t0) / a.dur);
+    const e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    V3.camera.position.lerpVectors(a.from.pos, a.to.pos, e);
+    V3.controls.target.lerpVectors(a.from.target, a.to.target, e);
+    if(k >= 1) V3.anim = null;
+    V3.dirty = true;
+  }
   const moved = V3.controls.update();
   if(moved || V3.dirty){
     V3.dirty = false;
@@ -7153,29 +7287,38 @@ function v3Select(id, meshName){
 /* Which regions hold a structure's geometry, from the join through the
    region files' extras: a structure's meshes may be spread across neighbours,
    so this is read from what is loaded where it can be. */
+/* The panel says what the Anatomy index says — the same anatDetailBody(), so
+   what a structure does, why it matters and which drills load it can never
+   differ between the two — with the viewer's own head on top. The patient
+   toggle is the index's toggle: one variable, module state, never stored, so
+   a reload lands in practitioner mode here as it does there. Adding a drill
+   goes through anatAddToPhase(), identical to the library's own checkbox. */
 function v3RenderSel(){
   const el = $("#v3Sel");
+  $("#v3Mode").textContent = "Patient view: " + (anatPatient ? "on" : "off");
+  $("#v3Mode").setAttribute("aria-pressed", anatPatient);
   if(V3.selMesh){
     el.innerHTML = `
       <span class="lbl">Not in the index</span>
       <p class="v3-selname">${esc(V3.selMesh)}</p>
       <p class="v3-note">This part of the model belongs to no structure in the index, so there is nothing to show for it. About a third of the model is like this.</p>`;
+    el.onclick = null;
     return;
   }
   const s = V3.sel ? v3Struct(V3.sel) : null;
   if(!s){
     el.innerHTML = `<span class="lbl">Selected</span><p class="v3-note">${V3.root ? "Click a structure to name it." : "Load a region first."}</p>`;
+    el.onclick = null;
     return;
   }
-  const j = V3.byId[s.id] || {};
+  const j = (V3.byId && V3.byId[s.id]) || {};
   const names = (j.meshes || []).concat(j.insertions || []);
   const here = names.filter(n=>V3.meshes.has(n)).length;
   /* Every other structure that claims any of these meshes, most specific first. */
   const others = [];
-  names.forEach(n=>(V3.byMesh[n] || []).forEach(o=>{ if(o !== s.id && others.indexOf(o) < 0) others.push(o); }));
+  names.forEach(n=>((V3.byMesh && V3.byMesh[n]) || []).forEach(o=>{ if(o !== s.id && others.indexOf(o) < 0) others.push(o); }));
   others.sort((a, b)=>v3Claim(a) - v3Claim(b));
-  const isLandmark = s.system === "landmark";
-  const attached = isLandmark ? (anatAttach[s.id] || []).map(id=>v3Struct(id)).filter(Boolean) : [];
+  const parent = s.inherits ? v3Struct(s.inherits) : null;
   el.innerHTML = `
     <span class="lbl">Selected</span>
     <h3 class="v3-selname">${esc(s.name)}</h3>
@@ -7185,27 +7328,25 @@ function v3RenderSel(){
       <span class="tag">${esc(systemName(s.system))}</span>
     </div>
     ${s.system === "nervous" ? `<p class="v3-schem-inline">${esc(V3_SCHEMATIC)}</p>` : ""}
-    ${!isLandmark && s.system !== "nervous" ? `<p class="v3-note">${here
+    ${parent ? `<div class="anat-parent">Part of
+      <button type="button" class="alink" data-goto="${esc(parent.id)}">${esc(parent.name)}</button></div>` : ""}
+    ${s.system !== "landmark" && s.system !== "nervous" ? `<p class="v3-note">${here
         ? here + " of " + names.length + " mesh" + (names.length === 1 ? "" : "es") + " in this region's model"
           + (j.insertions && j.insertions.length && !V3.ins ? " — turn on Insertions for its attachments" : "") + "."
-        : "Its geometry is in another region's model."}</p>` : ""}
-    ${isLandmark ? `
-    <div class="anat-sec">
-      <span class="lbl">What attaches here</span>
-      <div class="anat-kids">
-        ${attached.map(a=>`<button type="button" data-v3go="${esc(a.id)}">${esc(a.name)}</button>`).join("") || `<p class="v3-note">Nothing resolved.</p>`}
-      </div>
-    </div>` : ""}
+        : (names.length ? "Its geometry is in another region's model." : "No geometry in the model — described here only.")}</p>` : ""}
+    ${anatDetailBody(s)}
     ${others.length ? `
     <div class="anat-sec">
       <span class="lbl">Also part of</span>
       <div class="anat-kids">
-        ${others.map(o=>{ const t = v3Struct(o); return t ? `<button type="button" data-v3go="${esc(o)}">${esc(t.name)}</button>` : ""; }).join("")}
+        ${others.map(o=>{ const t = v3Struct(o); return t ? `<button type="button" data-goto="${esc(o)}">${esc(t.name)}</button>` : ""; }).join("")}
       </div>
     </div>` : ""}`;
   el.onclick = e=>{
-    const b = e.target.closest("[data-v3go]"); if(!b) return;
-    v3Show(b.dataset.v3go);
+    const go = e.target.closest("[data-goto]");
+    if(go){ v3Show(go.dataset.goto); return; }
+    const b = e.target.closest("[data-add]"); if(!b) return;
+    anatAddToPhase(b.dataset.add);
   };
 }
 
@@ -7213,9 +7354,11 @@ function v3RenderSel(){
    one does not. The attachment links and, in time, the Anatomy index come in
    through here. A structure with no geometry is selected by name only. */
 async function v3Show(id){
-  const j = V3.byId[id], s = v3Struct(id);
+  const s = v3Struct(id);
   if(!s) return;
-  if(!V3.ok){ V3.pending = V3.pending || (s.region); return; }
+  /* Before setup the request is kept, not dropped; v3Enter() replays it. */
+  if(!V3.ok){ V3.pendingShow = id; V3.pending = null; v3Chips(); return; }
+  const j = V3.byId[id];
   const names = j ? (j.meshes || []).concat(j.insertions || []) : [];
   const here = names.some(n=>V3.meshes.has(n)) || j && j.kind === "authored" || s.system === "landmark";
   if(!here && V3.region !== s.region){
@@ -7224,8 +7367,46 @@ async function v3Show(id){
   }
   if(s.system === "landmark" && !V3.layers.lm){ $("#v3Lm").checked = true; v3Landmarks(true); }
   if(j && j.kind === "authored" && !V3.layers.nrv){ $("#v3Nrv").checked = true; v3Nerves(true); }
-  if(j && !(j.meshes || []).length && (j.insertions || []).length && !V3.layers.ins){ $("#v3Ins").checked = true; v3Insertions(true); }
+  if(j && !(j.meshes || []).length && (j.insertions || []).length && !V3.layers.ins){
+    $("#v3Ins").checked = true;
+    await v3Insertions(true);
+  }
   v3Select(id);
+  v3FrameSel();
+}
+
+/* Frames the selected structure: its visible meshes' bounds, seen from the
+   direction the camera already looks, with a little air. Eased over half a
+   second, or placed at once under prefers-reduced-motion — the one camera
+   animation the viewer has. A selection with nothing on screen leaves the
+   camera where it is. */
+function v3FrameSel(){
+  const names = v3SelNames();
+  if(!names || !V3.root) return;
+  const T = V3.lib.THREE;
+  const box = new T.Box3();
+  let n = 0;
+  names.forEach(name=>{ const m = V3.meshes.get(name); if(m && m.visible && m.userData.box){ box.union(m.userData.box); n++; } });
+  if(V3.sel && V3.lm && V3.lm.visible) V3.lm.children.forEach(m=>{ if(m.userData.v3.id === V3.sel){ box.expandByPoint(m.position); n++; } });
+  if(V3.sel && V3.nerves && V3.nerves.visible) V3.nerves.traverse(o=>{ if(o.isMesh && o.visible && o.userData.v3 && o.userData.v3.id === V3.sel){ box.union(o.userData.box); n++; } });
+  if(!n || box.isEmpty()) return;
+  const c = box.getCenter(new T.Vector3()), size = box.getSize(new T.Vector3());
+  const radius = Math.max(size.length() / 2, 0.02);
+  const cam = V3.camera, ctl = V3.controls;
+  const fov = cam.fov * Math.PI / 180;
+  let dist = radius / Math.sin(fov / 2) * 1.25;
+  const aspect = V3.size.w / V3.size.h;
+  if(aspect < 1) dist /= aspect;
+  dist = Math.max(ctl.minDistance, Math.min(ctl.maxDistance, dist));
+  const dir = cam.position.clone().sub(ctl.target).normalize();
+  const to = {pos:c.clone().addScaledVector(dir, dist), target:c};
+  if(v3Reduced()){
+    cam.position.copy(to.pos); ctl.target.copy(to.target); ctl.update();
+    V3.anim = null; V3.dirty = true;
+    return;
+  }
+  V3.anim = {from:{pos:cam.position.clone(), target:ctl.target.clone()}, to:to, t0:performance.now(), dur:550};
+  V3.dirty = true;
 }
 
 /* ---- controls ---- */
@@ -7237,6 +7418,9 @@ $("#v3Depth").oninput = e=>{
 $("#v3Ins").onchange = e=>v3Insertions(e.target.checked);
 $("#v3Lm").onchange  = e=>v3Landmarks(e.target.checked);
 $("#v3Nrv").onchange = e=>v3Nerves(e.target.checked);
+/* The Anatomy index's toggle, from here. Same variable; the index's own
+   button reads it back the next time that view renders. */
+$("#v3Mode").onclick = ()=>{ anatPatient = !anatPatient; v3RenderSel(); };
 
 /* ---- entry and exit, from setView ---- */
 function v3Enter(){
@@ -7246,7 +7430,8 @@ function v3Enter(){
   v3Setup().then(()=>{
     v3Chips();
     v3RenderSel();
-    if(V3.pending) v3Load(V3.pending);
+    if(V3.pendingShow){ const id = V3.pendingShow; V3.pendingShow = null; v3Show(id); }
+    else if(V3.pending) v3Load(V3.pending);
     else if(!V3.region) v3Overlay("Choose a region", "Nothing has been downloaded yet. Each region is a separate file and loads when you pick it.");
     if(V3.visible && !V3.raf) v3Loop();
   }).catch(err=>{

@@ -16,7 +16,9 @@ Open the live URL in any browser and it runs.
   and which drills load it.
 - **3D** is the anatomy viewer. It loads nothing until it is opened — the
   libraries and the region models arrive on demand, one region at a time, so
-  the rest of the app stays exactly as fast as it is.
+  the rest of the app stays exactly as fast as it is. Tap a structure to read
+  what it does and add the drills that load it straight into the open program;
+  the Anatomy index offers **View in 3D** the other way round.
 
 ## Where your data lives
 
