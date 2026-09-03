@@ -4000,6 +4000,21 @@ const ANATOMY = [
  clinical:"The high ankle sprain. Injured by forced outward rotation rather than inversion, tender above the joint line rather than below it, and it takes roughly twice as long to recover. Mistaking one for a lateral sprain is the single most common reason an ankle does not settle on schedule.",
  ex:["Band Eversion","Knee-to-Wall Dorsiflexion","Isometric Calf Hold","Single Leg Balance Progression"]},
 
+{id:"ankle-atifl", name:"Anterior Tibiofibular Ligament", latin:"lig. tibiofibulare anterius", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-syndesmosis",
+ action:"Runs down and out from the front of the tibia to the front of the fibula, just above the ankle.",
+ clinical:"The first and most commonly injured part of the syndesmosis. Tender directly over it above the joint line, and the structure loaded by the squeeze and external rotation tests. Its isolated injury is the mildest high ankle sprain.",
+ ex:["Band Eversion","Knee-to-Wall Dorsiflexion","Isometric Calf Hold"]},
+
+{id:"ankle-ptifl", name:"Posterior Tibiofibular Ligament", latin:"lig. tibiofibulare posterius", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-syndesmosis",
+ action:"The posterior counterpart, from the back of the tibia to the back of the fibula.",
+ clinical:"Considerably stronger than the anterior. Its involvement means a more significant injury, and its avulsion is the posterior malleolar fracture.",
+ ex:["Band Eversion","Isometric Calf Hold","Ankle CARs"]},
+
+{id:"ankle-transverse-tibiofibular", name:"Transverse Tibiofibular Ligament", latin:"lig. tibiofibulare transversum", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-syndesmosis",
+ action:"Deep to the posterior ligament, running across the back of the ankle.",
+ clinical:"Effectively deepens the socket at the back, acting as a labrum for the talus. Rarely identified in isolation but part of why posterior syndesmotic injuries are slow.",
+ ex:["Ankle CARs","Knee-to-Wall Dorsiflexion"]},
+
 {id:"ankle-bifurcate", name:"Bifurcate Ligament", latin:"lig. bifurcatum", region:"ankle-foot", system:"articular", layer:3,
  action:"A Y-shaped ligament from the front of the heel bone splitting to the navicular and the cuboid.",
  clinical:"Avulses in an inversion sprain and produces tenderness in front of the outer ankle that is routinely misread as an ATFL injury. Point tenderness further forward, over the sinus tarsi rather than in front of the malleolus, distinguishes it.",
@@ -7279,7 +7294,8 @@ const V3_HAS_GEOMETRY = new Set([
   "shoulder-rhomboid-minor", "knee-articularis-genus", "ankle-atfl", "ankle-cfl",
   "ankle-ptfl", "ankle-deltoid-post-tibiotalar", "ankle-deltoid-tibiocalcaneal",
   "ankle-deltoid-tibionavicular", "ankle-tc-anterior", "ankle-tc-lateral", "ankle-tc-medial",
-  "ankle-tc-posterior", "ankle-syndesmosis", "ankle-bifurcate", "ankle-dorsal-talonavicular",
+  "ankle-tc-posterior", "ankle-syndesmosis", "ankle-atifl", "ankle-ptifl",
+  "ankle-transverse-tibiofibular", "ankle-bifurcate", "ankle-dorsal-talonavicular",
   "ankle-short-plantar", "ankle-dorsal-calcaneocuboid"
 ]);
 /* The systems the model can be shown by, and the whole of the toggle list:

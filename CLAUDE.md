@@ -511,7 +511,7 @@ and skipped, so re-importing your own export does not breed duplicates.
 
 ## The anatomy index
 
-`ANATOMY` is a flat array of 435 structures — muscles, joints, ligaments, fascia
+`ANATOMY` is a flat array of 438 structures — muscles, joints, ligaments, fascia
 and nerves — each resolving to the library drills that load it. It backs the
 Anatomy view, and a separate 3D viewer project consumes the same dataset and
 treats this file as its source. **Keep it liftable:** plain data, one top-level
@@ -828,7 +828,7 @@ it does **not** carry, each of which the viewer handles rather than hides:
   78 markers, because the region filter only means something in a region.
 
 Everything else behaves as it does in a region — selection, systems, muscle
-depth and parts all read the same code and the same join, and 344 of the 349
+depth and parts all read the same code and the same join, and 347 of the 352
 mapped structures have every one of their meshes in it. Differences a click
 shows are occlusion, not resolution: the whole body simply has more anatomy in
 front of the ray.
@@ -1011,7 +1011,18 @@ both use it), and the panel lists the members under *Contains*, each a link
 through `v3Show()`. Members are asserted at 3D setup beside the fascial lines:
 every id must resolve in the join and in `ANATOMY`, a container must name
 members, and members on a non-container is reported. The index cannot show
-*Contains*, because it must fetch nothing 3D and `members` lives in the join. Selecting a structure
+*Contains*, because it must fetch nothing 3D and `members` lives in the join.
+
+**A group whose parts are its own `inherits` children is not a container.**
+Lateral Ankle Ligaments, the Deltoid Ligament and the Distal Tibiofibular
+Syndesmosis each hold exactly the meshes of the named ligaments filed under
+them, which looks like the container case and is not: the parts claim two
+meshes each against the group's six, so `v3Rank()` separates them on
+specificity and there is no tie to break. `container` is for the entry that
+would otherwise tie — a *joint* holding exactly the meshes of a *group* it is
+made of, as Talocrural Joint does with Lateral Ankle Ligaments. Marking a
+parent as a container as well would put its own children under *Contains*,
+which is what *Breaks down into* already says. Selecting a structure
 highlights every mesh it claims, both sides. **Show named parts governs this
 resolution too**, and it is the same variable the index uses:
 with it off a click on the middle deltoid gives Deltoid and lights six meshes,
@@ -1138,7 +1149,7 @@ already holds some of its geometry**. `v3Show()` reads it and falls back to
 
 The check that this is complete: for every `mapped` structure, load the region
 `v3Show()` would load and confirm at least one of its meshes is in the scene.
-All 349 pass — the five insertion-only ones (Common Extensor Origin, Common
+All 352 pass — the five insertion-only ones (Common Extensor Origin, Common
 Flexor Origin, Patellar Tendon, Quadriceps Tendon, Articularis Genus) through the insertion layer,
 which `v3Show()` turns on for them.
 
