@@ -533,6 +533,7 @@ array, no reference to anything that renders it.
   inherits: "hip-hamstrings",    // show the parent's drills, then this one's own
   noExercises: "Specialist work" // why this structure legitimately has none
   attachments: ["Masseter", …]   // landmarks only — STRUCTURE names, not exercise
+  modelNote: "…"                 // where the 3D model is wrong about it — see below
 }
 ```
 
@@ -710,6 +711,48 @@ Three things keep `clinical` off paper, and all three have to stay true:
 The Patient view toggle hides `clinical` and nothing else. It is **module state,
 never storage** — the safe state is practitioner, so that has to be the state a
 reload lands in. Do not make it sticky.
+
+### `modelNote` says where the model is wrong, and it is not a warning
+
+Some structures are mislabelled or misplaced **in Z-Anatomy itself**. The
+trapezius part names are inverted at source — its "ascending part" is
+anatomically the upper trapezius — and the iliolumbar ligament's iliac end is
+drawn about 10 mm above the crest it attaches to, so it appears to float. There
+was nowhere to say so: the trapezius correction was a `sourceNote` in the join
+that nothing displayed.
+
+`modelNote` is that place. Optional, plain prose, unresolved by anything, and
+rendered by `anatDetailBody()` under the clinical block as
+**About this model — …**. Four entries carry one today: `shoulder-trapezius`,
+`cervical-upper-trap` and `shoulder-lower-trap` (the inversion) and
+`lumbar-iliolumbar-ligament` (the overshoot); `ankle-talocrural` carries the
+fifth, saying the joint has no capsule mesh of its own.
+
+Same principle as the schematic-nerve label: **where the model is less
+trustworthy than it looks, say so on screen.** Nobody but CYU can see the
+discrepancy, so nobody else can report it.
+
+Three rules it has to keep:
+
+- **Not a warning colour and not dismissible.** `.anat-model` is `--ink-3` under
+  a hairline rule. `--warn` would say the structure is dangerous; what is
+  imperfect is the drawing. Do not reach for `.anat-sec.clin` either — that
+  ground means *practitioner-only*, which this is not.
+- **It shows in patient view.** It is the one thing in the detail body outside
+  the `anatPatient` gate, deliberately: a patient looking at a floating ligament
+  is better served knowing the drawing is imperfect than wondering what they are
+  seeing. It is about the tool, not about them.
+- **It must never print**, by the same three guards `clinical` has — the two
+  views carry `no-print`, nothing copies anatomy text into a program, and
+  `renderPatient()` never reads `ANATOMY`. It describes the 3D model, and the
+  model is not on the handout.
+
+**Do not correct the geometry to remove the need for one.** The meshes are CC
+BY-SA data from upstream; editing them is an `mvmt-anatomy` job, it sets a
+precedent that the atlas is ours to fix, and there is no way to audit 2,054
+objects for the same class of error. A note is honest, costs nothing and scales.
+If specific structures are ever to be corrected, that is a separate decision
+with its own brief.
 
 ## Storage
 

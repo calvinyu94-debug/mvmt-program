@@ -493,6 +493,19 @@ button{cursor:pointer}
   padding:12px 14px;border-radius:var(--radius);
 }
 
+/* Where the 3D model is wrong about this structure. Muted and rule-marked,
+   deliberately NOT a warning colour: the geometry is imperfect, the structure
+   is not dangerous, and --warn here would say the second. No dismiss control,
+   for the reason the schematic-nerve label has none. */
+.anat-model{
+  margin-top:14px;padding:10px 0 0;border-top:1px solid var(--line-2);
+  font-size:12.5px;color:var(--ink-3);
+}
+.anat-model b{
+  font-family:var(--font-ui);text-transform:uppercase;letter-spacing:.08em;
+  font-size:11px;font-weight:700;
+}
+
 .anat-note{margin:0 0 4px;font-size:12.5px;color:var(--ink-3);font-style:italic}
 /* Navigation between a group and its parts, both directions. */
 .anat-parent{font-size:13px;color:var(--ink-2);margin:-8px 0 16px}
@@ -2457,6 +2470,22 @@ const EX = [
                    have. Missing it is reported like any other resolution
                    error.
 
+   And one more, optional and unresolved — it is prose, not a reference:
+
+     modelNote     where the 3D model is wrong about this structure. Some
+                   things are mislabelled or misplaced in Z-Anatomy itself:
+                   the trapezius part names are inverted at source, and the
+                   iliolumbar ligament's iliac end overshoots the crest it
+                   attaches to. The geometry is CC BY-SA data from upstream
+                   and is not ours to correct — a note is honest, costs
+                   nothing and scales where editing 2,054 objects does not.
+                   Same principle as the schematic-nerve label: where the
+                   model is less trustworthy than it looks, say so on screen.
+                   Shown in patient view as well as practitioner view, because
+                   it explains a visible oddity. It describes the model, and
+                   the model is not on the handout, so it must never print —
+                   the same three guards that hold for clinical hold for it.
+
    action is plain enough to read aloud to a patient. clinical is not: it names
    compensation patterns and things people get wrong. They are separate fields
    so hiding one is a toggle rather than a rewrite. clinical is reference-only
@@ -2610,7 +2639,8 @@ const ANATOMY = [
 {id:"cervical-upper-trap", name:"Upper Trapezius", latin:"m. trapezius pars descendens", region:"cervical", system:"muscular", layer:1, inherits:"shoulder-trapezius",
  action:"Lifts the shoulder blade and side-bends the neck.",
  clinical:"Rarely genuinely weak. Usually overworking because lower trapezius and serratus are not holding their end — treat the cause, not the ache.",
- ex:["Upper Trapezius Stretch","Prone Trap Raise","Serratus Wall Slide","Axial Elongation"]},
+ ex:["Upper Trapezius Stretch","Prone Trap Raise","Serratus Wall Slide","Axial Elongation"],
+ modelNote:"Z-Anatomy inverts the trapezius part names — its ‘ascending part’ is anatomically the upper trapezius. The mapping here follows the geometry, not the source labels, so the highlighting is correct."},
 
 {id:"cervical-levator", name:"Levator Scapulae", latin:"m. levator scapulae", region:"cervical", system:"muscular", layer:2,
  action:"Lifts the top corner of the shoulder blade and side-bends the neck.",
@@ -2795,7 +2825,8 @@ const ANATOMY = [
 {id:"shoulder-lower-trap", name:"Lower Trapezius", latin:"m. trapezius pars ascendens", region:"shoulder", system:"muscular", layer:2, inherits:"shoulder-trapezius",
  action:"Draws the shoulder blade down and rotates it upward for overhead reach.",
  clinical:"Sets the shoulder blade before the arm goes overhead. Weak in almost everyone with a desk job, and the direct counterpart to an overworking upper trapezius.",
- ex:["Prone Trap Raise","Prone Y-T-W-I","Face Pull","Banded Wall Slide"]},
+ ex:["Prone Trap Raise","Prone Y-T-W-I","Face Pull","Banded Wall Slide"],
+ modelNote:"Z-Anatomy inverts the trapezius part names — its ‘ascending part’ is anatomically the upper trapezius. The mapping here follows the geometry, not the source labels, so the highlighting is correct."},
 
 {id:"shoulder-rhomboids", name:"Rhomboids", latin:"mm. rhomboidei major et minor", region:"shoulder", system:"muscular", layer:2,
  action:"Draw the shoulder blades together and slightly upward.",
@@ -2838,7 +2869,8 @@ const ANATOMY = [
 {id:"shoulder-trapezius", name:"Trapezius", latin:"m. trapezius", region:"shoulder", alsoRegion:["cervical","thoracic"], system:"muscular", layer:1,
  action:"A large diamond-shaped muscle from the skull and spine to the shoulder blade and collarbone, with three parts pulling in different directions.",
  clinical:"Treated as one muscle and behaves as three. The upper part is almost never weak and almost always overworking; the lower part is almost always weak. Treating the tight part without training the weak one is why it comes back.",
- ex:["Prone Trap Raise","Band Pull-Apart","Prone Y-T-W-I","Upper Trapezius Stretch"]},
+ ex:["Prone Trap Raise","Band Pull-Apart","Prone Y-T-W-I","Upper Trapezius Stretch"],
+ modelNote:"Z-Anatomy inverts the trapezius part names — its ‘ascending part’ is anatomically the upper trapezius. The mapping here follows the geometry, not the source labels, so the highlighting is correct."},
 
 {id:"shoulder-subclavius", name:"Subclavius", latin:"m. subclavius", region:"shoulder", system:"muscular", layer:2,
  action:"A small muscle beneath the collarbone, drawing it down and forward.",
@@ -3314,7 +3346,8 @@ const ANATOMY = [
 {id:"lumbar-iliolumbar-ligament", name:"Iliolumbar Ligament", latin:"ligamentum iliolumbale", region:"lumbar", system:"articular", layer:3,
  action:"Runs from the L4 and L5 transverse processes to the back of the pelvis.",
  clinical:"The main passive restraint on the lowest lumbar segment. A frequent and specific source of one-sided low back pain just above the pelvic rim, and easily confused with the sacroiliac joint below it.",
- ex:["Side Plank","Bird Dog","Standing Lateral Flexion with Reach","Dead Bug"]},
+ ex:["Side Plank","Bird Dog","Standing Lateral Flexion with Reach","Dead Bug"],
+ modelNote:"The model draws this ligament’s iliac end about 1 cm above the top of the iliac crest, so it appears to float rather than attach. Its true attachment is on the inner lip of the crest, just anterior to the PSIS."},
 
 /* ---- Spine — the erector and deep columns, filed by column rather than by region ---- */
 /* Cut by column rather than by region. The two region-cut erector spinae
@@ -3777,7 +3810,8 @@ const ANATOMY = [
 {id:"ankle-talocrural", name:"Talocrural Joint", latin:"articulatio talocruralis", region:"ankle-foot", system:"articular", layer:3,
  action:"The main ankle hinge — pointing the foot up and down.",
  clinical:"Bending range is the single most useful ankle measurement. Restriction here pushes compensation up into the knee and hip on every squat and stair.",
- ex:["Knee-to-Wall Dorsiflexion","Banded Ankle Distraction","Kneeling Ankle Rock","Ankle CARs"]},
+ ex:["Knee-to-Wall Dorsiflexion","Banded Ankle Distraction","Kneeling Ankle Rock","Ankle CARs"],
+ modelNote:"The model carries no separate capsule mesh for the ankle joint — the ligaments shown are its collaterals, each also mapped individually."},
 
 {id:"ankle-subtalar", name:"Subtalar Joint", latin:"articulatio subtalaris", region:"ankle-foot", system:"articular", layer:3,
  action:"Sits below the ankle and handles side-to-side foot movement on uneven ground.",
@@ -6772,6 +6806,8 @@ function anatDetailBody(s){
       <span class="lbl">Why it matters clinically</span>
       <p>${esc(s.clinical)}</p>
     </div>`}
+
+    ${s.modelNote ? `<p class="anat-model"><b>About this model</b> — ${esc(s.modelNote)}</p>` : ""}
 
     ${isLandmark ? `
     <div class="anat-sec">
