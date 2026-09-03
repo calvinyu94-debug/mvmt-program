@@ -1,9 +1,9 @@
 {
  "version": 1,
  "generatedFrom": "mvmt-anatomy structure-mesh-join.json v1, trimmed to id/kind/meshes/insertions",
- "note": "meshes and insertions are glTF node names (sourceName) inside the region files; authored nerves are node names inside nerves.glb. Names, regions and triangle counts are not repeated here — ANATOMY in index.html has them. viewRegion is present only where the export puts a structure’s geometry in a region file other than its own: it is the region to load to see it.",
+ "note": "meshes and insertions are glTF node names (sourceName) inside the region files; authored nerves are node names inside nerves.glb. Names, regions and triangle counts are not repeated here — ANATOMY in index.html has them. viewRegion is present only where the export puts a structure’s geometry in a region file other than its own: it is the region to load to see it. container: true marks a joint or space whose meshes are also owned by the named structures listed in members — a click prefers the named structure over the container, and the selection panel lists the members under Contains.",
  "counts": {
-  "mapped": 317,
+  "mapped": 349,
   "absent": 14,
   "unresolved": 1,
   "anchor": 42,
@@ -821,7 +821,12 @@
     "Superior glenohumeral ligament.l",
     "Superior glenohumeral ligament.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "container": true,
+   "members": [
+    "shoulder-coracohumeral",
+    "shoulder-glenoid-labrum"
+   ]
   },
   {
    "id": "shoulder-ac-joint",
@@ -1074,7 +1079,11 @@
     "Flexor retinaculum of wrist.l",
     "Flexor retinaculum of wrist.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "container": true,
+   "members": [
+    "elbow-wrist-flexor-retinaculum"
+   ]
   },
   {
    "id": "elbow-first-compartment",
@@ -1502,7 +1511,11 @@
     "Ulnar collateral ligament of wrist joint.l",
     "Ulnar collateral ligament of wrist joint.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "container": true,
+   "members": [
+    "elbow-dorsal-radiocarpal"
+   ]
   },
   {
    "id": "thoracic-multifidus",
@@ -1524,7 +1537,11 @@
     "Radiate ligament of head of rib.l",
     "Radiate ligament of head of rib.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "container": true,
+   "members": [
+    "thoracic-radiate-rib"
+   ]
   },
   {
    "id": "thoracic-ribs",
@@ -2586,7 +2603,12 @@
     "Transverse acetabular ligament.l",
     "Transverse acetabular ligament.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "container": true,
+   "members": [
+    "hip-pubofemoral",
+    "hip-transverse-acetabular"
+   ]
   },
   {
    "id": "hip-pubic-symphysis",
@@ -2976,7 +2998,15 @@
     "Superficial part of tibial collateral ligament.l",
     "Superficial part of tibial collateral ligament.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "container": true,
+   "members": [
+    "knee-acl",
+    "knee-lcl",
+    "knee-mcl",
+    "knee-menisci",
+    "knee-pcl"
+   ]
   },
   {
    "id": "knee-patellofemoral",
@@ -2994,6 +3024,11 @@
     "Patellar ligament.er",
     "Patellar ligament.ol",
     "Patellar ligament.or"
+   ],
+   "container": true,
+   "members": [
+    "knee-patella",
+    "knee-patellar-retinacula"
    ]
   },
   {
@@ -3116,14 +3151,8 @@
    "id": "knee-proximal-tibiofibular",
    "kind": "mapped",
    "meshes": [
-    "Anterior tibiofibular ligament.l",
-    "Anterior tibiofibular ligament.r",
     "Articular capsule of superior tibiofibular joint.l",
-    "Articular capsule of superior tibiofibular joint.r",
-    "Posterior tibiofibular ligament.l",
-    "Posterior tibiofibular ligament.r",
-    "Transverse tibiofibular ligament.l",
-    "Transverse tibiofibular ligament.r"
+    "Articular capsule of superior tibiofibular joint.r"
    ],
    "insertions": []
   },
@@ -3311,7 +3340,15 @@
     "Posterior tibiotalar ligament.l",
     "Posterior tibiotalar ligament.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "container": true,
+   "members": [
+    "ankle-atfl",
+    "ankle-deltoid-ligament",
+    "ankle-deltoid-post-tibiotalar",
+    "ankle-lateral-ligaments",
+    "ankle-ptfl"
+   ]
   },
   {
    "id": "ankle-subtalar",
@@ -3851,7 +3888,11 @@
     "Costal cartilage of third rib.l",
     "Costal cartilage of third rib.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "container": true,
+   "members": [
+    "thoracic-costal-cartilage"
+   ]
   },
   {
    "id": "joint-sacrococcygeal",
@@ -3884,7 +3925,11 @@
     "Triquetrum bone.l",
     "Triquetrum bone.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "container": true,
+   "members": [
+    "bone-carpals"
+   ]
   },
   {
    "id": "joint-hand-joints",
@@ -3910,7 +3955,11 @@
     "Plantar metatarsophalangeal ligaments.l",
     "Plantar metatarsophalangeal ligaments.r"
    ],
-   "insertions": []
+   "insertions": [],
+   "container": true,
+   "members": [
+    "ankle-first-mtp"
+   ]
   },
   {
    "id": "lm-mastoid-process",
@@ -4897,6 +4946,316 @@
    "meshes": [
     "Iliopsoas fascia.l",
     "Iliopsoas fascia.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "bursa-anserine",
+   "kind": "mapped",
+   "meshes": [
+    "Anserine bursa.l",
+    "Anserine bursa.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "bursa-subdeltoid",
+   "kind": "mapped",
+   "meshes": [
+    "Subdeltoid bursa.l",
+    "Subdeltoid bursa.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "bursa-semimembranosus",
+   "kind": "mapped",
+   "meshes": [
+    "Semimembranosus bursa.l",
+    "Semimembranosus bursa.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "bursa-prepatellar",
+   "kind": "mapped",
+   "meshes": [
+    "Subcutaneous prepatellar bursa.l",
+    "Subcutaneous prepatellar bursa.r",
+    "Subfacial prepatellar bursa.l",
+    "Subfacial prepatellar bursa.r",
+    "Subtendinous prepatellar bursa.l",
+    "Subtendinous prepatellar bursa.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "bursa-infrapatellar",
+   "kind": "mapped",
+   "meshes": [
+    "Deep infrapatellar bursa.l",
+    "Deep infrapatellar bursa.r",
+    "Subcutaneous infrapatellar bursa.l",
+    "Subcutaneous infrapatellar bursa.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "bursa-calcaneal",
+   "kind": "mapped",
+   "meshes": [
+    "Subcutaneous calcaneal bursa.l",
+    "Subcutaneous calcaneal bursa.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "bursa-iliopectineal",
+   "kind": "mapped",
+   "meshes": [
+    "(Iliopectineal bursa).l",
+    "(Iliopectineal bursa).r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "shoulder-coracohumeral",
+   "kind": "mapped",
+   "meshes": [
+    "Coracohumeral ligament.l",
+    "Coracohumeral ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "hip-pubofemoral",
+   "kind": "mapped",
+   "meshes": [
+    "Pubofemoral ligament.l",
+    "Pubofemoral ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "hip-transverse-acetabular",
+   "kind": "mapped",
+   "meshes": [
+    "Transverse acetabular ligament.l",
+    "Transverse acetabular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "thoracic-radiate-rib",
+   "kind": "mapped",
+   "meshes": [
+    "Radiate ligament of head of rib.l",
+    "Radiate ligament of head of rib.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "knee-patellar-retinacula",
+   "kind": "mapped",
+   "meshes": [
+    "Lateral patellar retinaculum.l",
+    "Lateral patellar retinaculum.r",
+    "Medial patellar retinaculum.l",
+    "Medial patellar retinaculum.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "elbow-dorsal-radiocarpal",
+   "kind": "mapped",
+   "meshes": [
+    "Dorsal radiocarpal ligament.l",
+    "Dorsal radiocarpal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "elbow-pisohamate",
+   "kind": "mapped",
+   "meshes": [
+    "Pisohamate ligament.l",
+    "Pisohamate ligament.r",
+    "Pisometacarpal ligament.l",
+    "Pisometacarpal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "shoulder-rhomboid-major",
+   "kind": "mapped",
+   "meshes": [
+    "Rhomboid major muscle.l",
+    "Rhomboid major muscle.r"
+   ],
+   "insertions": [
+    "Rhomboid major muscle.el",
+    "Rhomboid major muscle.er"
+   ]
+  },
+  {
+   "id": "shoulder-rhomboid-minor",
+   "kind": "mapped",
+   "meshes": [
+    "Rhomboid minor muscle.l",
+    "Rhomboid minor muscle.r"
+   ],
+   "insertions": [
+    "Rhomboid minor muscle.el",
+    "Rhomboid minor muscle.er"
+   ]
+  },
+  {
+   "id": "knee-articularis-genus",
+   "kind": "mapped",
+   "meshes": [],
+   "insertions": [
+    "Articularis genus muscle.ol",
+    "Articularis genus muscle.or"
+   ]
+  },
+  {
+   "id": "ankle-atfl",
+   "kind": "mapped",
+   "meshes": [
+    "Anterior talofibular ligament.l",
+    "Anterior talofibular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-cfl",
+   "kind": "mapped",
+   "meshes": [
+    "Calcaneofibular ligament.l",
+    "Calcaneofibular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-ptfl",
+   "kind": "mapped",
+   "meshes": [
+    "Posterior talofibular ligament.l",
+    "Posterior talofibular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-deltoid-post-tibiotalar",
+   "kind": "mapped",
+   "meshes": [
+    "Posterior tibiotalar ligament.l",
+    "Posterior tibiotalar ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-deltoid-tibiocalcaneal",
+   "kind": "mapped",
+   "meshes": [
+    "Tibiocalcaneal ligament.l",
+    "Tibiocalcaneal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-deltoid-tibionavicular",
+   "kind": "mapped",
+   "meshes": [
+    "Tibionavicular ligament.l",
+    "Tibionavicular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-tc-anterior",
+   "kind": "mapped",
+   "meshes": [
+    "Anterior talocalcaneal ligament.l",
+    "Anterior talocalcaneal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-tc-lateral",
+   "kind": "mapped",
+   "meshes": [
+    "Lateral talocalcaneal ligament.l",
+    "Lateral talocalcaneal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-tc-medial",
+   "kind": "mapped",
+   "meshes": [
+    "Medial talocalcaneal ligament.l",
+    "Medial talocalcaneal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-tc-posterior",
+   "kind": "mapped",
+   "meshes": [
+    "Posterior talocalcaneal ligament.l",
+    "Posterior talocalcaneal ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-syndesmosis",
+   "kind": "mapped",
+   "meshes": [
+    "Anterior tibiofibular ligament.l",
+    "Anterior tibiofibular ligament.r",
+    "Posterior tibiofibular ligament.l",
+    "Posterior tibiofibular ligament.r",
+    "Transverse tibiofibular ligament.l",
+    "Transverse tibiofibular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-bifurcate",
+   "kind": "mapped",
+   "meshes": [
+    "Calcaneocuboid ligament.l",
+    "Calcaneocuboid ligament.r",
+    "Calcaneonavicular ligament.l",
+    "Calcaneonavicular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-dorsal-talonavicular",
+   "kind": "mapped",
+   "meshes": [
+    "Talonavicular ligament.l",
+    "Talonavicular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-short-plantar",
+   "kind": "mapped",
+   "meshes": [
+    "Plantar calcaneocuboid ligament.l",
+    "Plantar calcaneocuboid ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-dorsal-calcaneocuboid",
+   "kind": "mapped",
+   "meshes": [
+    "Dorsal calcaneocuboid ligament.l",
+    "Dorsal calcaneocuboid ligament.r"
    ],
    "insertions": []
   }
