@@ -744,15 +744,11 @@
    "kind": "mapped",
    "meshes": [
     "Long head of biceps brachii.l",
-    "Long head of biceps brachii.r",
-    "Long head of biceps femoris.l",
-    "Long head of biceps femoris.r"
+    "Long head of biceps brachii.r"
    ],
    "insertions": [
     "Long head of biceps brachii.ol",
-    "Long head of biceps brachii.or",
-    "Long head of biceps femoris.ol",
-    "Long head of biceps femoris.or"
+    "Long head of biceps brachii.or"
    ]
   },
   {
@@ -1274,16 +1270,12 @@
    "id": "elbow-wrist-hypothenar",
    "kind": "mapped",
    "meshes": [
-    "Abductor digiti minimi of foot.l",
-    "Abductor digiti minimi of foot.r",
     "Abductor digiti minimi of hand.l",
     "Abductor digiti minimi of hand.r",
     "Opponens digiti minimi muscle of hand.l",
     "Opponens digiti minimi muscle of hand.r"
    ],
    "insertions": [
-    "Abductor digiti minimi of foot.el",
-    "Abductor digiti minimi of foot.er",
     "Abductor digiti minimi of hand.el",
     "Abductor digiti minimi of hand.er",
     "Abductor digiti minimi of hand.ol",
@@ -1357,9 +1349,7 @@
    "kind": "mapped",
    "meshes": [
     "Interosseous membrane of forearm.l",
-    "Interosseous membrane of forearm.r",
-    "Interosseous membrane of leg.l",
-    "Interosseous membrane of leg.r"
+    "Interosseous membrane of forearm.r"
    ],
    "insertions": []
   },
@@ -2799,12 +2789,8 @@
     "Posterior meniscotibial ligament (Lateral meniscus).r",
     "Posterior meniscotibial ligament (Medial meniscus).l",
     "Posterior meniscotibial ligament (Medial meniscus).r",
-    "Radial collateral ligament.l",
-    "Radial collateral ligament.r",
     "Superficial part of tibial collateral ligament.l",
-    "Superficial part of tibial collateral ligament.r",
-    "Ulnar collateral ligament.l",
-    "Ulnar collateral ligament.r"
+    "Superficial part of tibial collateral ligament.r"
    ],
    "insertions": []
   },
@@ -3507,60 +3493,32 @@
    "id": "bone-hand",
    "kind": "mapped",
    "meshes": [
-    "Distal phalanx of fifth finger of foot.l",
-    "Distal phalanx of fifth finger of foot.r",
     "Distal phalanx of fifth finger of hand.l",
     "Distal phalanx of fifth finger of hand.r",
-    "Distal phalanx of first finger of foot.l",
-    "Distal phalanx of first finger of foot.r",
     "Distal phalanx of first finger of hand.l",
     "Distal phalanx of first finger of hand.r",
-    "Distal phalanx of fourth finger of foot.l",
-    "Distal phalanx of fourth finger of foot.r",
     "Distal phalanx of fourth finger of hand.l",
     "Distal phalanx of fourth finger of hand.r",
-    "Distal phalanx of second finger of foot.l",
-    "Distal phalanx of second finger of foot.r",
     "Distal phalanx of second finger of hand.l",
     "Distal phalanx of second finger of hand.r",
-    "Distal phalanx of third finger of foot.l",
-    "Distal phalanx of third finger of foot.r",
     "Distal phalanx of third finger of hand.l",
     "Distal phalanx of third finger of hand.r",
-    "Middle phalanx of fifth finger of foot.l",
-    "Middle phalanx of fifth finger of foot.r",
     "Middle phalanx of fifth finger of hand.l",
     "Middle phalanx of fifth finger of hand.r",
-    "Middle phalanx of fourth finger of foot.l",
-    "Middle phalanx of fourth finger of foot.r",
     "Middle phalanx of fourth finger of hand.l",
     "Middle phalanx of fourth finger of hand.r",
-    "Middle phalanx of second finger of foot.l",
-    "Middle phalanx of second finger of foot.r",
     "Middle phalanx of second finger of hand.l",
     "Middle phalanx of second finger of hand.r",
-    "Middle phalanx of third finger of foot.l",
-    "Middle phalanx of third finger of foot.r",
     "Middle phalanx of third finger of hand.l",
     "Middle phalanx of third finger of hand.r",
-    "Proximal phalanx of fifth finger of foot.l",
-    "Proximal phalanx of fifth finger of foot.r",
     "Proximal phalanx of fifth finger of hand.l",
     "Proximal phalanx of fifth finger of hand.r",
-    "Proximal phalanx of first finger of foot.l",
-    "Proximal phalanx of first finger of foot.r",
     "Proximal phalanx of first finger of hand.l",
     "Proximal phalanx of first finger of hand.r",
-    "Proximal phalanx of fourth finger of foot.l",
-    "Proximal phalanx of fourth finger of foot.r",
     "Proximal phalanx of fourth finger of hand.l",
     "Proximal phalanx of fourth finger of hand.r",
-    "Proximal phalanx of second finger of foot.l",
-    "Proximal phalanx of second finger of foot.r",
     "Proximal phalanx of second finger of hand.l",
     "Proximal phalanx of second finger of hand.r",
-    "Proximal phalanx of third finger of foot.l",
-    "Proximal phalanx of third finger of foot.r",
     "Proximal phalanx of third finger of hand.l",
     "Proximal phalanx of third finger of hand.r"
    ],
