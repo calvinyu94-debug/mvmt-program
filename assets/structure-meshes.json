@@ -4900,5 +4900,159 @@
    ],
    "insertions": []
   }
- ]
+ ],
+ "fascialLines": {
+  "SBL": {
+   "name": "Superficial Back Line",
+   "structures": [
+    "ankle-plantar-fascia",
+    "ankle-foot-layer-1",
+    "ankle-gastrocnemius",
+    "ankle-achilles",
+    "knee-hamstrings",
+    "hip-sacrotuberous-ligament",
+    "spine-erector-spinae",
+    "lumbar-tl-fascia",
+    "cervical-nuchal-ligament",
+    "head-jaw-occipitofrontalis"
+   ]
+  },
+  "SFL": {
+   "name": "Superficial Front Line",
+   "structures": [
+    "ankle-tib-ant",
+    "ankle-edl",
+    "ankle-ehl",
+    "knee-quadriceps",
+    "hip-rectus-femoris",
+    "knee-patellar-tendon",
+    "lumbar-rectus-abdominis",
+    "shoulder-pec-major",
+    "cervical-scm"
+   ]
+  },
+  "LL": {
+   "name": "Lateral Line",
+   "structures": [
+    "ankle-fibularis-longus",
+    "ankle-fibularis-brevis",
+    "hip-itb",
+    "hip-tfl",
+    "hip-glute-max",
+    "lumbar-external-oblique",
+    "lumbar-internal-oblique",
+    "thoracic-intercostals",
+    "cervical-splenius-capitis",
+    "cervical-scm"
+   ]
+  },
+  "SPL": {
+   "name": "Spiral Line",
+   "structures": [
+    "cervical-splenius-capitis",
+    "shoulder-rhomboids",
+    "shoulder-serratus",
+    "lumbar-external-oblique",
+    "lumbar-internal-oblique",
+    "hip-tfl",
+    "hip-itb",
+    "ankle-tib-ant",
+    "ankle-fibularis-longus",
+    "knee-biceps-femoris-long",
+    "hip-sacrotuberous-ligament",
+    "spine-erector-spinae"
+   ]
+  },
+  "DFL": {
+   "name": "Deep Front Line",
+   "structures": [
+    "ankle-tib-post",
+    "ankle-fdl",
+    "ankle-fhl",
+    "knee-popliteus",
+    "hip-adductor-magnus",
+    "hip-adductor-brevis",
+    "hip-adductor-longus-only",
+    "lumbar-pelvic-floor",
+    "spine-all",
+    "lumbar-psoas",
+    "hip-iliacus",
+    "hip-pectineus",
+    "thoracic-diaphragm",
+    "cervical-scalenes",
+    "cervical-deep-flexors",
+    "head-jaw-medial-pterygoid",
+    "head-jaw-temporalis"
+   ]
+  },
+  "SFAL": {
+   "name": "Superficial Front Arm Line",
+   "structures": [
+    "shoulder-pec-major",
+    "shoulder-lats",
+    "elbow-wrist-flexors",
+    "elbow-carpal-tunnel"
+   ]
+  },
+  "DFAL": {
+   "name": "Deep Front Arm Line",
+   "structures": [
+    "shoulder-pec-minor",
+    "fascia-clavipectoral",
+    "elbow-biceps",
+    "elbow-rcl",
+    "elbow-wrist-thenar"
+   ]
+  },
+  "SBAL": {
+   "name": "Superficial Back Arm Line",
+   "structures": [
+    "shoulder-trapezius",
+    "shoulder-deltoid",
+    "elbow-common-extensor",
+    "elbow-wrist-ed"
+   ]
+  },
+  "DBAL": {
+   "name": "Deep Back Arm Line",
+   "structures": [
+    "shoulder-rhomboids",
+    "cervical-levator",
+    "shoulder-supraspinatus",
+    "shoulder-infraspinatus",
+    "shoulder-teres-minor",
+    "shoulder-subscapularis",
+    "elbow-triceps",
+    "elbow-ucl",
+    "elbow-wrist-hypothenar"
+   ]
+  },
+  "BFL": {
+   "name": "Back Functional Line",
+   "structures": [
+    "shoulder-lats",
+    "lumbar-tl-fascia",
+    "hip-glute-max",
+    "knee-vastus-lateralis",
+    "knee-patellar-tendon"
+   ]
+  },
+  "FFL": {
+   "name": "Front Functional Line",
+   "structures": [
+    "shoulder-pec-major",
+    "lumbar-rectus-abdominis",
+    "hip-adductor-longus-only"
+   ]
+  },
+  "IFL": {
+   "name": "Ipsilateral Functional Line",
+   "structures": [
+    "shoulder-lats",
+    "lumbar-external-oblique",
+    "hip-sartorius",
+    "hip-adductor-longus-only"
+   ]
+  }
+ }
 }
