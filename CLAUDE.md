@@ -808,14 +808,27 @@ mesh and insertion name exists in the export manifest, every id matches
 join's own figures. **Do not edit it by hand without re-running that check.**
 
 A click raycasts against the region's own meshes only — context is never in
-the list — and reads the hit's `sourceName` back through the join. A mesh
-can be claimed by several structures (Piriformis is its own entry and part of
-the deep rotators), so the most specific claim wins, the one with the fewest
+the list — and walks every hit along the ray, nearest first, reading each
+`sourceName` back through the join. **The first hit the join claims wins;
+unmapped geometry is transparent to selection, never a selection result.**
+746 of the 2,054 exported objects map to nothing, and dozens of them are
+fasciae and tendon sheaths lying directly over the muscles a hand goes for —
+stopping at the nearest hit made the deltoid, the pecs and every thigh and
+forearm muscle unclickable. A mesh can be claimed by several structures
+(Piriformis is its own entry and part of the deep rotators), so among the
+claims on the winning hit the most specific wins, the one with the fewest
 meshes, and the rest are offered under *Also part of*. Selecting a structure
-highlights every mesh it claims, both sides. Roughly a third of the exported
-objects are claimed by nothing; a click landing on one says *Not in the
-index* and names the mesh. That is ordinary, not an error, and it must never
-be turned into silence.
+highlights every mesh it claims, both sides. Only when nothing along the ray
+maps does the click say *Not in the index* and name the frontmost unmapped
+mesh. That is ordinary, not an error, and it must never be turned into
+silence.
+
+The join maps to the model's geometry, not its labels, and one entry says
+so: Z-Anatomy names the trapezius parts inverted — its "Ascending part" sits
+highest and its "Descending part" lowest — so Upper Trapezius claims the
+model's ascending part and Lower Trapezius its descending part, each with a
+`sourceNote` recording why. Anyone reading the join against a textbook will
+think it is backwards. It is the model that is.
 
 Nerve nodes carry no `sourceName`, and GLTFLoader sanitises node names on the
 way in — `nerve-femoral.l` arrives as `nerve-femorall`. They are matched by

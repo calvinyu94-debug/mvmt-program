@@ -284,13 +284,16 @@
    "id": "cervical-upper-trap",
    "kind": "mapped",
    "meshes": [
-    "Descending part of trapezius muscle.l",
-    "Descending part of trapezius muscle.r"
+    "Ascending part of trapezius muscle.l",
+    "Ascending part of trapezius muscle.r"
    ],
    "insertions": [
-    "Descending part of trapezius muscle.ol",
-    "Descending part of trapezius muscle.or"
-   ]
+    "Ascending part of trapezius muscle.el",
+    "Ascending part of trapezius muscle.er",
+    "Ascending part of trapezius muscle.ol",
+    "Ascending part of trapezius muscle.or"
+   ],
+   "sourceNote": "Z-Anatomy inverts the trapezius part names: its 'Ascending part' is anatomically the UPPER trapezius (centroid z 1.495) and its 'Descending part' is the LOWER (z 1.267). Mapped to the model's geometry, not its labels."
   },
   {
    "id": "cervical-levator",
@@ -685,15 +688,14 @@
    "id": "shoulder-lower-trap",
    "kind": "mapped",
    "meshes": [
-    "Ascending part of trapezius muscle.l",
-    "Ascending part of trapezius muscle.r"
+    "Descending part of trapezius muscle.l",
+    "Descending part of trapezius muscle.r"
    ],
    "insertions": [
-    "Ascending part of trapezius muscle.el",
-    "Ascending part of trapezius muscle.er",
-    "Ascending part of trapezius muscle.ol",
-    "Ascending part of trapezius muscle.or"
-   ]
+    "Descending part of trapezius muscle.ol",
+    "Descending part of trapezius muscle.or"
+   ],
+   "sourceNote": "Z-Anatomy inverts the trapezius part names: its 'Ascending part' is anatomically the UPPER trapezius (centroid z 1.495) and its 'Descending part' is the LOWER (z 1.267). Mapped to the model's geometry, not its labels."
   },
   {
    "id": "shoulder-rhomboids",

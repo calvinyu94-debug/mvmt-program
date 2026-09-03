@@ -6913,17 +6913,30 @@ function v3PickAt(cx, cy){
   const T = V3.lib.THREE;
   const ndc = new T.Vector2(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
   V3.ray.setFromCamera(ndc, V3.camera);
-  /* Hidden layers are not hit. Context is never in the list at all. */
+  /* Hidden layers are not hit. Context is never in the list at all. Every
+     hit along the ray is walked, nearest first, and the first one the join
+     claims wins: unmapped geometry is transparent to selection, never a
+     result in itself. 746 of the exported objects map to nothing, and
+     several dozen of them are fasciae and sheaths lying directly over the
+     muscles a hand would go for — the deltoid, the pecs, the thigh — so
+     stopping at the nearest hit made all of those unclickable. Only when
+     nothing along the ray maps does the click report the frontmost unmapped
+     mesh by name. */
   const hits = V3.ray.intersectObjects(V3.pickable.filter(o=>o.visible), false);
-  if(!hits.length){ v3Select(null); return; }
-  const o = hits[0].object, tag = o.userData.v3 || {};
-  if(tag.kind === "landmark" || tag.kind === "nerve"){ v3Select(tag.id); return; }
-  const ids = V3.byMesh[tag.name] || [];
-  if(!ids.length){ v3Select(null, tag.name); return; }
-  /* The most specific claim wins — Piriformis over the deep rotators that
-     include it — and the others are offered in the panel. */
-  const best = ids.slice().sort((a, b)=>v3Claim(a) - v3Claim(b))[0];
-  v3Select(best);
+  let unmapped = null;
+  for(const h of hits){
+    const tag = h.object.userData.v3 || {};
+    if(tag.kind === "landmark" || tag.kind === "nerve"){ v3Select(tag.id); return; }
+    const ids = V3.byMesh[tag.name] || [];
+    if(ids.length){
+      /* The most specific claim wins — Piriformis over the deep rotators that
+         include it — and the others are offered in the panel. */
+      v3Select(ids.slice().sort((a, b)=>v3Claim(a) - v3Claim(b))[0]);
+      return;
+    }
+    if(unmapped == null) unmapped = tag.name;
+  }
+  v3Select(null, unmapped);
 }
 const v3Claim = id => { const s = V3.byId[id]; return (s.meshes || []).length + (s.insertions || []).length; };
 
