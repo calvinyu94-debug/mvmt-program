@@ -602,7 +602,8 @@ button{cursor:pointer}
 }
 .v3-views button:hover:not(:disabled){background:var(--hover);border-color:var(--ink-3);color:var(--ink)}
 .v3-views button:disabled{opacity:.35;cursor:not-allowed}
-.v3-reset{margin-top:6px;width:100%}
+.v3-ctl .pbtn{width:100%}
+.v3-reset{margin-top:6px}
 .v3-sel{margin-top:16px;padding-top:14px;border-top:1px solid var(--line-2)}
 .v3-sel .lbl{display:block;margin-bottom:5px}
 .v3-selname{font-family:var(--font-ui);font-size:17px;font-weight:600;margin:0;letter-spacing:-.01em}
@@ -990,6 +991,14 @@ button{cursor:pointer}
           <div class="v3-ctl" id="v3MuscleCtl">
             <span class="lbl">Muscle depth</span>
             <div class="v3-seg" id="v3Muscle" role="radiogroup" aria-label="Muscle depth"></div>
+          </div>
+          <!-- The Anatomy index's own toggle, surfaced where the parts are.
+               Same variable, so the two views can never disagree; here it
+               governs what a click on the model resolves to, which is the
+               thing you cannot discover from a control in another view. -->
+          <div class="v3-ctl">
+            <span class="lbl">Detail</span>
+            <button class="pbtn" id="v3Parts" title="With this off a click gives the group — the whole deltoid, six meshes lit. With it on it gives the named part and links the group. The same switch as the Anatomy view's.">Show named parts: off</button>
           </div>
           <!-- Rendered from V3_VIEWS, so a sixth angle is an entry in that
                array. Reset view sits with them because it is the same kind of
@@ -6817,7 +6826,12 @@ function anatDetailBody(s){
   const ambiguous = anatAmbiguous.filter(m=>m.id === s.id);
   const parent = s.inherits ? ANATOMY.find(x=>x.id === s.inherits) : null;
   /* Both directions of the hierarchy are navigable, and the children list is
-     the discovery path while the parts toggle is off. */
+     the discovery path while the parts toggle is off — so it is the first
+     thing in the body, beside the caller's "Part of" and "Contains" rather
+     than under the drills, where it was two screens down in the 3D panel and
+     every split in the map read as a single structure unless you already knew
+     better. It is never gated on the toggle: a group that will not admit it
+     has parts cannot be the place you find them. */
   const children = ANATOMY.filter(x=>x.inherits === s.id);
   /* A landmark answers a different question, so it gets a different section. */
   const isLandmark = s.system === "landmark";
@@ -6830,6 +6844,14 @@ function anatDetailBody(s){
   const where = S ? (isSingle() ? "this handout" : phase().name) : "";
 
   return `
+    ${children.length ? `
+    <div class="anat-sec">
+      <span class="lbl">Breaks down into</span>
+      <div class="anat-kids">
+        ${children.map(c=>`<button type="button" data-goto="${esc(c.id)}">${esc(c.name)}</button>`).join("")}
+      </div>
+    </div>` : ""}
+
     <div class="anat-sec">
       <span class="lbl">What it does</span>
       <p>${esc(s.action)}</p>
@@ -6877,14 +6899,6 @@ function anatDetailBody(s){
       <span class="lbl">No drills load this</span>
       <p>${esc(s.noExercises)}</p>
     </div>` : "")}`}
-
-    ${children.length ? `
-    <div class="anat-sec">
-      <span class="lbl">Breaks down into</span>
-      <div class="anat-kids">
-        ${children.map(c=>`<button type="button" data-goto="${esc(c.id)}">${esc(c.name)}</button>`).join("")}
-      </div>
-    </div>` : ""}
 
     ${missing.length ? `<div class="anat-warn">
       <span class="lbl">Incomplete</span>
@@ -8427,6 +8441,11 @@ function v3RenderSel(){
   const el = $("#v3Sel");
   $("#v3Mode").textContent = "Patient view: " + (anatPatient ? "on" : "off");
   $("#v3Mode").setAttribute("aria-pressed", anatPatient);
+  /* Both buttons read their variable here, and setView() renders this panel on
+     every entry, so a toggle flipped in the index shows its new state on the
+     way back — and the reverse, through renderAnat(). */
+  $("#v3Parts").textContent = "Show named parts: " + (anatParts ? "on" : "off");
+  $("#v3Parts").setAttribute("aria-pressed", anatParts);
   if(V3.selMesh){
     el.innerHTML = `
       <span class="lbl">Not in the index</span>
@@ -8723,6 +8742,11 @@ function v3SetSystem(k, on){
 /* The Anatomy index's toggle, from here. Same variable; the index's own
    button reads it back the next time that view renders. */
 $("#v3Mode").onclick = ()=>{ anatPatient = !anatPatient; v3RenderSel(); };
+/* Named parts, from here. It governs what the NEXT click resolves to, so the
+   selection standing when it is flipped is deliberately left alone — a
+   selection is what was asked for, and rolling it up or down on a toggle
+   would be the viewer changing the subject. */
+$("#v3Parts").onclick = ()=>{ anatParts = !anatParts; v3RenderSel(); };
 
 /* ---- entry and exit, from setView ---- */
 function v3Enter(){
