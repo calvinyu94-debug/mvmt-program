@@ -5222,6 +5222,33 @@
    "insertions": []
   },
   {
+   "id": "ankle-atifl",
+   "kind": "mapped",
+   "meshes": [
+    "Anterior tibiofibular ligament.l",
+    "Anterior tibiofibular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-ptifl",
+   "kind": "mapped",
+   "meshes": [
+    "Posterior tibiofibular ligament.l",
+    "Posterior tibiofibular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "ankle-transverse-tibiofibular",
+   "kind": "mapped",
+   "meshes": [
+    "Transverse tibiofibular ligament.l",
+    "Transverse tibiofibular ligament.r"
+   ],
+   "insertions": []
+  },
+  {
    "id": "ankle-bifurcate",
    "kind": "mapped",
    "meshes": [
