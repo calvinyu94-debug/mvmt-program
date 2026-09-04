@@ -625,11 +625,25 @@ used for loose association: **it is the sole input to the group/detail toggle.**
 A structure with a parent is a *part*; anything else is a group or a standalone.
 Nothing else distinguishes them, and no field was added to.
 
-> **Show named parts** (Anatomy view, default **off**) hides every structure with
-> an `inherits`. Erector Spinae reads as one entry; turn it on and the nine
-> named parts appear nested beneath it.
+> **Show named parts** (default **off**) hides every structure with an
+> `inherits`. Erector Spinae reads as one entry; turn it on and the nine named
+> parts appear nested beneath it.
 
-Three rules that toggle has to keep:
+It is one variable, `anatParts`, and it has a button in **both** views — the
+Anatomy index's Detail group and the 3D panel's. In the index it governs the
+browse list; in the viewer it governs what a click on the model resolves to,
+and that is why a control in the other view was not good enough. Both buttons
+read the variable in their own render, and `setView()` renders both on entry,
+so flipping one shows in the other on the way back. **Do not add a second
+variable, and do not make either button the authority** — either would be a way
+for the two views to disagree.
+
+Flipping it in the viewer deliberately **leaves the standing selection alone**.
+It decides the next click. A selection is what was asked for, and rolling it up
+to the parent or down to a part on a toggle would be the viewer changing the
+subject.
+
+Four rules that toggle has to keep:
 
 - **Search ignores it.** `anatPasses()` returns on the query *before* consulting
   the toggle. A structure you typed the name of and still could not see would be
@@ -640,6 +654,13 @@ Three rules that toggle has to keep:
   links under *Breaks down into*, a child links back under *Part of* — so a
   hidden part is always one click away, and that is what makes defaulting to off
   safe.
+- **`Breaks down into` is never gated on the toggle, and it leads the detail
+  body.** It is the first block `anatDetailBody()` renders, beside the caller's
+  *Part of* and *Contains*, in both views. It used to sit under the drills,
+  which in the 3D panel put it two screens down: every split in the map read as
+  a single structure unless you already knew the parts existed and knew a
+  control in another view revealed them. A group that will not admit it has
+  parts cannot be the place you find them.
 
 **Reparenting an entry removes it from the default browse list.** That is the
 toggle working, not a bug, but it is a real cost and it lands on exactly the
@@ -1026,9 +1047,12 @@ which is what *Breaks down into* already says. Selecting a structure
 highlights every mesh it claims, both sides. **Show named parts governs this
 resolution too**, and it is the same variable the index uses:
 with it off a click on the middle deltoid gives Deltoid and lights six meshes,
-with it on it gives Middle Deltoid, lights two and links the parent. One
-toggle, both views — a second control in the viewer would only be a way for
-them to disagree. A mesh that only parts claim still resolves to a part
+with it on it gives Middle Deltoid, lights two and links the parent. The
+viewer has its own button for it, under **Detail** beside Muscle depth,
+because this is where the setting bites and a control in another view is not
+discoverable from a click on the model. **One variable, two buttons** — a
+second *variable* would be the way for the views to disagree, not a second
+button. A mesh that only parts claim still resolves to a part
 whatever the toggle says, because the alternative is a click that selects
 nothing. Only when nothing along the ray
 maps does the click say *Not in the index* and name the frontmost unmapped
@@ -1206,11 +1230,13 @@ never be right in one place and stale in the other. Adding a drill from the
 which pushes the same `{exerciseId, rx, freq, note}` item the library's own
 checkbox does. No anatomy text travels with it.
 
-**One patient toggle.** `anatPatient` is the index's variable and the 3D
-panel reads the same one; the `Patient view` button on the 3D side flips it
-and the index's button shows the new state the next time that view renders.
-Module state, never stored — a reload lands in practitioner mode in both
-views, for the reason given under the Anatomy index.
+**Two shared toggles, no shared buttons.** `anatPatient` and `anatParts` are
+the index's variables and the 3D panel reads the same two; each has a button
+on both sides, each button reads its variable in that view's own render, and
+`setView()` renders both views on entry, so a flip on either side shows on the
+other on the way back. Both are module state, never stored — a reload lands in
+practitioner mode with parts hidden, in both views, for the reason given under
+the Anatomy index.
 
 **The three print guards hold from here too.** `#threeView` carries
 `no-print`; the 3D panel copies nothing into a program; `renderPatient()`
