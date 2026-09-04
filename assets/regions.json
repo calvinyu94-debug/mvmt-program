@@ -133,10 +133,10 @@
   {
    "id": "knee",
    "file": "knee.glb",
-   "triangles": 143352,
+   "triangles": 143328,
    "ownTriangles": 56490,
-   "contextTriangles": 86862,
-   "bytes": 1018308,
+   "contextTriangles": 86838,
+   "bytes": 1018008,
    "meshCount": 88,
    "contextMeshCount": 354,
    "contextRegions": [
@@ -172,10 +172,10 @@
   {
    "id": "ankle-foot",
    "file": "ankle-foot.glb",
-   "triangles": 151100,
-   "ownTriangles": 136244,
+   "triangles": 151092,
+   "ownTriangles": 136236,
    "contextTriangles": 14856,
-   "bytes": 921884,
+   "bytes": 921664,
    "meshCount": 250,
    "contextMeshCount": 88,
    "contextRegions": [
@@ -192,8 +192,8 @@
  "overview": {
   "id": "whole-body",
   "file": "overview.glb",
-  "triangles": 211971,
-  "bytes": 2155528,
+  "triangles": 211969,
+  "bytes": 2155300,
   "meshCount": 1349,
   "contextMeshCount": 0,
   "note": "skeletal, muscular and articular meshes; insertions are per-region layers and are not in the overview"
