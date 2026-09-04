@@ -747,7 +747,10 @@ rendered by `anatDetailBody()` under the clinical block as
 **About this model — …**. Four entries carry one today: `shoulder-trapezius`,
 `cervical-upper-trap` and `shoulder-lower-trap` (the inversion) and
 `lumbar-iliolumbar-ligament` (the overshoot); `ankle-talocrural` carries the
-fifth, saying the joint has no capsule mesh of its own.
+fifth, saying the joint has no capsule mesh of its own. `ankle-cfl` carries a
+sixth of a different kind: its drawing is not wrong but **changed** — the
+pipeline redraws it — and the note says so. See *Redrawn geometry* under the
+3D viewer.
 
 Same principle as the schematic-nerve label: **where the model is less
 trustworthy than it looks, say so on screen.** Nobody but CYU can see the
@@ -983,6 +986,24 @@ is why `V3.drawn` exists beside `V3.meshes`. The map keeps only the last mesh
 under a name, so it is for "is this here" lookups only; every pass that lights,
 dims, hides or frames walks `V3.drawn`. A new pass written against `V3.meshes`
 would silently leave half a split object behind.
+
+### Redrawn geometry says so on the selection
+
+Objects the mvmt-anatomy pipeline redraws by anchor rule — a source mesh whose
+attachment was demonstrably wrong — carry `corrected: true` and
+`source: "redrawn"` in their extras, the way the authored nerves carry
+`authored`. `v3Adopt()` reads `corrected` with the same walk up to the parent
+as `sourceName`, because it lives on the node and not on a split node's child
+meshes, and `v3RenderSel()` shows one non-dismissible line under the mesh count
+whenever a selected structure has a drawn mesh with it — the same treatment as
+the schematic-nerve inline caveat, and for the same reason: geometry that was
+changed from its source must not look like its source. The line appears only
+when such a mesh is actually selected; it is not a general disclaimer.
+
+**The reason for each redraw lives in that structure's `modelNote`, and in
+mvmt-anatomy's Corrected geometry section — never here.** This file states the
+rule, not a list of corrected objects. `corrected` is a display flag: it is not
+in `V3_HAS_GEOMETRY`, not in the join, and takes no part in resolution.
 
 ### `.gitignore` negations are exactly three
 

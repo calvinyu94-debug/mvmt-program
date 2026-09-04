@@ -3962,7 +3962,8 @@ const ANATOMY = [
 {id:"ankle-cfl", name:"Calcaneofibular Ligament", latin:"lig. calcaneofibulare", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-lateral-ligaments",
  action:"Runs down and back from the tip of the outer ankle bone to the heel bone, crossing both the ankle and the joint below it.",
  clinical:"The second to go, and the only lateral ligament crossing the subtalar joint — so its injury produces the rotational instability the ATFL alone does not. Taut with the foot flat, which is why testing it needs a neutral ankle.",
- ex:["Band Eversion","Subtalar Inversion and Eversion","Lateral Hop and Stick","Foot Tripod Balance"]},
+ ex:["Band Eversion","Subtalar Inversion and Eversion","Lateral Hop and Stick","Foot Tripod Balance"],
+ modelNote:"The source model draws this ligament as a flat placeholder that never reaches the calcaneus. It is redrawn in the export by rule, from the tip of the lateral malleolus down and back to the lateral wall of the calcaneus. The shape is a schematic band, not a dissected structure."},
 
 {id:"ankle-ptfl", name:"Posterior Talofibular Ligament", latin:"lig. talofibulare posterius", region:"ankle-foot", system:"articular", layer:3, inherits:"ankle-lateral-ligaments",
  action:"Runs backward and inward from the inner surface of the outer ankle bone to the back of the talus.",
@@ -7362,6 +7363,9 @@ const V3_VIEWS = [
    were written from a specification, the rest of the model comes from imaging,
    and drawn side by side they would look equally authoritative. They are not. */
 const V3_SCHEMATIC = "Schematic — indicative path only";
+/* Geometry the mvmt-anatomy pipeline redraws by rule carries `corrected` in
+   its extras; the selection says so, and the structure's modelNote says why. */
+const V3_REDRAWN = "Redrawn from the source model by rule. See the note below.";
 
 /* The tenth option in the viewer's region picker. It is NOT an MVMT region and
    must never become one: REGIONS drives the library's filter chips, its
@@ -8046,6 +8050,7 @@ function v3Adopt(mesh, kind){
         mesh.userData.sourceName = p.userData.sourceName;
         mesh.userData.system = p.userData.system;
         mesh.userData.context = p.userData.context;
+        mesh.userData.corrected = p.userData.corrected;
         break;
       }
     }
@@ -8472,6 +8477,8 @@ function v3RenderSel(){
      space is made of, so Tibiofemoral Joint offers its five ligaments. Ids
      that do not resolve were reported at setup and are skipped here. */
   const members = (j.container && Array.isArray(j.members) ? j.members : []).map(v3Struct).filter(Boolean);
+  /* Read off the drawn meshes, not V3.meshes, which keeps one mesh per name. */
+  const redrawn = V3.drawn.some(m=>m.userData.corrected && names.indexOf(m.userData.v3.name) >= 0);
   el.innerHTML = `
     <span class="lbl">Selected</span>
     <h3 class="v3-selname">${esc(s.name)}</h3>
@@ -8498,6 +8505,7 @@ function v3RenderSel(){
                 ? "Only attachment patches, and the whole-body model carries none — open its region to see them."
                 : "Its geometry is in another region's model.")
             : "No geometry in the model — described here only.")}</p>` : ""}
+    ${redrawn ? `<p class="v3-schem-inline">${esc(V3_REDRAWN)}</p>` : ""}
     ${anatDetailBody(s)}
     ${others.length ? `
     <div class="anat-sec">
