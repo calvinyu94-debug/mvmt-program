@@ -783,7 +783,7 @@ with its own brief.
 ```
 homecare:programs   → array of program objects
 homecare:custom     → user-authored exercises, merged over the built-in library
-homecare:settings   → { practitioner, lastProgramId, printColour }
+homecare:settings   → { practitioner, lastProgramId, printColour, model }
 rtt:program         → legacy v1 key, read once on first load, never written
 ```
 
@@ -804,6 +804,30 @@ same-origin from Pages so there is no CORS and the browser caches them like
 anything else. `assets/ATTRIBUTION.md` carries the licence chain: CC BY-SA
 throughout, and `nerves.glb` is original schematic work rather than a
 derivative. Keep it accurate if a file is replaced.
+
+### Two models, one switch — and the other one is an iframe
+
+The 3D view carries a **Model: Z-Anatomy | Human Atlas** switch above the
+stage. Z-Anatomy is this viewer, everything described below. Human Atlas is
+**mvmt-atlas** (our fork of ashemag/human-atlas, MIT, on the BodyParts3D
+data, CC BY 4.0), deployed at `V3_ATLAS_URL` and shown in an iframe that
+fills the same area. The two sit side by side as a comparison until one is
+picked; nothing about the exercise library or the program builder knows the
+switch exists.
+
+- The choice is `settings.model`, read through `v3ModelGet()` on **every
+  entry** to the 3D view, never once at boot. An unknown value is Z-Anatomy.
+- The iframe's `src` is set on first use and never before, so choosing
+  Z-Anatomy still fetches nothing of the other viewer, and the no-3D-at-boot
+  rule below holds for both.
+- The iframe is driven through mvmt-atlas's embed API: URL parameters on
+  load (`?model=bp3d&view=anterior`, also `systems`, `select`, `region`,
+  `patient`), and `window.postMessage({type:"set", ...})` afterwards. It
+  posts `{type:"select", id, name}` back on every selection change, which
+  the bar shows. The message listener checks `e.source` against the frame.
+- Human Atlas mode has none of this file's selection panel, systems, depth
+  or fascial lines; those are being rebuilt on the other engine in
+  mvmt-atlas. Do not duplicate them here.
 
 ### Nothing 3D loads until the 3D view is opened
 

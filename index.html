@@ -542,6 +542,17 @@ button{cursor:pointer}
 .anat-warn code{font-family:var(--font-ui);font-size:12.5px;color:var(--ink)}
 
 /* ---------- 3D viewer ---------- */
+/* The model switch. Z-Anatomy is this viewer; Human Atlas is mvmt-atlas, our
+   fork of ashemag/human-atlas, shown in an iframe filling the same area so the
+   two can be compared on the same screen until one is picked. The bar sits
+   above both because the switch has to be reachable from either. */
+.v3-modelbar{display:flex;align-items:center;gap:12px;margin-bottom:var(--gap);flex-wrap:wrap}
+.v3-modelbar .lbl{font-family:var(--font-ui);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--ink-3)}
+.v3-modelbar .v3-seg{width:260px}
+.v3-modelbar .count{margin-left:auto;font-family:var(--font-ui);font-size:11px;letter-spacing:.08em;color:var(--ink-3);text-transform:uppercase;font-weight:600}
+.v3-atlas{background:var(--panel);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden}
+.v3-atlas[hidden]{display:none}
+.v3-atlas iframe{display:block;width:100%;height:calc(100vh - 230px);min-height:420px;border:0;background:var(--panel)}
 /* The stage takes the width; the region picker takes a fixed column. Same
    panel, the same chips as the library filters, so nothing here is a new
    control to learn. */
@@ -949,7 +960,17 @@ button{cursor:pointer}
        first opened: the canvas is created then, and the libraries and the
        region files are fetched then — see the 3D VIEWER section of the script. -->
   <div id="threeView" class="no-print" style="display:none">
-    <div class="v3-cols">
+    <!-- Rendered from V3_MODELS. The iframe's src is set on first use, so
+         choosing Z-Anatomy never fetches the other viewer. -->
+    <div class="v3-modelbar">
+      <span class="lbl">Model</span>
+      <div class="v3-seg" id="v3Model" role="radiogroup" aria-label="Model"></div>
+      <span class="count" id="v3AtlasSel"></span>
+    </div>
+    <div class="v3-atlas" id="v3Atlas" hidden>
+      <iframe id="v3AtlasFrame" title="MVMT Atlas — the Human Atlas model" allow="fullscreen"></iframe>
+    </div>
+    <div class="v3-cols" id="v3Cols">
       <section class="panel">
         <div class="panel-hd">
           <h2>3D anatomy</h2>
@@ -6996,7 +7017,7 @@ function setView(v){
 
   /* The viewer only draws while it is on screen. Leaving is safe before it
      has ever been entered — it does nothing until the first entry. */
-  if(v === "3d") v3Enter(); else v3Leave();
+  if(v === "3d"){ if(v3ModelGet() === "atlas") v3AtlasEnter(); else v3Enter(); } else v3Leave();
 
   renderSaved();
   if(v === "list") renderList();
@@ -7373,6 +7394,43 @@ const V3_REDRAWN = "Redrawn from the source model by rule. See the note below.";
    "Whole body" filter in front of every exercise list and demand a tenth
    region colour the palette has no room for. The viewer keeps its own list,
    and its own label function with it. */
+/* The model switch. "zanatomy" is this viewer and everything below it;
+   "atlas" is mvmt-atlas in an iframe. The choice lives in settings so it
+   survives a reload, and it is read on every entry to the 3D view rather than
+   once at boot. The iframe is driven through mvmt-atlas's embed API: URL
+   parameters on first load, and it posts {type:"select", id, name} back on
+   every selection change, which the bar shows. */
+const V3_MODELS = [{k:"zanatomy", name:"Z-Anatomy"}, {k:"atlas", name:"Human Atlas"}];
+const V3_ATLAS_URL = "https://calvinyu94-debug.github.io/mvmt-atlas/";
+function v3ModelGet(){ const m = readSettings().model; return V3_MODELS.some(x=>x.k === m) ? m : "zanatomy"; }
+function v3ModelRender(){
+  const k = v3ModelGet(), el = $("#v3Model");
+  el.innerHTML = V3_MODELS.map(m=>`<button type="button" data-model="${m.k}" aria-pressed="${m.k === k}">${m.name}</button>`).join("");
+  el.querySelectorAll("button").forEach(b=>{ b.onclick = ()=>{ writeSettings({model:b.dataset.model}); v3ModelApply(); }; });
+  const atlas = k === "atlas";
+  $("#v3Cols").style.display = atlas ? "none" : "";
+  $("#v3Atlas").hidden = !atlas;
+  $("#v3AtlasSel").hidden = !atlas;
+}
+function v3ModelApply(){
+  v3ModelRender();
+  if(U.view !== "3d") return;
+  if(v3ModelGet() === "atlas"){ v3Leave(); v3AtlasEnter(); }
+  else v3Enter();
+}
+function v3AtlasEnter(){
+  v3ModelRender();
+  const f = $("#v3AtlasFrame");
+  if(!f.getAttribute("src")) f.src = V3_ATLAS_URL + "?model=bp3d&view=anterior";
+}
+window.addEventListener("message", e=>{
+  const f = $("#v3AtlasFrame");
+  if(!f || e.source !== f.contentWindow) return;
+  const d = e.data;
+  if(!d || typeof d !== "object") return;
+  if(d.type === "select") $("#v3AtlasSel").textContent = d.name ? "Selected: " + d.name : "";
+});
+
 const V3_WHOLE = "whole-body";
 const V3_REGIONS = REGIONS.concat([{k:V3_WHOLE, name:"Whole body"}]);
 const v3RegionLabel = k => (V3_REGIONS.find(r=>r.k === k) || {}).name || k;
@@ -8793,6 +8851,7 @@ function v3Leave(){
     }
   }
   applyPrintColour(readSettings().printColour === true);
+  v3ModelRender();
   /* The saved-programs list is the home screen. */
   setView("list");
 })();
