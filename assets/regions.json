@@ -30,10 +30,10 @@
   {
    "id": "cervical",
    "file": "cervical.glb",
-   "triangles": 341318,
+   "triangles": 341319,
    "ownTriangles": 156525,
-   "contextTriangles": 184793,
-   "bytes": 1742652,
+   "contextTriangles": 184794,
+   "bytes": 1742656,
    "meshCount": 132,
    "contextMeshCount": 399,
    "contextRegions": [
@@ -51,10 +51,10 @@
   {
    "id": "shoulder",
    "file": "shoulder.glb",
-   "triangles": 345402,
+   "triangles": 345403,
    "ownTriangles": 159730,
-   "contextTriangles": 185672,
-   "bytes": 1880420,
+   "contextTriangles": 185673,
+   "bytes": 1880424,
    "meshCount": 110,
    "contextMeshCount": 540,
    "contextRegions": [
@@ -75,7 +75,7 @@
    "triangles": 526180,
    "ownTriangles": 393253,
    "contextTriangles": 132927,
-   "bytes": 2221932,
+   "bytes": 2221924,
    "meshCount": 128,
    "contextMeshCount": 338,
    "contextRegions": [
@@ -93,10 +93,10 @@
   {
    "id": "lumbar",
    "file": "lumbar.glb",
-   "triangles": 358495,
+   "triangles": 358496,
    "ownTriangles": 205026,
-   "contextTriangles": 153469,
-   "bytes": 1557028,
+   "contextTriangles": 153470,
+   "bytes": 1557032,
    "meshCount": 96,
    "contextMeshCount": 232,
    "contextRegions": [
