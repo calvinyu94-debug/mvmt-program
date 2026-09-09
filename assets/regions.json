@@ -75,7 +75,7 @@
    "triangles": 526180,
    "ownTriangles": 393253,
    "contextTriangles": 132927,
-   "bytes": 2221936,
+   "bytes": 2221932,
    "meshCount": 128,
    "contextMeshCount": 338,
    "contextRegions": [
@@ -192,7 +192,7 @@
  "overview": {
   "id": "whole-body",
   "file": "overview.glb",
-  "triangles": 211969,
+  "triangles": 211971,
   "bytes": 2155300,
   "meshCount": 1349,
   "contextMeshCount": 0,
