@@ -3,7 +3,7 @@
  "generatedFrom": "mvmt-anatomy structure-mesh-join.json v1, trimmed to id/kind/meshes/insertions",
  "note": "meshes and insertions are glTF node names (sourceName) inside the region files; authored nerves are node names inside nerves.glb. Names, regions and triangle counts are not repeated here — ANATOMY in index.html has them. viewRegion is present only where the export puts a structure’s geometry in a region file other than its own: it is the region to load to see it. container: true marks a joint or space whose meshes are also owned by the named structures listed in members — a click prefers the named structure over the container, and the selection panel lists the members under Contains.",
  "counts": {
-  "mapped": 349,
+  "mapped": 359,
   "absent": 14,
   "unresolved": 1,
   "anchor": 42,
@@ -1628,6 +1628,25 @@
    "insertions": []
   },
   {
+   "id": "thoracic-discs",
+   "kind": "mapped",
+   "meshes": [
+    "Intervertebral disc T1-T2",
+    "Intervertebral disc T2-T3",
+    "Intervertebral disc T3-T4",
+    "Intervertebral disc T4-T5",
+    "Intervertebral disc T5-T6",
+    "Intervertebral disc T6-T7",
+    "Intervertebral disc T7-T8",
+    "Intervertebral disc T8-T9",
+    "Intervertebral disc T9-T10",
+    "Intervertebral disc T10-T11",
+    "Intervertebral disc T11-T12",
+    "Intervertebral disc T12-L1"
+   ],
+   "insertions": []
+  },
+  {
    "id": "thoracic-tl-junction",
    "kind": "absent"
   },
@@ -1818,6 +1837,58 @@
   {
    "id": "lumbar-facets",
    "kind": "absent"
+  },
+  {
+   "id": "lumbar-vertebrae",
+   "kind": "mapped",
+   "meshes": [
+    "Vertebra L1",
+    "Vertebra L2",
+    "Vertebra L3",
+    "Vertebra L4",
+    "Vertebra L5"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "lumbar-vertebra-l1",
+   "kind": "mapped",
+   "meshes": [
+    "Vertebra L1"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "lumbar-vertebra-l2",
+   "kind": "mapped",
+   "meshes": [
+    "Vertebra L2"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "lumbar-vertebra-l3",
+   "kind": "mapped",
+   "meshes": [
+    "Vertebra L3"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "lumbar-vertebra-l4",
+   "kind": "mapped",
+   "meshes": [
+    "Vertebra L4"
+   ],
+   "insertions": []
+  },
+  {
+   "id": "lumbar-vertebra-l5",
+   "kind": "mapped",
+   "meshes": [
+    "Vertebra L5"
+   ],
+   "insertions": []
   },
   {
    "id": "lumbar-discs",
