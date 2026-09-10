@@ -823,11 +823,37 @@ switch exists.
 - The iframe is driven through mvmt-atlas's embed API: URL parameters on
   load (`?model=bp3d&view=anterior`, also `systems`, `select`, `region`,
   `patient`), and `window.postMessage({type:"set", ...})` afterwards. It
-  posts `{type:"select", id, name}` back on every selection change, which
-  the bar shows. The message listener checks `e.source` against the frame.
-- Human Atlas mode has none of this file's selection panel, systems, depth
-  or fascial lines; those are being rebuilt on the other engine in
-  mvmt-atlas. Do not duplicate them here.
+  posts `{type:"select", id, name, mvmtId}` back on every selection change,
+  which the bar shows. The message listener checks `e.source` against the
+  frame. `?atlas=http://localhost:…/` on this page's own query string points
+  the frame at a local atlas for side-by-side development, and is honoured
+  for a local origin only.
+- **The atlas's structure panel is fed from here, and it is the same panel
+  in a different frame.** The atlas has no exercise library, only an id
+  bridge (`atlas.layers.mvmt`, built by its `build-index.mjs` from this
+  file's `ANATOMY`) that resolves any BodyParts3D part to an `ANATOMY` id —
+  `mvmtId` on the `select` message. `v3AtlasReply()` answers with
+  `{type:"structure", …}` built from the same sources as `anatDetailBody()`:
+  `ANATOMY` for the copy, `anatEx` for the drills as the live library
+  resolves them, the open phase for what is already added. An Add in that
+  panel arrives as `{type:"add-exercise", exerciseId}` and goes through
+  `anatAddToPhase()` — the same function the index and the Z-Anatomy panel
+  use, the same id-only item, the same "No program open" modal — and is
+  answered with `{type:"added", …}` so the button can read Added from the
+  truth rather than a guess. The reply is re-sent after an add and on every
+  re-entry to the view, because the phase can change under it. With no
+  parent the atlas shows blurbs from a bundled copy of `ANATOMY` and no
+  drills; the drills are never bundled because the library is user-mutable.
+- The three print guards hold from the atlas exactly as they do from the
+  Z-Anatomy panel: the frame sits under `#threeView`'s `no-print`, nothing
+  anatomy-flavoured comes back across the boundary, and `renderPatient()`
+  still never reads `ANATOMY`. `clinical` crosses *into* the frame and
+  stays there: the atlas hides it (and the drills) in its own patient view,
+  which enters in the state `anatPatient` is in and keeps its own toggle from
+  there — not stored on either side.
+- Human Atlas mode has none of this file's systems, depth or fascial lines;
+  those are rebuilt on the other engine in mvmt-atlas. Do not duplicate them
+  here.
 
 ### Nothing 3D loads until the 3D view is opened
 

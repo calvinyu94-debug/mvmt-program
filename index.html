@@ -7398,10 +7398,24 @@ const V3_REDRAWN = "Redrawn from the source model by rule. See the note below.";
    "atlas" is mvmt-atlas in an iframe. The choice lives in settings so it
    survives a reload, and it is read on every entry to the 3D view rather than
    once at boot. The iframe is driven through mvmt-atlas's embed API: URL
-   parameters on first load, and it posts {type:"select", id, name} back on
-   every selection change, which the bar shows. */
+   parameters on first load, {type:"set", …} afterwards, and it posts
+   {type:"select", id, name, mvmtId} back on every selection change — mvmtId
+   being the ANATOMY structure the atlas's id bridge resolves the selection
+   to. The atlas has no library of its own, so its structure panel is fed from
+   here: v3AtlasReply() answers a select with the structure's copy and the
+   drills that load it, and an add from that panel comes back as
+   {type:"add-exercise", exerciseId} and goes through anatAddToPhase(), the
+   same function the index and the Z-Anatomy panel use. Only the id-only item
+   ever travels that way. */
 const V3_MODELS = [{k:"zanatomy", name:"Z-Anatomy"}, {k:"atlas", name:"Human Atlas"}];
-const V3_ATLAS_URL = "https://calvinyu94-debug.github.io/mvmt-atlas/";
+/* The deployed atlas, or, for running the two side by side in development,
+   ?atlas=http://localhost:3016/mvmt-atlas/ on the query string. The override
+   is honoured for a local origin only, so a link cannot point the frame at
+   anything else. */
+const V3_ATLAS_URL = (()=>{
+  const q = new URLSearchParams(location.search).get("atlas");
+  return q && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(q) ? q : "https://calvinyu94-debug.github.io/mvmt-atlas/";
+})();
 function v3ModelGet(){ const m = readSettings().model; return V3_MODELS.some(x=>x.k === m) ? m : "zanatomy"; }
 function v3ModelRender(){
   const k = v3ModelGet(), el = $("#v3Model");
@@ -7418,17 +7432,77 @@ function v3ModelApply(){
   if(v3ModelGet() === "atlas"){ v3Leave(); v3AtlasEnter(); }
   else v3Enter();
 }
+/* The structure the atlas last resolved a selection to. Kept so the panel can
+   be answered again when what it shows may have changed under it — the
+   program's phase after an add, or on the way back into the view. */
+let v3AtlasSel = null;
+function v3AtlasPost(msg){
+  const f = $("#v3AtlasFrame");
+  if(f && f.contentWindow && f.getAttribute("src")) f.contentWindow.postMessage(msg, "*");
+}
 function v3AtlasEnter(){
   v3ModelRender();
   const f = $("#v3AtlasFrame");
-  if(!f.getAttribute("src")) f.src = V3_ATLAS_URL + "?model=bp3d&view=anterior";
+  /* Patient view goes in with the URL the first time and by message after,
+     so the atlas starts in whatever state the Anatomy index is in. The atlas
+     keeps its own toggle from there; the state is not stored on either side. */
+  if(!f.getAttribute("src")) f.src = V3_ATLAS_URL + "?model=bp3d&view=anterior&patient=" + (anatPatient ? 1 : 0);
+  else{
+    v3AtlasPost({type:"set", patient:anatPatient});
+    if(v3AtlasSel) v3AtlasReply(v3AtlasSel);
+  }
 }
+/* What the atlas's panel shows for a structure, from the same sources as
+   anatDetailBody(): ANATOMY for the copy, anatEx for the drills as the live
+   library resolves them, the open phase for what is already added. The
+   exercise names are not sent — the atlas has nothing to resolve them
+   against — and nothing anatomy-flavoured ever comes back: an add arrives as
+   an exercise id and becomes the same id-only item every other route makes. */
+function v3AtlasStructure(id){
+  const s = ANATOMY.find(x=>x.id === id);
+  if(!s) return {type:"structure", mvmtId:id, structure:null, drills:[], where:null, hasProgram:!!S, inherited:0};
+  const drills = (anatEx[s.id] || []).map(i=>byId[i]).filter(Boolean);
+  const inPhase = S ? new Set(phase().items.map(i=>i.exerciseId)) : null;
+  const parent = s.inherits ? ANATOMY.find(x=>x.id === s.inherits) : null;
+  return {
+    type:"structure", mvmtId:id,
+    structure:{
+      id:s.id, name:s.name, latin:s.latin, region:s.region, alsoRegion:s.alsoRegion, system:s.system,
+      layer:s.layer, inherits:s.inherits, action:s.action, clinical:s.clinical,
+      noExercises:s.noExercises, modelNote:s.modelNote,
+      parent: parent ? {id:parent.id, name:parent.name} : null,
+      children: ANATOMY.filter(x=>x.inherits === s.id).map(c=>({id:c.id, name:c.name}))
+    },
+    drills: drills.map(x=>({
+      id:x.id, name:x.name, level:x.level, levelLabel:LEVELS[x.level] || String(x.level),
+      type:x.type, typeLabel:typeName(x.type), rx:x.rx, added:!!(inPhase && inPhase.has(x.id))
+    })),
+    where: S ? (isSingle() ? "this handout" : phase().name) : null,
+    hasProgram:!!S,
+    inherited: parent ? (anatEx[parent.id] || []).length : 0
+  };
+}
+function v3AtlasReply(id){ v3AtlasPost(v3AtlasStructure(id)); }
 window.addEventListener("message", e=>{
   const f = $("#v3AtlasFrame");
   if(!f || e.source !== f.contentWindow) return;
   const d = e.data;
   if(!d || typeof d !== "object") return;
-  if(d.type === "select") $("#v3AtlasSel").textContent = d.name ? "Selected: " + d.name : "";
+  if(d.type === "ready"){ v3AtlasPost({type:"set", patient:anatPatient}); return; }
+  if(d.type === "select"){
+    $("#v3AtlasSel").textContent = d.name ? "Selected: " + d.name : "";
+    v3AtlasSel = typeof d.mvmtId === "string" && ANATOMY.some(x=>x.id === d.mvmtId) ? d.mvmtId : null;
+    if(v3AtlasSel) v3AtlasReply(v3AtlasSel);
+    return;
+  }
+  if(d.type === "add-exercise" && typeof d.exerciseId === "string"){
+    /* The same function as every other Add. With no program open it raises
+       the same modal, and the answer below says the drill is not added. */
+    anatAddToPhase(d.exerciseId);
+    const added = !!(S && phase().items.some(i=>i.exerciseId === d.exerciseId));
+    v3AtlasPost({type:"added", exerciseId:d.exerciseId, structureId:typeof d.structureId === "string" ? d.structureId : null, added});
+    if(v3AtlasSel) v3AtlasReply(v3AtlasSel);
+  }
 });
 
 const V3_WHOLE = "whole-body";
