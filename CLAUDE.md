@@ -511,7 +511,7 @@ and skipped, so re-importing your own export does not breed duplicates.
 
 ## The anatomy index
 
-`ANATOMY` is a flat array of 438 structures — muscles, joints, ligaments, fascia
+`ANATOMY` is a flat array of 445 structures — muscles, joints, ligaments, fascia
 and nerves — each resolving to the library drills that load it. It backs the
 Anatomy view, and a separate 3D viewer project consumes the same dataset and
 treats this file as its source. **Keep it liftable:** plain data, one top-level
@@ -619,6 +619,11 @@ The split is there because which ligament is the whole clinical question at
 the ankle — ATFL alone, ATFL plus CFL and PTFL involvement are three different
 injuries — and a group answers none of it. The interosseous talocalcaneal
 ligament is already Sinus Tarsi and deliberately has no subtalar child.
+Batch N added the five lumbar vertebrae the same way — a Lumbar Vertebrae group
+with L1–L5 as parts, each claiming its one mesh — and the thoracic discs as a
+single articular entry beside the cervical and lumbar ones. The join's
+`counts` block is set from the data when the join is edited; it had drifted
+three behind the real mapped count and now agrees with it.
 
 `inherits` is now two things at once, and the second is why it must not be
 used for loose association: **it is the sole input to the group/detail toggle.**
@@ -902,7 +907,7 @@ it does **not** carry, each of which the viewer handles rather than hides:
   78 markers, because the region filter only means something in a region.
 
 Everything else behaves as it does in a region — selection, systems, muscle
-depth and parts all read the same code and the same join, and 347 of the 352
+depth and parts all read the same code and the same join, and 354 of the 359
 mapped structures have every one of their meshes in it. Differences a click
 shows are occlusion, not resolution: the whole body simply has more anatomy in
 front of the ray.
@@ -1083,9 +1088,10 @@ A click raycasts against the region's own meshes only — context is never in
 the list — and walks every hit along the ray, nearest first, reading each
 `sourceName` back through the join. **The first hit the join claims wins;
 unmapped geometry is transparent to selection, never a selection result.**
-556 of the 2,054 exported objects map to nothing — it was 746 before Batch K
+539 of the 2,054 exported objects map to nothing — it was 746 before Batch K
 named 42 ligaments and fasciae, and 590 before Batches L and M named the
-bursae and the short ligaments of the foot — and dozens of them are
+bursae and the short ligaments of the foot, and 556 before Batch N named the
+lumbar vertebrae and the thoracic discs — and dozens of them are
 fasciae and tendon sheaths lying directly over the muscles a hand goes for —
 stopping at the nearest hit made the deltoid, the pecs and every thigh and
 forearm muscle unclickable. A mesh can be claimed by several structures
@@ -1244,7 +1250,7 @@ already holds some of its geometry**. `v3Show()` reads it and falls back to
 
 The check that this is complete: for every `mapped` structure, load the region
 `v3Show()` would load and confirm at least one of its meshes is in the scene.
-All 352 pass — the five insertion-only ones (Common Extensor Origin, Common
+All 359 pass — the five insertion-only ones (Common Extensor Origin, Common
 Flexor Origin, Patellar Tendon, Quadriceps Tendon, Articularis Genus) through the insertion layer,
 which `v3Show()` turns on for them.
 
