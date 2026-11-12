@@ -799,6 +799,56 @@ Autosave debounces 800ms. Any code path that replaces the open program must call
 `flushSave()` first, or the pending write lands on the wrong program and the
 previous one's last edit is lost.
 
+### Patients and their programs
+
+A patient is **not a record of its own**. It is the set of programs sharing a
+`patientId`, and every program carries the patient's name and number with it.
+That keeps one storage key and means a backup, a restore and a program file
+carry the grouping with no new format. Four fields on each program:
+
+```
+patientId  → opaque uuid, the identity, never shown
+patientNo  → five random digits, what the practitioner sees and writes down
+title      → optional, "Left shoulder" — shown in the list, never on the handout
+createdAt  → orders a patient's programs; "Program 2" is computed from it
+```
+
+- **`normalize()` must name every one of them.** It rebuilds the record field
+  by field, so a field it leaves out is lost on every load, restore and file
+  open. The same is true of any field added later.
+- **The program number is computed, never stored**, so two computers can never
+  disagree about it. Deleting a program renumbers the later ones; the dialog
+  says so.
+- **Patient numbers are random, not sequential**, because two computers create
+  patients independently. A clash met through a restore is resolved by giving
+  the incoming patient a fresh number; a patient this computer already holds
+  keeps the number it shows here. The rare cost is one patient carrying a
+  different number on each computer.
+- **`ensurePatients()` fills the gaps** and runs at boot, on every `persist()`
+  and after a restore. A program with no `patientId` — from an older build or
+  an older file — is grouped by identical name, case and spacing aside.
+  Unnamed programs never group. A **new** patient chosen in the UI is given a
+  `patientId` at once (`finishCreate()`), never left empty — empty means
+  "legacy" and would be grouped by name, which is exactly what was declined.
+- **An identical name is a question, not a merge.** New program asks whether a
+  name that matches an existing patient is that person; two patients may share
+  a name, and the list flags it. Joining two records of one person after the
+  fact is **Details → Belongs to**.
+- The name belongs to the patient: renaming from the list or the header bar
+  rewrites it on every program that patient has.
+- **The handout is untouched by all of this** — it still prints only the
+  patient's name. Verified byte-identical against `main`.
+
+### Exercise names are checked at the form
+
+`name` is a resolution key (see above), so **Add your own exercise** refuses a
+name already in the library — the same trim-and-lowercase key
+`resolveAnatomy()` groups on. A built-in's name is refused outright. One of
+the practitioner's own is offered **Replace**, confirmed by a second press:
+the existing entry's content is overwritten and **its id kept**, so programs
+using it show the new version. **Edit** never offers Replace — overwriting
+another entry would leave the edited one behind — and refuses the clash.
+
 ### Moving between computers: the encrypted backup
 
 Storage is per browser per device, deliberately — there is no server to sync

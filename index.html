@@ -779,6 +779,19 @@ button{cursor:pointer}
 .prow .pnm .anon{color:var(--ink-3);font-weight:400;font-style:italic}
 .prow .pmeta{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-3)}
 .prow .pacts{display:flex;gap:5px;margin-left:auto;flex-wrap:wrap}
+/* Patients group their programs. The patient row is the heading; each program
+   sits indented under it, oldest first, so the history reads top to bottom. */
+.pgroup{border-bottom:1px solid var(--line)}
+.pgroup:last-child{border-bottom:0}
+.prow.phead{background:var(--panel-2)}
+.prow.phead:hover{background:var(--panel-2)}
+.prow .pno{font-family:var(--font-ui);font-weight:600;font-size:12px;letter-spacing:.04em;color:var(--ink-3);margin-left:6px}
+.prow.psub{padding-left:calc(var(--pad) + 22px)}
+.prow.psub .pnm{font-size:14px}
+.prow.psub .pnm .ptitle{font-weight:400;color:var(--ink-2)}
+.prow .pwarn{color:var(--warn);font-weight:600}
+.who .who-tag{align-self:center;font-family:var(--font-ui);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--chrome-dim);white-space:nowrap}
+.who .who-tag:empty{display:none}
 
 /* ---------- modal ---------- */
 .modal{
@@ -801,6 +814,9 @@ button{cursor:pointer}
 .modal-body .fhint{display:block;font-size:11.5px;color:var(--ink-3);margin-top:4px}
 .modal-body .ferr{color:var(--danger);font-weight:600}
 .modal-body .ferr[hidden]{display:none}
+.modal-body label.radio{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--ink);cursor:pointer}
+.modal-body label.radio input{width:auto;margin:3px 0 0;flex:0 0 auto;accent-color:var(--accent)}
+.modal-body .lbl .opt{text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink-3)}
 .modal-foot{padding:0 22px 20px;display:flex;gap:9px;justify-content:flex-end}
 .btn.dark{background:var(--ink);border-color:var(--ink);color:var(--panel)}
 .btn.dark:hover{background:var(--ink-soft);border-color:var(--ink-soft)}
@@ -820,6 +836,7 @@ button{cursor:pointer}
     <input id="fPatient" placeholder="Patient name">
     <input id="fPrac" placeholder="Practitioner">
     <input id="fDate" type="date" aria-label="Start date" title="Start date">
+    <span class="who-tag" id="whoTag"></span>
   </div>
   <div class="acts">
     <span class="saved" id="savedAt"></span>
@@ -852,7 +869,7 @@ button{cursor:pointer}
     <section class="panel">
       <div class="panel-hd">
         <h2>Saved programs</h2>
-        <input class="search" id="lSearch" placeholder="Search by patient name…">
+        <input class="search" id="lSearch" placeholder="Search by name, #number or program title…">
         <span class="count" id="lCount"></span>
         <button class="pbtn" id="bBackupAll" title="Save every program and your own exercises to one password-protected file">Back up everything</button>
         <button class="pbtn" id="bRestoreAll" title="Load a backup file made on this or another computer">Restore backup</button>
@@ -4941,15 +4958,21 @@ function blankPhase(name){
 }
 
 function makeProgram(o){
+  const now = new Date().toISOString();
   return {
     schemaVersion:2,
     id:uuid(),
     patient:o.patient||"",
+    /* Filled by ensurePatients() on the first save when not given. */
+    patientId:o.patientId||"",
+    patientNo:o.patientNo||"",
+    title:o.title||"",
+    createdAt:now,
     practitioner:o.practitioner||"",
     startDate:o.startDate||"",
     structure:o.structure==="single"?"single":"phased",
     phases:(o.names||["Phase 1"]).map(blankPhase),
-    updatedAt:new Date().toISOString()
+    updatedAt:now
   };
 }
 
@@ -5102,6 +5125,14 @@ function normalize(d){
     schemaVersion: 2,
     id: d.id || uuid(),
     patient: d.patient || "",
+    /* Patient grouping and the program's own label. Carried here because
+       normalize() rebuilds the record field by field, and anything it does not
+       name is lost on every load, restore and file open. Gaps are filled by
+       ensurePatients(), not here — that needs the whole list. */
+    patientId: typeof d.patientId === "string" ? d.patientId : "",
+    patientNo: typeof d.patientNo === "string" ? d.patientNo : "",
+    title: typeof d.title === "string" ? d.title : "",
+    createdAt: typeof d.createdAt === "string" ? d.createdAt : "",
     practitioner: d.practitioner || "",
     startDate: normalizeDate(d.startDate),
     structure: d.structure === "single" ? "single" : "phased",
@@ -5215,6 +5246,9 @@ function persist(announce){
   const list = readPrograms();
   const i = list.findIndex(p=>p.id===S.id);
   if(i>=0) list[i] = S; else list.push(S);
+  /* S is in the list by reference, so a patient id or number assigned here
+     lands on the open program too. */
+  ensurePatients(list);
 
   const ok = writePrograms(list) && writeSettings({
     lastProgramId: S.id,
@@ -5235,6 +5269,119 @@ function flushSave(){
 window.addEventListener("pagehide", flushSave);
 window.addEventListener("beforeunload", flushSave);
 document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden") flushSave(); });
+
+/* ============================ PATIENTS ============================ */
+/* A patient is not a record of its own. It is the set of programs sharing a
+   patientId, and each program carries the patient's name and number with it.
+   That keeps a single storage key, and it means a backup, a restore and a
+   program file all carry the grouping without any new format.
+
+   patientId is the identity — an opaque uuid, never shown. patientNo is the
+   five-digit number the practitioner sees and can write down. Numbers are
+   random rather than sequential because two computers create patients
+   independently: sequential numbers would collide on the first restore.
+
+   A program's place in its patient's history ("Program 2") is computed from
+   createdAt, never stored, so two computers can never disagree about it. */
+
+const patKey = n => String(n||"").trim().toLowerCase().replace(/\s+/g," ");
+
+function newPatientNo(taken){
+  let n;
+  do{ n = String(10000 + Math.floor(Math.random()*90000)); }while(taken[n]);
+  return n;
+}
+
+/* Fill whatever a record is missing, in place. Returns true if anything
+   changed. Runs on every save, at boot and after a restore, so a program from
+   an older build or an older file is always brought into a patient.
+
+   Older programs have no patientId. They are grouped by identical name —
+   case and spacing aside — because that is how the practitioner already
+   identified them. Unnamed programs never group: each is its own patient. */
+function ensurePatients(list){
+  let changed = false;
+  list.forEach(p=>{
+    if(!p.createdAt){
+      p.createdAt = p.startDate ? p.startDate + "T00:00:00.000Z" : (p.updatedAt || new Date().toISOString());
+      changed = true;
+    }
+  });
+  const byName = Object.create(null);
+  list.forEach(p=>{ if(p.patientId && patKey(p.patient) && !byName[patKey(p.patient)]) byName[patKey(p.patient)] = p.patientId; });
+  list.forEach(p=>{
+    if(p.patientId) return;
+    const k = patKey(p.patient);
+    p.patientId = (k && byName[k]) || uuid();
+    if(k && !byName[k]) byName[k] = p.patientId;
+    changed = true;
+  });
+  /* One number per patient, unique across patients. The first holder of a
+     number keeps it; a clash — only possible when two computers met through
+     a restore — is resolved by giving the later patient a fresh one. */
+  const noOf = Object.create(null), owner = Object.create(null);
+  list.forEach(p=>{
+    if(p.patientId in noOf) return;
+    const n = /^\d{5}$/.test(p.patientNo) ? p.patientNo : "";
+    if(n && !owner[n]){ noOf[p.patientId] = n; owner[n] = p.patientId; }
+    else noOf[p.patientId] = "";
+  });
+  Object.keys(noOf).forEach(pid=>{
+    if(noOf[pid]) return;
+    noOf[pid] = newPatientNo(owner);
+    owner[noOf[pid]] = pid;
+  });
+  list.forEach(p=>{
+    if(p.patientNo !== noOf[p.patientId]){ p.patientNo = noOf[p.patientId]; changed = true; }
+  });
+  return changed;
+}
+
+/* Every patient, newest activity first, each with its programs oldest first. */
+function patientsFrom(list){
+  const by = Object.create(null), order = [];
+  list.forEach(p=>{
+    if(!by[p.patientId]){ by[p.patientId] = {id:p.patientId, no:p.patientNo, name:"", programs:[]}; order.push(by[p.patientId]); }
+    by[p.patientId].programs.push(p);
+  });
+  order.forEach(pt=>{
+    pt.programs.sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)) || String(a.id).localeCompare(String(b.id)));
+    /* The newest program's spelling of the name wins, so a rename shows even
+       if an older record somehow missed it. */
+    const newest = pt.programs.slice().sort((a,b)=>String(b.updatedAt||"").localeCompare(String(a.updatedAt||"")))[0];
+    pt.name = String(newest.patient || "").trim();
+    pt.updatedAt = newest.updatedAt || "";
+  });
+  return order.sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt)));
+}
+
+function programNumber(p, list){
+  const pt = patientsFrom(list || readPrograms()).find(x=>x.id === p.patientId);
+  if(!pt) return 1;
+  const i = pt.programs.findIndex(x=>x.id === p.id);
+  return i < 0 ? pt.programs.length + 1 : i + 1;
+}
+
+function programLabel(p, list){
+  return "Program " + programNumber(p, list) + (p.title ? " · " + p.title : "");
+}
+
+/* Patients whose name is identical to this one, case and spacing aside. */
+function patientsNamed(name, exceptPid){
+  const k = patKey(name);
+  if(!k) return [];
+  return patientsFrom(readPrograms()).filter(pt=>pt.id !== exceptPid && patKey(pt.name) === k);
+}
+
+/* Rename every program a patient owns. Callers flushSave() first. */
+function renamePatient(pid, name){
+  const list = readPrograms();
+  const now = new Date().toISOString();
+  list.forEach(p=>{ if(p.patientId === pid && p.patient !== name){ p.patient = name; p.updatedAt = now; } });
+  if(!writePrograms(list)) return false;
+  if(S && S.patientId === pid){ S.patient = name; syncHeader(); }
+  return true;
+}
 
 function renderSaved(){
   const el = $("#savedAt");
@@ -5775,11 +5922,75 @@ function showCustomError(msg){
   el.hidden = !msg;
 }
 
+/* Exercise names are a resolution key — the Anatomy map finds drills by name —
+   so a second exercise under a name already in use is stopped at the form,
+   not discovered later on the Anatomy banner. The key is the one
+   resolveAnatomy() groups on: case and surrounding spaces ignored.
+
+   Returns the exercise already holding the name, or null. */
+function customNameHolder(name, selfId){
+  const k = String(name).trim().toLowerCase();
+  return ALL.find(x=>x.id !== selfId && String(x.name).trim().toLowerCase() === k) || null;
+}
+
+function builtinNameMsg(x){
+  return "“" + x.name + "” is already an exercise in the built-in library. Give yours a different name — two exercises under one name confuse the Anatomy map.";
+}
+
+/* Overwrite a custom entry's content from the form. The id is deliberately
+   left alone — saved programs point at it, so they show the new content. */
+function applyCustomForm(t, f){
+  t.name = f.name; t.region = f.region; t.type = f.type; t.level = f.level;
+  t.description = f.description; t.progression = f.progression;
+  t.desc = assembleDesc(f.description, f.progression);
+  t.targets = f.targets; t.rx = f.rx;
+  const also = normalizeAlso(f.also, f.region);
+  if(also) t.alsoRegion = also; else delete t.alsoRegion;
+  t.updatedAt = new Date().toISOString();
+}
+
 function addCustomFlow(){
+  /* Set when the typed name matches one of the practitioner's own exercises
+     and they have been asked once. A second press of Replace with the same
+     name is the confirmation; editing the name withdraws it. */
+  let replaceId = null;
   openModal("Add your own exercise", customForm(null), ()=>{
     const f = readCustomForm();
     const err = customFormError(f);
     if(err){ showCustomError(err); return false; }
+
+    const holder = customNameHolder(f.name);
+    if(holder && !holder.custom){ showCustomError(builtinNameMsg(holder)); return false; }
+    if(holder && replaceId !== holder.id){
+      replaceId = holder.id;
+      flushSave();
+      const used = programsUsing(holder.id);
+      showCustomError("You already have an exercise called “" + holder.name + "”. Press Replace to overwrite it with what you've typed here"
+        + (used.length ? " — " + listNames(used) + (used.length===1 ? " uses it and will" : " use it and will") + " show the new version" : "")
+        + ", or change the name to keep both.");
+      $("#modalOk").textContent = "Replace";
+      return false;
+    }
+    if(holder){
+      flushSave();
+      const list = readCustom();
+      const t = list.find(x=>x.id === holder.id);
+      if(!t){ showCustomError("That exercise is no longer in your library."); return false; }
+      applyCustomForm(t, f);
+      if(!writeCustom(list)){ showCustomError("Couldn't save the change in this browser."); return false; }
+      rebuildLibrary();
+      renderFilterChips();
+      let placed = false;
+      if(S && !phase().items.some(i=>i.exerciseId === t.id)){
+        phase().items.push({exerciseId:t.id, rx:t.rx, freq:"", note:""});
+        touch();
+        placed = true;
+      }
+      renderAll();
+      toast("Replaced “" + t.name + "” in your library"
+        + (placed ? " and added it to this " + (isSingle() ? "handout" : "phase") : "") + ".");
+      return;
+    }
 
     const x = {
       id: customId(f.region, f.type, f.name),
@@ -5814,6 +6025,12 @@ function addCustomFlow(){
     toast("Added “" + x.name + "” to your library"
       + (placed ? " and to this " + (isSingle() ? "handout" : "phase") : "") + ".");
   }, "Add exercise");
+  $("#cxName").addEventListener("input", ()=>{
+    if(!replaceId) return;
+    replaceId = null;
+    $("#modalOk").textContent = "Add exercise";
+    showCustomError("");
+  });
 }
 
 function editCustomFlow(id){
@@ -5824,17 +6041,20 @@ function editCustomFlow(id){
     const err = customFormError(f);
     if(err){ showCustomError(err); return false; }
 
+    /* Editing can't offer Replace: overwriting another entry would leave this
+       one behind under a name it no longer holds. */
+    const holder = customNameHolder(f.name, id);
+    if(holder){
+      showCustomError(holder.custom
+        ? "You already have another exercise called “" + holder.name + "”. Pick a different name, or delete one of the two."
+        : builtinNameMsg(holder));
+      return false;
+    }
+
     const list = readCustom();
     const t = list.find(x=>x.id === id);
     if(!t){ showCustomError("That exercise is no longer in your library."); return false; }
-    /* The id is deliberately left alone — saved programs point at it. */
-    t.name = f.name; t.region = f.region; t.type = f.type; t.level = f.level;
-    t.description = f.description; t.progression = f.progression;
-    t.desc = assembleDesc(f.description, f.progression);
-    t.targets = f.targets; t.rx = f.rx;
-    const also = normalizeAlso(f.also, f.region);
-    if(also) t.alsoRegion = also; else delete t.alsoRegion;
-    t.updatedAt = new Date().toISOString();
+    applyCustomForm(t, f);
 
     if(!writeCustom(list)){
       showCustomError("Couldn't save the change in this browser.");
@@ -5941,12 +6161,31 @@ function confirmModal(title, message, onYes, yesLabel){
 }
 
 /* ============================ NEW PROGRAM SETUP ============================ */
-function newProgramFlow(){
+/* forPid: open the form already attached to that patient — the "+ New
+   program" on a patient row. Without it the form asks for a name, and a name
+   identical to an existing patient's is confirmed before anything is created
+   (see choosePatient). */
+function newProgramFlow(forPid){
+  flushSave();
   const st = readSettings();
-  openModal("New program", `
-    <label><span class="lbl">Patient name</span><input id="suPatient" autocomplete="off"></label>
+  const list = readPrograms();
+  const pt = forPid ? patientsFrom(list).find(x=>x.id === forPid) : null;
+  const earlier = pt ? pt.programs.slice().reverse() : [];
+  openModal(pt ? "New program for " + (pt.name || "unnamed patient") : "New program", `
+    ${pt
+      ? `<p>Patient <b>${esc(pt.name || "Unnamed patient")}</b> · #${esc(pt.no)} — this will be their Program ${pt.programs.length + 1}.</p>`
+      : `<label><span class="lbl">Patient name</span><input id="suPatient" autocomplete="off"></label>`}
+    <label><span class="lbl">Program title <span class="opt">optional</span></span><input id="suTitle" autocomplete="off" placeholder="e.g. Left shoulder, or Return to running">
+      <span class="fhint">Tells this program apart from the patient's others. It shows in your list, not on the handout.</span></label>
+    ${earlier.length ? `<label><span class="lbl">Start from</span>
+      <select id="suFrom">
+        <option value="">A blank program</option>
+        ${earlier.map(p=>`<option value="${esc(p.id)}">A copy of ${esc(programLabel(p, list))}</option>`).join("")}
+      </select>
+      <span class="fhint">A copy keeps every exercise, dose and note so you can build on it. The earlier program is left as it was.</span></label>` : ""}
     <label><span class="lbl">Practitioner</span><input id="suPrac" value="${esc(st.practitioner||"")}" autocomplete="off"></label>
     <label><span class="lbl">Start date</span><input id="suDate" type="date"></label>
+    <div id="suShape">
     <label><span class="lbl">Program structure</span>
       <select id="suStruct">
         <option value="single">Single handout</option>
@@ -5965,10 +6204,13 @@ function newProgramFlow(){
         </select></label>
       <div id="suCustom"></div>
     </div>
-  `, createFromSetup, "Create program");
+    </div>
+  `, ()=>createFromSetup(pt), "Create program");
 
-  const struct = $("#suStruct"), naming = $("#suNaming"), count = $("#suCount");
+  const struct = $("#suStruct"), naming = $("#suNaming"), count = $("#suCount"), from = $("#suFrom");
   const sync = ()=>{
+    /* A copy brings its own phases, so the shape questions don't apply. */
+    $("#suShape").style.display = from && from.value ? "none" : "";
     $("#suPhased").style.display = struct.value === "phased" ? "" : "none";
     const custom = struct.value === "phased" && naming.value === "custom";
     $("#suCustom").innerHTML = custom
@@ -5977,13 +6219,13 @@ function newProgramFlow(){
       : "";
   };
   struct.onchange = sync; naming.onchange = sync; count.onchange = sync;
+  if(from) from.onchange = sync;
   sync();
 }
 
-function createFromSetup(){
-  /* Whatever is open may have an unsaved debounce in flight — land it before
-     S is replaced, or that last edit is lost. */
-  flushSave();
+/* Read the form before anything else happens — the patient question below
+   replaces the modal body, and the answers would go with it. */
+function readSetupForm(pt){
   const structure = $("#suStruct").value;
   let names;
   if(structure === "single"){
@@ -5995,17 +6237,76 @@ function createFromSetup(){
       ? [...document.querySelectorAll("#suCustom .suName")].map((el,i)=>el.value.trim() || ("Phase "+(i+1)))
       : Array.from({length:n}, (_,i)=>PHASE_WORDS[naming]+" "+(i+1));
   }
-  S = makeProgram({
-    patient: $("#suPatient").value.trim(),
+  return {
+    patient: pt ? pt.name : $("#suPatient").value.trim(),
+    title: $("#suTitle").value.trim(),
+    fromId: $("#suFrom") ? $("#suFrom").value : "",
     practitioner: $("#suPrac").value.trim(),
     startDate: $("#suDate").value,
     structure, names
-  });
+  };
+}
+
+function createFromSetup(pt){
+  /* Whatever is open may have an unsaved debounce in flight — land it before
+     S is replaced, or that last edit is lost. */
+  flushSave();
+  const o = readSetupForm(pt);
+  if(pt){ finishCreate(o, pt.id, pt.no); return; }
+  const same = patientsNamed(o.patient);
+  if(!same.length){ finishCreate(o, "", ""); return; }
+  choosePatient(o, same);
+  return false;   // the question replaces this form; it closes itself
+}
+
+/* A name identical to an existing patient's — case and spacing aside — is
+   almost always the same person coming back, so adding to them is the
+   default. It is still a question, because two people can share a name and a
+   program silently filed under the wrong person is the worse mistake. */
+function choosePatient(o, same){
+  const first = same[0];
+  openModal("Is this the same patient?", `
+    <p>You already have ${same.length === 1 ? "a patient" : same.length + " patients"} called <b>${esc(o.patient)}</b>.</p>
+    ${same.map((pt,i)=>`<label class="radio"><input type="radio" name="suWho" value="${esc(pt.id)}"${i===0?" checked":""}>
+      <span>Add to <b>${esc(pt.name)}</b> · #${esc(pt.no)} — as their Program ${pt.programs.length + 1}
+      <span class="fhint">Has ${pt.programs.length} program${pt.programs.length===1?"":"s"}: ${pt.programs.map(p=>esc(programLabel(p))).join(", ")}</span></span></label>`).join("")}
+    <label class="radio"><input type="radio" name="suWho" value=""><span>No — create a separate patient with the same name
+      <span class="fhint">They get their own patient number, so you can tell them apart.</span></span></label>
+  `, ()=>{
+    const pick = document.querySelector('input[name="suWho"]:checked');
+    const pid = pick ? pick.value : first.id;
+    const pt = same.find(x=>x.id === pid);
+    finishCreate(o, pt ? pt.id : "", pt ? pt.no : "");
+  }, "Continue");
+}
+
+function finishCreate(o, pid, no){
+  /* No pid means a new patient, decided — mint one now. Left empty, the save
+     would treat the program like one from an older build and file it under
+     any patient with the same name, which is exactly what was just declined. */
+  if(!pid){ pid = uuid(); no = ""; }
+  const list = readPrograms();
+  const src = o.fromId ? list.find(p=>p.id === o.fromId) : null;
+  let p;
+  if(src){
+    const base = migrate(clone(src));
+    if(!base){ toast("That earlier program couldn't be read, so this one starts blank."); }
+    p = makeProgram({patient:o.patient, patientId:pid, patientNo:no, title:o.title,
+                     practitioner:o.practitioner, startDate:o.startDate, structure:base ? base.structure : o.structure,
+                     names:["Phase 1"]});
+    if(base) p.phases = base.phases;
+    else p.phases = o.names.map(blankPhase);
+  }else{
+    p = makeProgram({patient:o.patient, patientId:pid, patientNo:no, title:o.title,
+                     practitioner:o.practitioner, startDate:o.startDate, structure:o.structure, names:o.names});
+  }
+  S = p;
   U.active = 0;
   F.maxLevel = null;
   persist(false);
   syncHeader();
   setView("prac");
+  toast(programLabel(S) + " for " + (S.patient || "unnamed patient") + " · #" + S.patientNo + ".");
 }
 
 /* ============================ SAVED PROGRAMS LIST ============================ */
@@ -6017,54 +6318,93 @@ function programStats(p){
   };
 }
 
-function renderList(){
-  const all = readPrograms().slice().sort((a,b)=>
-    String(b.updatedAt||"").localeCompare(String(a.updatedAt||"")));
-  const q = listQuery.trim().toLowerCase();
-  const list = q ? all.filter(p=>String(p.patient||"").toLowerCase().includes(q)) : all;
+function fmtDate(iso){
+  if(!iso) return "";
+  const d = new Date(String(iso).length === 10 ? iso + "T00:00:00" : iso);
+  return isNaN(d) ? "" : d.toLocaleDateString(undefined, {day:"numeric", month:"short", year:"numeric"});
+}
 
-  $("#lCount").textContent = all.length
-    ? (q ? list.length+" of "+all.length : all.length + (all.length===1?" program":" programs"))
+function renderList(){
+  const list = readPrograms();
+  const pts = patientsFrom(list);
+  const q = listQuery.trim().toLowerCase().replace(/^#/, "");
+  /* A search matches the patient's name or number, or any program's title —
+     and a hit on a title still shows the whole patient, so the program is
+     seen in its history rather than alone. */
+  const shown = q ? pts.filter(pt=>
+      String(pt.name).toLowerCase().includes(q) || String(pt.no).includes(q) ||
+      pt.programs.some(p=>String(p.title||"").toLowerCase().includes(q))) : pts;
+
+  const n = list.length;
+  $("#lCount").textContent = n
+    ? (q ? shown.length + " of " + pts.length + " patients"
+         : pts.length + (pts.length===1?" patient":" patients") + " · " + n + (n===1?" program":" programs"))
     : "";
 
-  if(!all.length){
+  if(!n){
     $("#plist").innerHTML = `<div class="empty">
       <b>No programs yet</b>Create one to get started.
       <div style="margin-top:14px"><button class="pbtn" id="emptyNew">New program</button></div>
     </div>`;
-    $("#emptyNew").onclick = newProgramFlow;
+    $("#emptyNew").onclick = ()=>newProgramFlow();
     return;
   }
-  if(!list.length){
-    $("#plist").innerHTML = `<div class="empty"><b>Nothing matches</b>No patient name contains “${esc(listQuery)}”.</div>`;
+  if(!shown.length){
+    $("#plist").innerHTML = `<div class="empty"><b>Nothing matches</b>No patient name, number or program title contains “${esc(listQuery)}”.</div>`;
     return;
   }
 
-  $("#plist").innerHTML = list.map(p=>{
-    const s = programStats(p);
-    const open = S && S.id === p.id;
-    return `<div class="prow" data-id="${esc(p.id)}">
-      <div class="pnm">${p.patient ? esc(p.patient) : `<span class="anon">Unnamed patient</span>`}</div>
-      <div class="pmeta">
-        <span>${p.structure==="single" ? "Single handout" : s.phases+(s.phases===1?" phase":" phases")}</span>
-        <span>${s.exercises} exercise${s.exercises===1?"":"s"}</span>
-        <span>${esc(relTime(p.updatedAt))}</span>
-        ${open?`<span>· open</span>`:""}
+  /* Two patients under one name is allowed — two people can share one — but
+     it is also what a program created separately on each computer looks like,
+     so it is pointed out rather than hidden. */
+  const twins = Object.create(null);
+  pts.forEach(pt=>{ const k = patKey(pt.name); if(k) (twins[k] = twins[k] || []).push(pt.no); });
+
+  $("#plist").innerHTML = shown.map(pt=>{
+    const others = (twins[patKey(pt.name)] || []).filter(x=>x !== pt.no);
+    return `<div class="pgroup" data-pid="${esc(pt.id)}">
+      <div class="prow phead">
+        <div class="pnm">${pt.name ? esc(pt.name) : `<span class="anon">Unnamed patient</span>`}<span class="pno">#${esc(pt.no)}</span></div>
+        <div class="pmeta">
+          <span>${pt.programs.length} program${pt.programs.length===1?"":"s"}</span>
+          <span>edited ${esc(relTime(pt.updatedAt))}</span>
+          ${others.length ? `<span class="pwarn">Same name as #${others.map(esc).join(", #")}</span>` : ""}
+        </div>
+        <div class="pacts">
+          <button class="pbtn" data-a="newfor">+ New program</button>
+          <button class="pbtn" data-a="renpat">Rename patient</button>
+        </div>
       </div>
-      <div class="pacts">
-        <button class="pbtn" data-a="open">Open</button>
-        <button class="pbtn" data-a="print">Print handout</button>
-        <button class="pbtn" data-a="dup">Duplicate</button>
-        <button class="pbtn" data-a="ren">Rename</button>
-        <button class="pbtn danger" data-a="del">Delete</button>
-      </div>
+      ${pt.programs.map((p,i)=>{
+        const st = programStats(p);
+        const open = S && S.id === p.id;
+        return `<div class="prow psub" data-id="${esc(p.id)}">
+          <div class="pnm">Program ${i+1}${p.title ? `<span class="ptitle"> · ${esc(p.title)}</span>` : ""}</div>
+          <div class="pmeta">
+            ${p.startDate ? `<span>started ${esc(fmtDate(p.startDate))}</span>` : `<span>created ${esc(fmtDate(p.createdAt))}</span>`}
+            <span>${p.structure==="single" ? "Single handout" : st.phases+(st.phases===1?" phase":" phases")}</span>
+            <span>${st.exercises} exercise${st.exercises===1?"":"s"}</span>
+            <span>edited ${esc(relTime(p.updatedAt))}</span>
+            ${open?`<span>· open</span>`:""}
+          </div>
+          <div class="pacts">
+            <button class="pbtn" data-a="open">Open</button>
+            <button class="pbtn" data-a="print">Print handout</button>
+            <button class="pbtn" data-a="dup" title="Start a new program for this patient from a copy of this one">Build on this</button>
+            <button class="pbtn" data-a="ren">Details</button>
+            <button class="pbtn danger" data-a="del">Delete</button>
+          </div>
+        </div>`;
+      }).join("")}
     </div>`;
   }).join("");
 
   $("#plist").onclick = e=>{
     const btn = e.target.closest("[data-a]"); if(!btn) return;
-    const id = e.target.closest(".prow").dataset.id;
     const action = btn.dataset.a;
+    if(action === "newfor") return newProgramFlow(e.target.closest(".pgroup").dataset.pid);
+    if(action === "renpat") return renamePatientFlow(e.target.closest(".pgroup").dataset.pid);
+    const id = e.target.closest(".prow").dataset.id;
     if(action === "open")  openProgram(id);
     if(action === "print") printProgram(id);
     if(action === "dup")   duplicateProgram(id);
@@ -6103,46 +6443,105 @@ function printProgram(id){
   setTimeout(printCurrent, 80);
 }
 
+/* "Build on this": a new program for the same patient, starting as a copy.
+   It becomes their newest program, so it numbers after everything they have;
+   the original is left exactly as it was — it is the record of what they were
+   given. */
 function duplicateProgram(id){
   flushSave();
-  const raw = readPrograms().find(p=>p.id === id);
+  const list = readPrograms();
+  const raw = list.find(p=>p.id === id);
   if(!raw) return;
   const copy = clone(raw);
+  const now = new Date().toISOString();
   copy.id = uuid();
-  copy.patient = (raw.patient ? raw.patient : "Unnamed patient") + " (copy)";
-  copy.updatedAt = new Date().toISOString();
-  const list = readPrograms();
+  copy.createdAt = now;
+  copy.updatedAt = now;
+  copy.startDate = "";
   list.push(copy);
-  if(writePrograms(list)) toast("Duplicated.");
-  else toast("Couldn't save the duplicate.");
-  renderList();
+  if(!writePrograms(list)){ toast("Couldn't save the new program."); return; }
+  openProgram(copy.id);
+  toast("Started " + programLabel(copy) + " for " + (copy.patient || "this patient") + " from a copy. Set its start date above.");
 }
 
+/* Program details: its title, its start date, and which patient it belongs
+   to. Moving a program is how two records of one person are joined after the
+   fact — the list flags a shared name, and this is where it is fixed. */
 function renameProgram(id){
   flushSave();
-  const raw = readPrograms().find(p=>p.id === id);
+  const list = readPrograms();
+  const raw = list.find(p=>p.id === id);
   if(!raw) return;
-  openModal("Rename program",
-    `<label><span class="lbl">Patient name</span><input id="rnName" value="${esc(raw.patient||"")}"></label>`,
-    ()=>{
-      const name = $("#rnName").value.trim();
-      const list = readPrograms();
-      const t = list.find(p=>p.id === id);
-      if(!t) return;
-      t.patient = name;
-      t.updatedAt = new Date().toISOString();
-      writePrograms(list);
-      if(S && S.id === id){ S.patient = name; S.updatedAt = t.updatedAt; syncHeader(); }
-      renderList();
-    }, "Rename");
+  const pts = patientsFrom(list).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+  openModal(programLabel(raw, list) + " — details", `
+    <p class="ferr" id="rnErr" hidden></p>
+    <label><span class="lbl">Program title <span class="opt">optional</span></span><input id="rnTitle" value="${esc(raw.title||"")}" placeholder="e.g. Left shoulder"></label>
+    <label><span class="lbl">Start date</span><input id="rnDate" type="date" value="${esc(raw.startDate||"")}"></label>
+    <label><span class="lbl">Belongs to</span>
+      <select id="rnWho">
+        ${pts.map(pt=>`<option value="${esc(pt.id)}"${pt.id===raw.patientId?" selected":""}>${esc(pt.name || "Unnamed patient")} · #${esc(pt.no)}</option>`).join("")}
+        <option value="">A new patient…</option>
+      </select>
+      <span class="fhint">Moving it renumbers the programs of both patients by date.</span></label>
+    <label id="rnNewWrap" style="display:none"><span class="lbl">New patient's name</span><input id="rnNew" autocomplete="off"></label>
+  `, ()=>{
+    const who = $("#rnWho").value;
+    const err = $("#rnErr");
+    const list2 = readPrograms();
+    const t = list2.find(p=>p.id === id);
+    if(!t) return;
+    const now = new Date().toISOString();
+    t.title = $("#rnTitle").value.trim();
+    t.startDate = $("#rnDate").value;
+    if(!who){
+      const name = $("#rnNew").value.trim();
+      if(!name){ err.textContent = "Type the new patient's name."; err.hidden = false; return false; }
+      t.patient = name; t.patientId = uuid(); t.patientNo = "";
+    }else if(who !== t.patientId){
+      const pt = pts.find(x=>x.id === who);
+      t.patientId = pt.id; t.patientNo = pt.no; t.patient = pt.name;
+    }
+    t.updatedAt = now;
+    ensurePatients(list2);
+    if(!writePrograms(list2)){ err.textContent = "Couldn't save that change in this browser."; err.hidden = false; return false; }
+    if(S && S.id === id){
+      Object.assign(S, {title:t.title, startDate:t.startDate, patient:t.patient, patientId:t.patientId, patientNo:t.patientNo, updatedAt:now});
+      syncHeader();
+    }
+    renderList();
+    toast("Saved.");
+  }, "Save");
+  $("#rnWho").onchange = ()=>{ $("#rnNewWrap").style.display = $("#rnWho").value ? "none" : ""; };
+}
+
+function renamePatientFlow(pid){
+  flushSave();
+  const pt = patientsFrom(readPrograms()).find(x=>x.id === pid);
+  if(!pt) return;
+  openModal("Rename patient", `
+    <p>Renames #${esc(pt.no)} on all ${pt.programs.length} of their program${pt.programs.length===1?"":"s"}. Their patient number stays the same.</p>
+    <label><span class="lbl">Patient name</span><input id="rnName" value="${esc(pt.name||"")}"></label>
+  `, ()=>{
+    const name = $("#rnName").value.trim();
+    if(!renamePatient(pid, name)){ toast("Couldn't save that change."); return; }
+    renderList();
+    const same = patientsNamed(name, pid);
+    toast(same.length
+      ? "Renamed. Another patient (#" + same.map(x=>x.no).join(", #") + ") has the same name — use Details on a program to move it if they're the same person."
+      : "Renamed.");
+  }, "Rename");
 }
 
 function deleteProgram(id){
   flushSave();
-  const raw = readPrograms().find(p=>p.id === id);
+  const all = readPrograms();
+  const raw = all.find(p=>p.id === id);
   if(!raw) return;
-  const label = raw.patient || "this unnamed program";
-  confirmModal("Delete program", "Delete " + label + "? This can't be undone.", ()=>{
+  const label = programLabel(raw, all) + (raw.patient ? " for " + raw.patient : "");
+  const last = !all.some(p=>p.id !== id && p.patientId === raw.patientId);
+  confirmModal("Delete program", "Delete " + label + "? "
+    + (last ? "It's their only program, so the patient goes from your list too. " : "Their other programs are kept, and the later ones are renumbered. ")
+    + "This can't be undone.", ()=>{
     const list = readPrograms().filter(p=>p.id !== id);
     writePrograms(list);
     if(S && S.id === id){
@@ -6160,7 +6559,7 @@ function deleteProgram(id){
 }
 
 $("#lSearch").oninput = e=>{ listQuery = e.target.value; renderList(); };
-$("#bNew").onclick = newProgramFlow;
+$("#bNew").onclick = ()=>newProgramFlow();
 
 /* ============================ FILTERS UI ============================ */
 function chips(el, opts, key){
@@ -7100,6 +7499,7 @@ function syncHeader(){
   $("#fPatient").value = S ? S.patient : "";
   $("#fPrac").value    = S ? S.practitioner : "";
   $("#fDate").value    = S ? S.startDate : "";
+  $("#whoTag").textContent = S && S.patientNo ? "#" + S.patientNo + " · " + programLabel(S) : "";
 }
 
 $("#nPatient").oninput = e=>{phase().patientNote = e.target.value; touch();};
@@ -7109,6 +7509,16 @@ $("#nPrac").oninput = e=>{phase().practitionerNote = e.target.value; touch();};
   const k = ["patient","practitioner","startDate"][i];
   $("#"+id).oninput = e=>{ if(!S) return; S[k]=e.target.value; touch(); };
 });
+/* The name belongs to the patient, not to one program — once the edit is
+   finished, carry it to every program they have, so the list never shows one
+   person under two spellings. */
+$("#fPatient").onchange = ()=>{
+  if(!S || !S.patientId) return;
+  flushSave();
+  const name = S.patient.trim();
+  S.patient = name;
+  renamePatient(S.patientId, name);
+};
 
 $("#bSave").onclick = ()=>{ clearTimeout(saveTimer); saveTimer=null; persist(true); };
 
@@ -7360,6 +7770,10 @@ function applyBackup(payload){
   }
   const map = r.custom ? r.custom.map : {};
   const list = readPrograms();
+  /* A patient this computer already knows keeps the number it shows here —
+     a practitioner may have written it down. */
+  const localNo = Object.create(null);
+  list.forEach(x=>{ if(x.patientId && x.patientNo && !localNo[x.patientId]) localNo[x.patientId] = x.patientNo; });
   (Array.isArray(payload && payload.programs) ? payload.programs : []).forEach(raw=>{
     if(!raw || !raw.id) return;
     const d = remapIds(JSON.parse(JSON.stringify(raw)), map);
@@ -7367,6 +7781,7 @@ function applyBackup(payload){
     r.dropped += droppedOnMigrate;
     if(!p) return;
     p.id = raw.id;
+    if(localNo[p.patientId]) p.patientNo = localNo[p.patientId];
     if(raw.updatedAt) p.updatedAt = raw.updatedAt;
     const i = list.findIndex(x=>x.id === p.id);
     if(i < 0){ list.push(p); r.added++; return; }
@@ -7375,7 +7790,14 @@ function applyBackup(payload){
     else if(there === here) r.same++;
     else r.keptHere++;
   });
+  /* A program from an older build gets its patient here; a patient number that
+     clashes with a different patient on this computer is reissued. */
+  ensurePatients(list);
   if(!writePrograms(list)) throw new Error("programs");
+  if(S){
+    const mine = list.find(x=>x.id === S.id);
+    if(mine){ S.patientId = mine.patientId; S.patientNo = mine.patientNo; }
+  }
   /* The open program may just have been replaced by a newer copy. */
   if(S && r.updated){
     const fresh = loadProgram(S.id);
@@ -9189,6 +9611,11 @@ function v3Leave(){
       writeSettings({lastProgramId: p.id});
     }
   }
+  /* Programs saved before patients existed are grouped into patients here, by
+     identical name, and given numbers. Idempotent: a list that already has
+     them is left untouched and not rewritten. */
+  const all = readPrograms();
+  if(ensurePatients(all)) writePrograms(all);
   applyPrintColour(readSettings().printColour === true);
   v3ModelRender();
   /* The saved-programs list is the home screen. */
