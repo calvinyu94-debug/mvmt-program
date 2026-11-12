@@ -849,6 +849,9 @@ button{cursor:pointer}
         <h2>Saved programs</h2>
         <input class="search" id="lSearch" placeholder="Search by patient name…">
         <span class="count" id="lCount"></span>
+        <button class="pbtn" id="bBackupAll" title="Save every program and your own exercises to one password-protected file">Back up everything</button>
+        <button class="pbtn" id="bRestoreAll" title="Load a backup file made on this or another computer">Restore backup</button>
+        <input type="file" id="fBackupAll" accept=".json,application/json" style="display:none">
       </div>
       <div id="plist"></div>
     </section>
@@ -7161,6 +7164,13 @@ $("#fFile").onchange = e=>{
   rd.onload = ()=>{
     try{
       const d = JSON.parse(rd.result);
+      /* An encrypted backup picked here by mistake goes to the restore flow. */
+      if(isBackupFile(d)){
+        e.target.value = "";
+        if(cryptoReady()) restoreFlow(d);
+        else toast("This browser can't open encrypted files here. Open the app from its web address and try again.");
+        return;
+      }
       /* A file of exercises on its own is a reasonable thing to open here too. */
       if(d && !Array.isArray(d.phases) && !Array.isArray(d.blocks)
            && (Array.isArray(d.exercises) || Array.isArray(d.customExercises))){
@@ -7224,6 +7234,214 @@ $("#fCustomFile").onchange = e=>{
     try{ importCustomFile(JSON.parse(rd.result)); }
     catch(err){ toast("That file isn't an exercise file."); }
     e.target.value = "";
+  };
+  rd.readAsText(f);
+};
+
+/* ============================ ENCRYPTED BACKUP ============================ */
+/* Moving everything between computers without a server. Storage is per browser
+   per device by design, so "Back up everything" writes every program and every
+   custom exercise into one file, encrypted in the browser with a password the
+   practitioner chooses. The file holds patient names and notes, so nothing in
+   it is readable without that password — not even how many programs it holds.
+
+   AES-GCM 256 with a key from PBKDF2-SHA256, Web Crypto only: no library, no
+   network. A wrong password and a damaged file both fail GCM's integrity check,
+   so a restore can never half-apply garbage. There is no recovery path — that
+   is the property, and the modal says so.
+
+   Restore merges rather than replaces, so it works as sync between two
+   machines: a program not here is added; one held on both sides keeps
+   whichever copy was edited more recently. Nothing newer on this machine is
+   ever overwritten. Custom exercises go through mergeCustom() and the programs
+   through remapIds() then migrate(), in that order, exactly as Open file does. */
+
+const BACKUP_TYPE = "mvmt-backup";
+const BACKUP_ITER = 600000;
+const BACKUP_MIN_PW = 8;
+
+function b64(buf){
+  const bytes = new Uint8Array(buf);
+  let s = "";
+  for(let i=0;i<bytes.length;i+=0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i+0x8000));
+  return btoa(s);
+}
+function unb64(str){
+  const s = atob(str), out = new Uint8Array(s.length);
+  for(let i=0;i<s.length;i++) out[i] = s.charCodeAt(i);
+  return out;
+}
+function cryptoReady(){
+  return !!(window.crypto && crypto.subtle && window.isSecureContext !== false);
+}
+async function backupKey(password, salt, iterations){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(password),
+    "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    {name:"PBKDF2", hash:"SHA-256", salt:salt, iterations:iterations},
+    base, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]);
+}
+async function encryptBackup(payload, password){
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv   = crypto.getRandomValues(new Uint8Array(12));
+  const key  = await backupKey(password, salt, BACKUP_ITER);
+  const data = await crypto.subtle.encrypt({name:"AES-GCM", iv:iv}, key,
+    new TextEncoder().encode(JSON.stringify(payload)));
+  return {
+    type: BACKUP_TYPE, version: 1, encrypted: true,
+    createdAt: new Date().toISOString(),
+    kdf: {name:"PBKDF2", hash:"SHA-256", iterations:BACKUP_ITER, salt:b64(salt)},
+    cipher: {name:"AES-GCM", iv:b64(iv)},
+    data: b64(data)
+  };
+}
+/* Throws on a wrong password or a tampered file — GCM checks both. */
+async function decryptBackup(file, password){
+  const iter = Number(file.kdf && file.kdf.iterations) || BACKUP_ITER;
+  const key = await backupKey(password, unb64(file.kdf.salt), iter);
+  const plain = await crypto.subtle.decrypt({name:"AES-GCM", iv:unb64(file.cipher.iv)}, key, unb64(file.data));
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+function isBackupFile(d){
+  return !!(d && d.type === BACKUP_TYPE && d.kdf && d.cipher && typeof d.data === "string");
+}
+
+function backupAllFlow(){
+  if(!cryptoReady()){ toast("This browser can't encrypt files here. Open the app from its web address and try again."); return; }
+  flushSave();
+  const n = readPrograms().length, c = readCustom().length;
+  if(!n && !c){ toast("There's nothing to back up yet."); return; }
+  openModal("Back up everything", `
+    <p>Saves ${n===1?"your 1 program":"all "+n+" programs"}${c?` and your ${c} own exercise${c===1?"":"s"}`:""} into one file, locked with a password. Open it on another computer with <b>Restore backup</b>.</p>
+    <p class="ferr" id="bkErr" hidden></p>
+    <label><span class="lbl">Password</span><input id="bkPw" type="password" autocomplete="new-password">
+      <span class="fhint">At least ${BACKUP_MIN_PW} characters. If you forget it, the backup can't be opened — there is no way to recover it.</span></label>
+    <label><span class="lbl">Type it again</span><input id="bkPw2" type="password" autocomplete="new-password"></label>
+  `, ()=>{
+    const pw = $("#bkPw").value, err = $("#bkErr");
+    const fail = m=>{ err.textContent = m; err.hidden = false; return false; };
+    if(pw.length < BACKUP_MIN_PW) return fail("Use at least " + BACKUP_MIN_PW + " characters.");
+    if(pw !== $("#bkPw2").value) return fail("The two passwords don't match.");
+    $("#modalOk").disabled = true;
+    err.hidden = true;
+    flushSave();
+    const payload = {programs: readPrograms(), custom: readCustom()};
+    encryptBackup(payload, pw).then(file=>{
+      const blob = new Blob([JSON.stringify(file)], {type:"application/json"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "mvmt-backup-" + new Date().toISOString().slice(0,10) + ".json";
+      a.click(); URL.revokeObjectURL(a.href);
+      $("#modalOk").disabled = false;
+      closeModal();
+      toast("Backup saved. Open it on your other computer with Restore backup.");
+    }).catch(()=>{
+      $("#modalOk").disabled = false;
+      fail("Couldn't create the backup in this browser.");
+    });
+    return false;   // the modal closes itself once the file is written
+  }, "Save backup");
+}
+
+/* Merge a decrypted payload into this browser. Returns counts for the message. */
+function applyBackup(payload){
+  flushSave();
+  const r = {added:0, updated:0, same:0, keptHere:0, dropped:0, custom:null};
+  const custom = Array.isArray(payload && payload.custom) ? payload.custom : [];
+  if(custom.length){
+    r.custom = mergeCustom(custom);
+    if(!r.custom) throw new Error("custom");
+    renderFilterChips();
+  }
+  const map = r.custom ? r.custom.map : {};
+  const list = readPrograms();
+  (Array.isArray(payload && payload.programs) ? payload.programs : []).forEach(raw=>{
+    if(!raw || !raw.id) return;
+    const d = remapIds(JSON.parse(JSON.stringify(raw)), map);
+    const p = migrate(d);
+    r.dropped += droppedOnMigrate;
+    if(!p) return;
+    p.id = raw.id;
+    if(raw.updatedAt) p.updatedAt = raw.updatedAt;
+    const i = list.findIndex(x=>x.id === p.id);
+    if(i < 0){ list.push(p); r.added++; return; }
+    const here = String(list[i].updatedAt || ""), there = String(p.updatedAt || "");
+    if(there > here){ list[i] = p; r.updated++; }
+    else if(there === here) r.same++;
+    else r.keptHere++;
+  });
+  if(!writePrograms(list)) throw new Error("programs");
+  /* The open program may just have been replaced by a newer copy. */
+  if(S && r.updated){
+    const fresh = loadProgram(S.id);
+    if(fresh && String(fresh.updatedAt) !== String(S.updatedAt)){
+      S = fresh;
+      if(U.active >= S.phases.length) U.active = 0;
+      syncHeader();
+    }
+  }
+  return r;
+}
+
+function restoreMessage(r){
+  const parts = [];
+  const progs = n => n + " program" + (n===1?"":"s");
+  if(r.added)   parts.push(progs(r.added) + " added");
+  if(r.updated) parts.push(progs(r.updated) + " updated to a newer copy");
+  if(r.keptHere) parts.push(progs(r.keptHere) + " kept as is — the copy on this computer was newer");
+  if(!parts.length) parts.push("Everything was already up to date");
+  let m = parts.join(", ") + ".";
+  if(r.custom && r.custom.added) m += " " + customAddedMsg(r.custom);
+  if(r.dropped) m += " " + r.dropped + (r.dropped===1
+    ? " exercise is no longer in the library and was left out."
+    : " exercises are no longer in the library and were left out.");
+  return m;
+}
+
+function restoreFlow(file){
+  openModal("Restore backup", `
+    <p>Adds the programs in this backup to this computer. Where both have the same program, the one edited most recently is kept. Nothing is deleted.</p>
+    <p class="ferr" id="bkErr" hidden></p>
+    <label><span class="lbl">Backup password</span><input id="bkPw" type="password" autocomplete="current-password"></label>
+  `, ()=>{
+    const pw = $("#bkPw").value, err = $("#bkErr");
+    const fail = m=>{ err.textContent = m; err.hidden = false; $("#modalOk").disabled = false; return false; };
+    if(!pw) return fail("Enter the password you chose when you made the backup.");
+    $("#modalOk").disabled = true;
+    err.hidden = true;
+    decryptBackup(file, pw).then(payload=>{
+      let r;
+      try{ r = applyBackup(payload); }
+      catch(e){ fail("Couldn't save the restored programs in this browser."); return; }
+      $("#modalOk").disabled = false;
+      closeModal();
+      if(U.view === "list") renderList(); else renderAll();
+      toast(restoreMessage(r));
+    }).catch(()=>fail("That password doesn't open this backup."));
+    return false;
+  }, "Restore");
+}
+
+$("#bBackupAll").onclick = backupAllFlow;
+$("#bRestoreAll").onclick = ()=>{
+  if(!cryptoReady()){ toast("This browser can't open encrypted files here. Open the app from its web address and try again."); return; }
+  $("#fBackupAll").click();
+};
+$("#fBackupAll").onchange = e=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    let d = null;
+    try{ d = JSON.parse(rd.result); }catch(err){}
+    e.target.value = "";
+    if(!isBackupFile(d)){
+      toast(d && (Array.isArray(d.phases) || Array.isArray(d.blocks))
+        ? "That's a single program file — open it with Open file instead."
+        : "That isn't a backup file. Pick the mvmt-backup file you saved.");
+      return;
+    }
+    restoreFlow(d);
   };
   rd.readAsText(f);
 };
