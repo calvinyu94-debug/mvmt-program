@@ -799,6 +799,33 @@ Autosave debounces 800ms. Any code path that replaces the open program must call
 `flushSave()` first, or the pending write lands on the wrong program and the
 previous one's last edit is lost.
 
+### Moving between computers: the encrypted backup
+
+Storage is per browser per device, deliberately — there is no server to sync
+through. **Back up everything** and **Restore backup** on the Saved programs
+panel are the way across. They are the answer to "add a login": a password
+checked by a static page is not security, and a hosted database would put
+patient data with a third party. Do not add either without that being decided
+explicitly.
+
+- The backup holds `homecare:programs` and `homecare:custom`, encrypted in the
+  browser — AES-GCM 256, key from PBKDF2-SHA256 at 600,000 iterations, Web
+  Crypto only. The outer file (`type: "mvmt-backup"`) carries only the KDF and
+  cipher parameters and the ciphertext. **Nothing readable may be added to the
+  outer object** — not a program count, not a patient name.
+- There is no password recovery, and the dialog says so. That is the property.
+- Restore **merges**, it never replaces: a program not held is added, one held
+  on both sides keeps the copy with the later `updatedAt`, and nothing newer on
+  this machine is overwritten. Re-restoring the same file is a no-op.
+- It reuses the Open file order exactly: `mergeCustom()`, then `remapIds()`,
+  then `migrate()` per program. Dropped exercise ids are counted and reported.
+- Web Crypto needs a secure context (https or localhost). Elsewhere the buttons
+  say so rather than failing silently.
+- A backup picked through **Open file** is routed to the restore flow.
+
+The backup is a `.json` and is covered by the blanket `*.json` ignore. It is
+patient data: it must never be committed, encrypted or not.
+
 ## The 3D viewer
 
 The first thing that lives outside `index.html`. The models are in `assets/`:
